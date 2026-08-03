@@ -2,60 +2,60 @@
 
 A paper-first repository for Human–Agent collaborative scientific writing.
 
-The repository should feel like a normal LaTeX paper project: read the current paper contract, edit the paper, compile it, and iterate. Agent governance, detailed checks, and legacy evidence controls support the work without becoming the Human's primary interface.
+The repository behaves like a normal LaTeX paper project. Human-facing contracts explain what the paper is trying to say; Agent knowledge, checks, and release tooling stay in the `.agents/` sidecar.
 
 ## Start writing
 
-1. Open `PAPER.md` and record what the paper is trying to be: thesis, contributions, story, style, protected decisions, and unresolved questions.
-2. Open `EXPERIMENTS.md` and record the paper-facing experiment questions and the conditions that must not change silently.
-3. Edit the LaTeX source under `paper/`, starting with `paper/sections/`.
-4. Compile from the paper directory:
+1. Open `PAPER.md` and record the thesis, contributions, story, style, protected decisions, and unresolved questions.
+2. Open `EXPERIMENTS.md` and record the paper-facing experiment questions and conditions that must not change silently.
+3. Edit `paper/sections/` and the stable interfaces in `paper/macros.tex`.
+4. Build the paper:
 
 ```bash
-cd paper
-latexmk -pdf main.tex
+make pdf
 ```
 
-If `latexmk` is unavailable, use the TeX workflow appropriate for the target venue. Missing tools must be reported as unverified rather than treated as a successful build.
+Clean generated LaTeX files with:
+
+```bash
+make clean
+```
+
+The Human build uses only the normal `paper/` project. It does not load Agent runtime state, research ledgers, or release tooling.
 
 ## Human-facing entry points
 
-- `PAPER.md` — current paper positioning, thesis, claims, story, style, flexible boundaries, and unresolved decisions.
-- `EXPERIMENTS.md` — what the paper needs experiments to answer and which experimental changes require Human awareness.
-- `PAPER_INTERFACES.md` — stable paper-facing names such as `\MethodName` or `\MainAccuracy`, and how Human and Agent maintain their meaning.
+- `PAPER.md` — current positioning, thesis, claims, story, style, flexible boundaries, and unresolved decisions.
+- `EXPERIMENTS.md` — what experiments need to answer and which changes require Human awareness.
+- `PAPER_INTERFACES.md` — stable paper-facing names and how Human and Agent maintain their meaning.
 - `DECISIONS.md` — durable rationale for important Human decisions.
-- `paper/` — the actual LaTeX paper.
+- `paper/` — the actual LaTeX source.
 
-The collaboration cues **locked**, **bounded**, **free**, and **unresolved** are intentionally flexible. They help Human and Agent recognize important boundaries without turning the template into a rigid state machine.
+The cues **locked**, **bounded**, **free**, and **unresolved** are intentionally flexible. They help Human and Agent recognize important boundaries without turning the template into a rigid state machine.
 
 ## Agent collaboration
 
-`AGENTS.md` is a thin routing entry point. Agents should begin with the Human-facing contract, load only the knowledge or skill needed for the current task, and avoid filling the context with every policy, venue, ledger, and historical file.
+`AGENTS.md` is a thin router. Agents begin with the Human-facing contracts, then load one relevant skill or knowledge document rather than every policy, venue, ledger, and historical file.
+
+Stable Agent entrypoints are:
+
+```bash
+bash .agents/tools/verify.sh
+bash .agents/tools/release.sh
+```
+
+`verify.sh` runs the current deterministic checks. `release.sh` first applies the strict Release contract, then compiles, exports, validates, and independently compiles the arXiv package. The unresolved factory template is expected to fail the Release contract until a real paper is ready.
 
 The Human retains final responsibility for scientific claims, story, experiment fairness, result interpretation, interface meaning, and release approval. Agents handle retrieval, alternatives, consistency, drafting, low-risk revision, impact analysis, and focused validation.
 
 ## Draft and release
 
-Drafts may contain explicit TODO, provisional language, and unresolved choices. Uncertainty should remain visible.
+Drafts may contain explicit TODOs, provisional language, and unresolved choices. Uncertainty should remain visible.
 
 Release work is stricter: important claims, experiment interpretation, stable interfaces, venue settings, and known exceptions must be reviewed; active placeholders or silent semantic changes must not enter the submission package.
 
-## Repository internals
+## Compatibility internals
 
-The existing evidence-first harness, validators, release exporters, and adapter surfaces remain available during the transition to the paper-first model. They are compatibility infrastructure, not the recommended Human orientation path.
+`state/`, `lab/`, `.agent/`, `.claude/`, and `scripts/` remain temporarily because existing capabilities, real-paper cases, and release regressions depend on them. They are compatibility implementation, not the Human's navigation model or the default place for new paper-first features.
 
-Agent or maintainer validation currently includes:
-
-```bash
-python scripts/check-writing-harness.py
-python scripts/check-capability-parity.py
-python scripts/check-paper-surface.py
-bash scripts/check-latex.sh --compile
-bash scripts/export-tex-release.sh
-python scripts/check-release-package.py
-python scripts/check-release-freshness.py
-python scripts/check-arxiv-portability.py
-bash scripts/check-latex.sh --compile-release arxiv
-```
-
-Release directories are generated TeX-only surfaces. Edit `paper/`, not `release/`. The ongoing simplification is tracked in issue #32; the first implementation phase is issue #39.
+Release directories are generated TeX-only surfaces. Edit `paper/`, not `release/`. Pull requests are validated by deterministic checks, real TeX compilation, isolated arXiv compilation, and a paper-only build that removes the Agent and legacy control surfaces.
