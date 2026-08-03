@@ -1,7 +1,20 @@
 # Release Anatomy
 
 Release surfaces are generated from `paper/` and must not expose harness state, Git metadata, or symlinks.
-`release/manifest.yaml` records sha256, relpath, and size for exported files plus source revision data when available.
+`release/manifest.yaml` records sha256, relpath, and size for exported files.
+
+## Source provenance
+
+The authoritative release source identity is `source_revision.tree`: a synthetic Git tree built from exactly the authored `paper/` paths consumed by the exporter. This identity:
+
+- reflects the current authored paper, including working-tree content at export time;
+- ignores unrelated documentation, Agent-sidecar, state, or harness changes;
+- remains stable across squash merges and rebases when the paper content is unchanged;
+- changes whenever an exported paper file changes.
+
+`source_revision.commit` is an optional audit hint identifying the checkout used to build the release. It is not a freshness requirement and may disappear after a squash or rebase. Freshness compares the current exported paper tree with the recorded paper tree and separately checks every release checksum.
+
+Legacy commit-bound manifests are rejected with a migration diagnostic; rerun the exporter through `bash .agents/tools/release.sh` or `scripts/export-tex-release.sh`.
 
 `release/venue/` is a separate, gitignored preview surface produced by `scripts/export-venue-template.sh`
 (pairs `paper/` with a locally supplied official venue kit). Unlike `arxiv/`, `overleaf/`, and `github-tex/`,
