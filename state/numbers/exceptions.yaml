@@ -3,7 +3,8 @@
     {
       "pattern": "2027",
       "match_scope": "literal",
-      "reason": "venue year metadata"
+      "path_pattern": "state/ccfa.yaml",
+      "reason": "venue year metadata in the primary project configuration"
     }
   ]
 }
