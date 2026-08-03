@@ -47,6 +47,7 @@ jobs:
           python3 scripts/check-bridge-chassis.py
           python3 .agents/tools/check-paper-contracts.py --profile draft
           python3 .agents/tools/check-paper-state.py
+          python3 .agents/tools/check-paper-interfaces.py
 
       - name: Run negative regression probes
         shell: bash
@@ -102,6 +103,14 @@ jobs:
           python3 scripts/check-release-package.py
           python3 scripts/check-release-freshness.py
           python3 scripts/check-arxiv-portability.py
+
+      - name: Upload rebuilt release surfaces
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebuilt-release
+          path: release/
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Compile arXiv release in isolation
         run: bash scripts/check-latex.sh --compile-release arxiv
