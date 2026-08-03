@@ -3,6 +3,7 @@
 # branch commit that disappears after squash/rebase.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+SOURCE_REPO="$(pwd)"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -16,41 +17,7 @@ printf '\\documentclass{article}\n' > paper/main.tex
 git add paper/main.tex
 git commit -qm source
 SOURCE_COMMIT="$(git rev-parse HEAD)"
-git branch source
-
-python3 - "$OLDPWD" "$REPO" "$SOURCE_COMMIT" <<'PY'
-import importlib.util
-import subprocess
-import sys
-from pathlib import Path
-from types import SimpleNamespace
-
-tools = Path(sys.argv[1]) / ".agents/tools"
-repo = Path(sys.argv[2])
-source_commit = sys.argv[3]
-spec = importlib.util.spec_from_file_location("release_provenance", tools / "release_provenance.py")
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
-source_tree = module.paper_source_tree(repo, ["main.tex"])
-(repo / "source.txt").write_text(f"{source_commit}\n{source_tree}\n", encoding="utf-8")
-PY
-
-# Simulate a squash result with identical paper content but unrelated history.
-git checkout -q --orphan squash
-rm -rf ./*
-mkdir -p paper
-printf '\\documentclass{article}\n' > paper/main.tex
-git add paper/main.tex
-git commit -qm squash
-git branch -D source >/dev/null
-git reflog expire --expire=now --all
-git gc --prune=now >/dev/null 2>&1
-
-readarray -t SOURCE < <(git show HEAD^:source.txt 2>/dev/null || true)
-# source.txt was not carried into the orphan commit; recover it from the shell
-# fixture written before history replacement.
-SOURCE_COMMIT_ENV="$SOURCE_COMMIT"
-SOURCE_TREE="$(python3 - "$OLDPWD" "$REPO" <<'PY'
+SOURCE_TREE="$(python3 - "$SOURCE_REPO" "$REPO" <<'PY'
 import importlib.util
 import sys
 from pathlib import Path
@@ -64,12 +31,29 @@ print(module.paper_source_tree(repo, ["main.tex"]))
 PY
 )"
 
-if git cat-file -e "$SOURCE_COMMIT_ENV^{commit}" 2>/dev/null; then
+# Simulate a squash result with identical paper content but unrelated history.
+git checkout -q --orphan squash
+rm -rf ./*
+mkdir -p paper
+printf '\\documentclass{article}\n' > paper/main.tex
+git add paper/main.tex
+git commit -qm squash
+
+# Delete every non-squash branch (including the init default branch), expire all
+# reflogs, and prune objects so the original source commit is genuinely absent.
+while IFS= read -r branch; do
+  [ "$branch" = "squash" ] || git branch -D "$branch" >/dev/null
+done < <(git for-each-ref --format='%(refname:short)' refs/heads)
+git reflog expire --expire=now --all
+git gc --prune=now >/dev/null 2>&1
+
+if git cat-file -e "$SOURCE_COMMIT^{commit}" 2>/dev/null; then
   echo "ERROR source commit is still reachable; squash fixture is invalid" >&2
+  git show-ref >&2 || true
   exit 1
 fi
 
-python3 - "$OLDPWD" "$REPO" "$SOURCE_COMMIT_ENV" "$SOURCE_TREE" <<'PY'
+python3 - "$SOURCE_REPO" "$REPO" "$SOURCE_COMMIT" "$SOURCE_TREE" <<'PY'
 import importlib.util
 import subprocess
 import sys
