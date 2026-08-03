@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Lightweight checks for the Human–Agent paper contract.
-
-The contract remains natural-language Markdown. This tool checks only stable
-anchors and visible unresolved work; it does not attempt to infer scientific
-truth, approval, or prose semantics.
-"""
+"""Lightweight checks for the Human–Agent paper contracts."""
 from __future__ import annotations
 
 import argparse
@@ -38,6 +33,16 @@ REQUIRED_HEADINGS = {
         "## Change workflow",
         "## Draft and release",
     ],
+    "PUBLICATION.md": [
+        "# Publication Contract",
+        "## Canonical paper",
+        "## Active variants",
+        "## Allowed differences",
+        "## Must not diverge silently",
+        "## Human review triggers",
+        "## Build interface",
+        "## Release instances",
+    ],
 }
 CONTROL_WORDS = ("locked", "bounded", "free", "unresolved")
 FOCUSED_SKILLS = (
@@ -45,6 +50,7 @@ FOCUSED_SKILLS = (
     "decision-packet",
     "style-alignment",
     "paper-interface-maintenance",
+    "publication-planning",
     "release-review",
 )
 PLACEHOLDER_RE = re.compile(r"\b(?:TODO|TBD|PLACEHOLDER)\b|\\PaperTODO\b", re.I)
@@ -102,12 +108,11 @@ def check_draft(root: Path) -> int:
         line_count = len(agents_text.splitlines())
         if line_count > 120:
             code |= fail(f"AGENTS.md is no longer a thin router ({line_count} lines > 120)")
-        broad_patterns = (
+        for pattern in (
             r"read (?:the )?entire repository",
             r"read all (?:files|policies|knowledge)",
             r"load all (?:files|policies|knowledge)",
-        )
-        for pattern in broad_patterns:
+        ):
             if re.search(pattern, agents_text, re.I):
                 code |= fail(f"AGENTS.md contains broad context-loading instruction: {pattern}")
 
@@ -139,12 +144,9 @@ def check_draft(root: Path) -> int:
 
 
 def current_contract_lines(text: str) -> list[tuple[int, str]]:
-    """Return lines that represent current values rather than explanatory prose."""
     result: list[tuple[int, str]] = []
     for number, line in enumerate(strip_fenced_code(text).splitlines(), start=1):
         stripped = line.strip()
-        if not stripped:
-            continue
         if stripped.startswith(("- ", "* ", "|", "### ", "#### ")):
             result.append((number, line))
     return result
@@ -153,7 +155,7 @@ def current_contract_lines(text: str) -> list[tuple[int, str]]:
 def check_release(root: Path) -> int:
     code = check_draft(root)
 
-    for relative in ("PAPER.md", "EXPERIMENTS.md"):
+    for relative in ("PAPER.md", "EXPERIMENTS.md", "PUBLICATION.md"):
         text = read_text(root, relative)
         if text is None:
             continue
@@ -168,8 +170,6 @@ def check_release(root: Path) -> int:
         code |= fail("missing paper/ source directory")
     else:
         for path in sorted(paper_root.rglob("*.tex")):
-            if any(part in {"build", "release"} for part in path.parts):
-                continue
             text = path.read_text(encoding="utf-8")
             for number, line in enumerate(text.splitlines(), start=1):
                 active = line.split("%", 1)[0]
@@ -183,19 +183,13 @@ def check_release(root: Path) -> int:
     return code
 
 
-def build_parser() -> argparse.ArgumentParser:
+def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--profile", choices=("draft", "release"), default="draft")
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    return parser
-
-
-def main() -> int:
-    args = build_parser().parse_args()
+    args = parser.parse_args()
     root = args.root.expanduser().resolve()
-    if args.profile == "release":
-        return check_release(root)
-    return check_draft(root)
+    return check_release(root) if args.profile == "release" else check_draft(root)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,8 @@ from pathlib import Path
 
 REQUIRED = (
     "PaperTODO",
+    "PaperTitle",
+    "PaperAuthors",
     "MethodName",
     "CoreTerm",
     "StateSymbol",

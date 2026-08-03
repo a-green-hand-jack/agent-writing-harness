@@ -37,31 +37,60 @@ jobs:
         run: git diff --exit-code
 
   latex:
-    name: latex
+    name: latex (${{ matrix.variant }})
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [draft, anonymous, camera-ready, arxiv]
     steps:
       - name: Checkout the validated head
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Install TeX
+      - name: Install TeX and PDF text tools
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             latexmk \
+            poppler-utils \
             texlive-latex-base \
             texlive-latex-recommended \
             texlive-latex-extra \
             texlive-fonts-recommended \
             texlive-bibtex-extra
 
-      - name: Build through the Human interface
-        run: make pdf
+      - name: Build publication variant
+        run: make pdf VARIANT="${{ matrix.variant }}"
 
-      - name: Require a non-empty PDF
-        run: test -s paper/main.pdf
+      - name: Check variant surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          variant="${{ matrix.variant }}"
+          if [[ "$variant" == draft ]]; then
+            pdf="paper/main.pdf"
+          else
+            pdf="paper/main-$variant.pdf"
+          fi
+          test -s "$pdf"
+          pdftotext "$pdf" "$RUNNER_TEMP/$variant.txt"
+          if [[ "$variant" == anonymous ]]; then
+            if grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"; then
+              echo "ERROR anonymous variant exposes canonical authors" >&2
+              exit 1
+            fi
+            if grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"; then
+              echo "ERROR anonymous variant exposes acknowledgements" >&2
+              exit 1
+            fi
+          fi
+          if [[ "$variant" == camera-ready || "$variant" == arxiv ]]; then
+            grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
+            grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
+          fi
 
   paper-only:
     name: paper-only
@@ -91,8 +120,12 @@ jobs:
             texlive-fonts-recommended \
             texlive-bibtex-extra
 
-      - name: Compile only the paper project
+      - name: Compile all variants with only paper present
         run: |
+          set -euo pipefail
           cd "$RUNNER_TEMP/paper-only/paper"
-          latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
-          test -s main.pdf
+          for variant in draft anonymous camera_ready arxiv; do
+            job="paper-only-$variant"
+            latexmk -pdf -jobname="$job" -interaction=nonstopmode -halt-on-error "variants/$variant.tex"
+            test -s "$job.pdf"
+          done

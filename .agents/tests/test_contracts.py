@@ -28,9 +28,7 @@ def completed_fixture(root: Path) -> None:
     write(
         root / "PAPER.md",
         """# Paper Contract
-
 The collaboration cues locked, bounded, free, and unresolved remain available as guidance.
-
 ## Paper identity
 The paper has an approved identity.
 ## What readers should believe
@@ -75,7 +73,26 @@ Consumers are updated together.
 Release interfaces are approved.
 """,
     )
-    write(root / "AGENTS.md", "# Agent Entry\nLoad only the context required for the task.\n")
+    write(
+        root / "PUBLICATION.md",
+        """# Publication Contract
+## Canonical paper
+One source.
+## Active variants
+The approved release variant is active.
+## Allowed differences
+Presentation only.
+## Must not diverge silently
+Scientific meaning is shared.
+## Human review triggers
+Publication requires Human review.
+## Build interface
+Use the build command.
+## Release instances
+The release instance is approved.
+""",
+    )
+    write(root / "AGENTS.md", "# Agent Entry\nLoad only relevant context.\n")
     write(root / "DECISIONS.md", "# Decisions\n")
     write(
         root / ".agents/skills/paper-orientation/SKILL.md",
@@ -86,6 +103,7 @@ Release interfaces are approved.
         "decision-packet",
         "style-alignment",
         "paper-interface-maintenance",
+        "publication-planning",
         "release-review",
     ):
         write(
