@@ -1,0 +1,101 @@
+name: PR validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  harness:
+    name: harness
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: python -m pip install --disable-pip-version-check pyyaml
+
+      - name: Run deterministic harness checks
+        run: |
+          set -euo pipefail
+          python3 scripts/check-capability-parity.py
+          python3 scripts/check-writing-harness.py
+          python3 scripts/check-anatomy-drift.py
+          python3 scripts/check-paper-surface.py
+          python3 scripts/check-conference-template.py
+          python3 scripts/check-release-package.py
+          python3 scripts/check-release-freshness.py
+          python3 scripts/check-arxiv-portability.py
+          python3 scripts/check-bridge-chassis.py
+
+      - name: Run negative regression probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tests=(scripts/test-*.sh)
+          if (( ${#tests[@]} == 0 )); then
+            echo "ERROR no scripts/test-*.sh regression probes found" >&2
+            exit 1
+          fi
+          for test_script in "${tests[@]}"; do
+            echo "::group::$test_script"
+            bash "$test_script"
+            echo "::endgroup::"
+          done
+
+      - name: Confirm probes restored tracked files
+        run: git diff --exit-code
+
+  latex:
+    name: latex
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install TeX and export dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            latexmk \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-bibtex-extra \
+            texlive-extra-utils
+
+      - name: Install Python dependencies
+        run: python3 -m pip install --disable-pip-version-check pyyaml
+
+      - name: Compile authored paper
+        run: bash scripts/check-latex.sh --compile
+
+      - name: Rebuild and validate release surfaces
+        run: |
+          set -euo pipefail
+          bash scripts/export-tex-release.sh
+          python3 scripts/check-release-package.py
+          python3 scripts/check-release-freshness.py
+          python3 scripts/check-arxiv-portability.py
+
+      - name: Compile arXiv release in isolation
+        run: bash scripts/check-latex.sh --compile-release arxiv
