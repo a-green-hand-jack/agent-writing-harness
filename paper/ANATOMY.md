@@ -2,7 +2,7 @@
 
 LaTeX source lives here. It is the primary authored paper surface.
 
-The current paper intent and collaboration boundaries are described in root `PAPER.md` and `EXPERIMENTS.md`. Stable paper-facing names are described in root `PAPER_INTERFACES.md` and implemented lightly in `paper/macros.tex` when they are needed.
+The current paper intent and collaboration boundaries are described in root `PAPER.md` and `EXPERIMENTS.md`. Stable paper-facing names are described in root `PAPER_INTERFACES.md` and implemented lightly in `paper/macros.tex`.
 
 ## Directory layout
 
@@ -17,15 +17,17 @@ The current paper intent and collaboration boundaries are described in root `PAP
 
 ## Lightweight paper interfaces
 
-Use `macros.tex` for recurring names or values whose meaning must remain stable across several paper surfaces, for example `\MethodName`, `\PrimaryMetric`, or `\MainAccuracy`.
+`macros.tex` ships a minimal compilable interface surface:
 
-A useful definition includes a short comment explaining:
+- `\PaperTODO` for explicit Draft-only placeholders;
+- `\MethodName` and `\CoreTerm` for identity and terminology;
+- `\StateSymbol` for notation;
+- `\MainResult` and `\MainResultUncertainty` for the primary result pair;
+- an optional `generated/results-macros.tex` override hook after Human and Agent review.
 
-- the current meaning;
-- whether it is locked, bounded, free, or unresolved;
-- which semantic changes require Human review.
+Each interface has a short comment describing its meaning, practical control boundary, and Human-review trigger. The abstract, Introduction, and Method scaffolds consume these interfaces so they are not dead definitions.
 
-Do not build a schema or generator for one-off local values. The interface model should remain Human-readable and flexible. Dedicated code-repository imports and interface version tooling are future work.
+Do not build a schema or generator for one-off local values. The interface model remains Human-readable and flexible. Dedicated code-repository imports and interface version tooling are future work.
 
 ## File naming convention
 

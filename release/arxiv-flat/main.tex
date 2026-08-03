@@ -1,18 +1,33 @@
 \documentclass{article}
 \usepackage{ccfa-paper}
+
+
+\providecommand{\PaperTODO}[1]{\textbf{[TODO: #1]}}
+
+\providecommand{\MethodName}{\PaperTODO{method name}}
+
+\providecommand{\CoreTerm}{\PaperTODO{core term}}
+
+\providecommand{\StateSymbol}{\ensuremath{\mathbf{s}}}
+
+\providecommand{\MainResult}{\PaperTODO{main result}}
+
+\providecommand{\MainResultUncertainty}{\PaperTODO{main-result uncertainty}}
+
+\InputIfFileExists{generated/results-macros.tex}{}{}
   \title{TODO Paper Title}
 \author{TODO}
 \begin{document}
 \maketitle
  \begin{abstract}
-TODO
+\PaperTODO{Summarize the problem, position \MethodName{}, and report the approved main result \MainResult{} with uncertainty \MainResultUncertainty{}.}
 \end{abstract}
  \section{Introduction}
-TODO
+\PaperTODO{Introduce the problem, explain the role of \CoreTerm{}, and position \MethodName{} without exceeding the approved claim strength.}
  \section{Related Work}
 TODO
  \section{Method}
-TODO
+\PaperTODO{Define \StateSymbol{} and explain how \MethodName{} operates on the approved representation.}
  \section{Experiments}
 TODO
  \section{Conclusion}

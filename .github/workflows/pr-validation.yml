@@ -20,10 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout full history
+      - name: Checkout full history at the real head
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -47,6 +48,7 @@ jobs:
           python3 scripts/check-bridge-chassis.py
           python3 .agents/tools/check-paper-contracts.py --profile draft
           python3 .agents/tools/check-paper-state.py
+          python3 .agents/tools/check-paper-interfaces.py
 
       - name: Run negative regression probes
         shell: bash
@@ -72,10 +74,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout full history
+      - name: Checkout full history at the real head
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Install TeX and export dependencies
         run: |
@@ -102,6 +105,14 @@ jobs:
           python3 scripts/check-release-package.py
           python3 scripts/check-release-freshness.py
           python3 scripts/check-arxiv-portability.py
+
+      - name: Upload rebuilt release surfaces
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebuilt-release
+          path: release/
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Compile arXiv release in isolation
         run: bash scripts/check-latex.sh --compile-release arxiv
