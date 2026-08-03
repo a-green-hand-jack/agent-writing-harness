@@ -9,9 +9,21 @@ The paper project is primary. Begin with the current Human-facing contract and l
 3. Read `PAPER_INTERFACES.md` only when the task changes recurring terminology, notation, results, claims, figures, tables, or macros.
 4. Read the relevant current decisions in `DECISIONS.md`.
 5. Read `.agents/skills/paper-orientation/SKILL.md` when starting a new session or when context is unclear.
-6. Load one task-specific workflow or knowledge document. Do not load every policy, venue, ledger, and historical file by default.
+6. Load one task-specific skill or knowledge document. Do not load every policy, venue, ledger, and historical file by default.
 
 Legacy `state/`, `lab/`, `.agent/`, `.claude/`, adapter, and validator surfaces remain available during the migration. Consult them only when the current task or a declared check requires them.
+
+## Task routing
+
+Load one focused skill when its trigger applies:
+
+- high-impact meaning or permission boundary → `.agents/skills/control-review/SKILL.md`;
+- a focused Human choice is needed → `.agents/skills/decision-packet/SKILL.md`;
+- paper positioning, structure, or prose style → `.agents/skills/style-alignment/SKILL.md`;
+- recurring term, notation, result, artifact, or macro → `.agents/skills/paper-interface-maintenance/SKILL.md`;
+- submission or release candidate → `.agents/skills/release-review/SKILL.md`.
+
+Do not load all five for ordinary local edits.
 
 ## Collaboration boundary
 
