@@ -2,27 +2,28 @@
 
 ## Trigger
 
-Use when preparing a submission, arXiv package, camera-ready version, or other Human-approved release candidate.
+Use when preparing an immutable submission, arXiv version, camera-ready version, or other Human-approved release instance.
 
 ## Minimum context
 
-- `PAPER.md`, `EXPERIMENTS.md`, and `PAPER_INTERFACES.md`;
+- `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, and `PUBLICATION.md`;
 - current applicable decisions;
-- active paper source and release diff;
+- selected variant and canonical paper diff;
+- release-instance record or candidate manifest;
 - venue rules only from current official sources when a venue is involved.
 
 Do not load historical alternatives unless a current conflict requires them.
 
 ## Procedure
 
-1. Run the Draft contract check and summarize current state.
-2. Run the Release contract check; do not suppress unresolved or placeholder failures.
+1. Confirm the selected variant and permitted differences from the canonical paper.
+2. Run the Draft and Release contract checks; do not suppress unresolved or placeholder failures.
 3. List high-impact changes since the last Human review.
-4. Check claim strength, experiment interpretation, stable interfaces, limitations, negative evidence, anonymity, references, figures, tables, and compilation.
-5. Run the repository's deterministic and real-LaTeX checks.
+4. Check claim strength, experiment interpretation, stable interfaces, limitations, negative evidence, anonymity, author/acknowledgement behavior, appendix inclusion, references, figures, tables, and compilation.
+5. Build the exact release candidate and verify its manifest and artifact checksums.
 6. Mark unavailable external environments as unverified, not successful.
 7. Produce a short release summary with blockers, accepted exceptions, residual risks, and an Agent recommendation.
 
 ## Human decision
 
-Only the Human approves the release candidate and accepts explicit residual risk or exceptions. Bind approval to the reviewed Git revision and release artifacts.
+Only the Human approves a release instance and accepts explicit residual risk or exceptions. Bind approval to the reviewed source revision, variant, manifest, and artifacts.

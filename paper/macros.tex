@@ -1,12 +1,21 @@
 % Project-specific, paper-facing interfaces.
 % Reusable display helpers live in paper/style/ccfa-paper.sty.
-% Keep these definitions Human-readable and update every active consumer when
-% an interface meaning changes.
+% Update every active consumer when an interface meaning changes.
 
 % Interface: PaperTODO
 % Meaning: an explicit Draft-only placeholder that remains compilable.
 % Control: free implementation; Release must reject active uses.
 \providecommand{\PaperTODO}[1]{\textbf{[TODO: #1]}}
+
+% Interface: PaperTitle
+% Meaning: the canonical title shared by publication variants.
+% Control: bounded wording; a positioning change requires Human review.
+\providecommand{\PaperTitle}{TODO Paper Title}
+
+% Interface: PaperAuthors
+% Meaning: the canonical visible author line for non-anonymous variants.
+% Control: locked identity; anonymous variants hide rather than redefine it.
+\providecommand{\PaperAuthors}{TODO Authors}
 
 % Interface: MethodName
 % Meaning: the approved paper-facing name of the proposed method or system.
@@ -33,6 +42,5 @@
 % Control: bounded value; uncertainty type or aggregation changes require Human review.
 \providecommand{\MainResultUncertainty}{\PaperTODO{main-result uncertainty}}
 
-% Generated numeric macros may override or add interfaces after Human and Agent
-% have reviewed their paper-facing meaning.
+% Reviewed generated numeric macros may override or add result interfaces.
 \InputIfFileExists{generated/results-macros.tex}{}{}
