@@ -1,33 +1,29 @@
 # Agent Sidecar Anatomy
 
-`.agents/` is the home for Agent-facing knowledge, skills, public tool entrypoints, policies, and short-lived coordination. It supports the paper project without becoming the Human's primary work surface.
+`.agents/` contains optional Agent-facing knowledge, focused skills, tools, tests, and short-lived coordination. It supports the paper without becoming the Human's primary work surface.
 
-## Current structure
+## Structure
 
-- `knowledge/`: optional reference material loaded only when relevant.
+- `knowledge/`: conditional reference material. Current project contracts always take priority.
 - `skills/`: focused procedures for orientation, control review, decision packets, style alignment, interface maintenance, and release review.
-- `tools/`: stable Agent-facing command surface.
-  - `verify.sh` runs deterministic repository verification.
-  - `release.sh` applies the strict Release contract, compiles, exports, validates, and independently compiles the arXiv package.
-  - `paper-harness.py` loads the legacy backend with current Agent-side compatibility adapters.
-  - `release_provenance.py` defines squash-stable paper-tree source identity; the checkout commit is audit-only.
-  - `check-paper-contracts.py` distinguishes flexible Draft checks from strict Release readiness.
-  - `check-paper-state.py` enforces reciprocal claim/number links, scoped numeric exceptions, and actual configured venue use.
-  - `check-paper-interfaces.py` verifies lightweight LaTeX interface definitions, documentation, active consumers, and generated-result hooks.
-- `runtime/`: ignored session or worktree coordination state. Only `.gitignore` is durable.
-- `roles/`, `workflows/`, `tool-policies/`, and `handoffs/`: existing adapter surfaces retained during migration.
+- `tools/`:
+  - `verify.sh` runs paper-first structure, Draft contract, interface, and regression checks.
+  - `release.sh` applies the strict Release contract and compiles the canonical paper.
+  - `check-structure.py` enforces the two-layer repository boundary and paper source structure.
+  - `check-paper-contracts.py` distinguishes flexible Draft work from strict Release readiness.
+  - `check-paper-interfaces.py` verifies stable interface definitions, documentation, and active consumers.
+- `tests/`: standard-library positive and negative regressions for the tool surface.
+- `runtime/`: ignored session or worktree coordination state; it is never durable project truth.
 
 ## Boundary
 
-- Human-facing contracts live at the repository root and under `paper/`.
-- Current `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, and explicit Human decisions override generic knowledge or adapter defaults.
-- Agents load one relevant skill and the minimum related knowledge rather than recursively reading the sidecar.
-- Normal LaTeX authoring and `make pdf` do not require `.agents/`.
-- Draft checks allow visible uncertainty; Release checks reject active placeholders and unresolved current commitments.
-- Semantic checkers validate identity, scope, configured use, and consumer consistency; they do not decide scientific truth.
-- Release freshness follows authored paper content rather than a branch commit that may disappear after squash/rebase.
-- New Agent automation should enter through `.agents/tools/`; existing `scripts/` remain compatibility implementation until current capabilities and real cases can migrate with equivalent evidence.
+- Human-facing intent lives in the root contracts.
+- Authored content lives in `paper/`.
+- Agent automation and checks live in `.agents/`.
+- The sidecar contains no capability registry, Bridge contract, experiment ledger, product adapter mirror, or duplicate Human/memory store.
+- Agents load one relevant skill and minimum context rather than recursively reading the sidecar.
+- `make pdf` and a paper-only checkout must not require `.agents/`.
 
 ## Context hygiene
 
-Rich knowledge is useful only when relevant. Venue rules, release policy, experiment guidance, style knowledge, and historical rationale are loaded when the task requires them. Irrelevant context can override a current Human decision, create false constraints, or make an Agent unnecessarily cautious.
+Rich knowledge is useful only when relevant. Venue guidance, release practices, experiment advice, and historical rationale are loaded on demand. Generic knowledge never overrides a current explicit Human decision.

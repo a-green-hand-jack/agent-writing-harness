@@ -1,64 +1,50 @@
 # Repository Anatomy
 
-This repository is a paper-first Human–Agent collaboration project with an Agent sidecar and a retained compatibility harness.
+This repository has two primary layers: the authored paper workspace and an optional Agent sidecar.
 
-## Primary Human-facing surface
+## Human and authored surface
 
 - `README.md`: direct starting point.
-- `Makefile`: simple `make pdf` and `make clean` interface.
-- `PAPER.md`: positioning, thesis, claims, story, style, protected decisions, and unresolved questions.
-- `EXPERIMENTS.md`: paper-facing experiment questions, boundaries, and interpretation responsibilities.
-- `PAPER_INTERFACES.md`: stable semantic names used across prose, tables, figures, notation, and LaTeX macros.
+- `Makefile`: simple Human build commands.
+- `PAPER.md`: positioning, thesis, claims, story, style, protected decisions, and unresolved work.
+- `EXPERIMENTS.md`: paper-facing experiment questions and interpretation boundaries.
+- `PAPER_INTERFACES.md`: stable terminology, notation, result, claim, and artifact interfaces.
 - `DECISIONS.md`: durable rationale for important Human decisions.
-- `paper/`: authored LaTeX source and primary editing surface.
+- `paper/`: canonical LaTeX source.
 
-The Human build depends only on the normal LaTeX project. A clean copy of `paper/` must compile without `.agents/`, `state/`, `lab/`, or `scripts/`.
+A clean copy of `paper/` must compile independently.
 
 ## Agent sidecar
 
-- `AGENTS.md`: thin discovery and routing entry point.
+- `AGENTS.md`: thin routing entrypoint.
 - `.agents/knowledge/`: optional reference knowledge loaded only when relevant.
 - `.agents/skills/`: focused task procedures.
-- `.agents/tools/verify.sh`: stable deterministic verification entrypoint.
-- `.agents/tools/release.sh`: strict Release contract, compilation, export, package checks, and isolated arXiv compilation.
-- `.agents/tools/check-*.py`: focused Human–Agent contract and paper-state checks.
+- `.agents/tools/`: verification, release-readiness, structure, contract, and interface checks.
+- `.agents/tests/`: positive and negative regression tests for the Agent-facing tools.
 - `.agents/runtime/`: ignored short-lived coordination state.
-- `.agents/roles/`, `.agents/workflows/`, `.agents/tool-policies/`, `.agents/handoffs/`: existing adapter surfaces retained during migration.
 
-Current Human-facing contracts outrank generic knowledge and old adapter guidance. New Agent-facing orchestration belongs behind `.agents/tools/` or a focused skill rather than adding more Human commands.
+There is no separate capability registry, experiment ledger, Bridge layer, product-specific adapter mirror, or duplicate Human/memory control plane.
 
-## Compatibility implementation
+## Generated outputs
 
-- `.agent/`: existing doctrine and capability registry.
-- `.claude/`: existing Claude adapter surface.
-- `state/`: legacy writing control plane required by current capabilities and real-paper cases.
-- `lab/`: legacy claim, evidence, result, citation, and artifact ledgers.
-- `human/`: legacy briefs, reviews, decisions, and inbox surfaces.
-- `memory/`: legacy status, handoff, worktree, and change-control surfaces.
-- `scripts/`: deterministic implementation used by the stable `.agents/tools/` entrypoints.
-- `release/`: generated TeX-only export surfaces.
-- `exemplars/`: rhetorical move maps.
-
-These paths remain while existing capabilities and real cases depend on them. They are not the Human navigation model and are not the default growth surface for new paper-first features. Deletion or migration requires equivalent CI and case evidence.
+- LaTeX build files remain local and ignored.
+- Publication variants and release instances are generated from the canonical paper through the publication workflow.
+- Generated output is never a second authored source.
 
 ## Dependency direction
 
 ```text
 Human intent and decisions
         ↓
-PAPER.md / EXPERIMENTS.md / PAPER_INTERFACES.md
+PAPER.md / EXPERIMENTS.md / PAPER_INTERFACES.md / DECISIONS.md
         ↓
-paper/ authored source ── make pdf ──> paper/main.pdf
-        ↓
-release/ generated surfaces
+paper/ canonical authored source ── make pdf ──> paper/main.pdf
 
-Agent runtime
-        ↓ reads selectively
-AGENTS.md → focused skill / knowledge
-        ↓ invokes stable interfaces
+Agent task
+        ↓
+AGENTS.md → one focused skill / knowledge document
+        ↓
 .agents/tools/verify.sh or .agents/tools/release.sh
-        ↓ compatibility implementation
-scripts/ + current state/lab surfaces
 ```
 
-Release surfaces must not expose control-plane or Agent-sidecar paths. CI independently proves the full harness, real release builds, and paper-only compilation.
+The paper must not import files from `.agents/`. Agent knowledge must not override a current explicit Human decision.

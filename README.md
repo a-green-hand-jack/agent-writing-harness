@@ -4,60 +4,45 @@
 
 A paper-first repository for Human–Agent collaborative scientific writing.
 
-The repository behaves like a normal LaTeX paper project. Human-facing contracts explain what the paper is trying to say; Agent knowledge, checks, and release tooling stay in the `.agents/` sidecar.
-
 ## Start writing
 
-1. Open `PAPER.md` and record the thesis, contributions, story, style, protected decisions, and unresolved questions.
-2. Open `EXPERIMENTS.md` and record the paper-facing experiment questions and conditions that must not change silently.
-3. Edit `paper/sections/` and the stable interfaces in `paper/macros.tex`.
-4. Build the paper:
+1. Record the paper thesis, story, style, protected decisions, and open questions in `PAPER.md`.
+2. Record paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
+3. Maintain recurring terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
+4. Edit the LaTeX source under `paper/`.
+5. Build with:
 
 ```bash
 make pdf
 ```
 
-Clean generated LaTeX files with:
+Clean generated LaTeX files with `make clean`.
 
-```bash
-make clean
-```
+## Human-facing surface
 
-The Human build uses only the normal `paper/` project. It does not load Agent runtime state, research ledgers, or release tooling.
-
-## Human-facing entry points
-
-- `PAPER.md` — current positioning, thesis, claims, story, style, flexible boundaries, and unresolved decisions.
-- `EXPERIMENTS.md` — what experiments need to answer and which changes require Human awareness.
-- `PAPER_INTERFACES.md` — stable paper-facing names and how Human and Agent maintain their meaning.
+- `PAPER.md` — current positioning, claims, story, style, protected decisions, and unresolved work.
+- `EXPERIMENTS.md` — paper-facing experiment questions and interpretation boundaries.
+- `PAPER_INTERFACES.md` — stable semantic names shared by prose, tables, figures, and notation.
 - `DECISIONS.md` — durable rationale for important Human decisions.
-- `paper/` — the actual LaTeX source.
+- `paper/` — the authored LaTeX project.
 
-The cues **locked**, **bounded**, **free**, and **unresolved** are intentionally flexible. They help Human and Agent recognize important boundaries without turning the template into a rigid state machine.
+The cues **locked**, **bounded**, **free**, and **unresolved** are intentionally flexible. They support collaboration without creating a rigid state machine.
 
-## Agent collaboration
+## Agent sidecar
 
-`AGENTS.md` is a thin router. Agents begin with the Human-facing contracts, then load one relevant skill or knowledge document rather than every policy, venue, ledger, and historical file.
+`AGENTS.md` is a thin router. Agents load the current Human-facing contract, then one focused skill or knowledge document.
 
-Stable Agent entrypoints are:
+Stable Agent entrypoints:
 
 ```bash
 bash .agents/tools/verify.sh
 bash .agents/tools/release.sh
 ```
 
-`verify.sh` runs the current deterministic checks. `release.sh` first applies the strict Release contract, then compiles, exports, validates, and independently compiles the arXiv package. The unresolved factory template is expected to fail the Release contract until a real paper is ready.
+`verify.sh` checks the paper-first structure, Draft contract, stable interfaces, and Agent-side regressions. `release.sh` applies the strict Release contract and compiles the canonical paper; publication variants and immutable release packages are managed by the dedicated publication workflow.
 
-The Human retains final responsibility for scientific claims, story, experiment fairness, result interpretation, interface meaning, and release approval. Agents handle retrieval, alternatives, consistency, drafting, low-risk revision, impact analysis, and focused validation.
+## Project boundary
 
-## Draft and release
+The repository has no capability registry, Bridge chassis, experiment ledger, product-specific adapter mirror, or duplicate Human/memory control plane. Scientific and narrative intent remains in the root contracts; authored content remains in `paper/`; Agent support remains in `.agents/`.
 
-Drafts may contain explicit TODOs, provisional language, and unresolved choices. Uncertainty should remain visible.
-
-Release work is stricter: important claims, experiment interpretation, stable interfaces, venue settings, and known exceptions must be reviewed; active placeholders or silent semantic changes must not enter the submission package.
-
-## Compatibility internals
-
-`state/`, `lab/`, `.agent/`, `.claude/`, and `scripts/` remain temporarily because existing capabilities, real-paper cases, and release regressions depend on them. They are compatibility implementation, not the Human's navigation model or the default place for new paper-first features.
-
-Release directories are generated TeX-only surfaces. Edit `paper/`, not `release/`. Pull requests are validated by deterministic checks, real TeX compilation, isolated arXiv compilation, and a paper-only build that removes the Agent and legacy control surfaces. See `CONTRIBUTING.md` for the green-check merge contract.
+A clean copy of `paper/` must compile without `.agents/` or any repository tooling. Pull requests must pass the `harness`, `latex`, and `paper-only` Actions jobs before merge. See `CONTRIBUTING.md`.

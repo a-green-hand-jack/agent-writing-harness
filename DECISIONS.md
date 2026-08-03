@@ -1,48 +1,41 @@
 # Decisions
 
-## DEC-0001: Evidence-first writing control plane
+## DEC-0001: Paper-first two-layer repository
 
-Decision: register contribution, claims, evidence, numbers, references, floats, notation, and release policy before treating prose as paper-facing.
+Decision: the repository consists of a canonical authored paper workspace and an optional Agent sidecar.
 
-Rationale: paper errors usually come from untracked factual promotion, stale numbers, citation drift, and release leakage.
+- Human intent and current collaboration boundaries live in `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, and `DECISIONS.md`.
+- Authored LaTeX lives in `paper/` and compiles independently.
+- Agent knowledge, skills, checks, and short-lived coordination live in `.agents/`.
 
-## DEC-0002: Separate harness and release surfaces
+Rationale: users should be able to start writing immediately without learning a governance framework.
 
-Decision: `paper/` is the editing surface, `release/` is a generated tex-only surface, and harness state remains private by default.
+## DEC-0002: Remove the old harness and duplicate control planes
 
-## DEC-0003: Writing-side Bridge chassis adoption-readiness preflight (issue #6)
+Decision: delete capability registries, Bridge preflight, product-specific adapter mirrors, experiment/evidence ledgers, worktree governance, and duplicate Human/memory stores from this template.
 
-Decision: declare `profile: writing` and record Writing-side adoption pins for the `research-writing-bridge` chassis/protocol contracts in `state/bridge-chassis.yaml` (with `state/ccfa.yaml` as the profile/pin pointer). This is a Writing-side adoption-readiness preflight, **not** upstream Bridge conformance: the Bridge chassis-spec, protocol schemas, and golden fixtures are not vendored or pinned here, and Bridge issues #3/#6/#7 remain open. Pins must be fully explicit semver (suffix garbage and default-latest/floating pins are rejected) and ranges must use explicit comparator grammar. The capability registry carries explicit `contract_version`/`schema_version`, stays `profile: writing` / `ownership: writing-owned`, and every registered capability is classified as profile-specific so Writing's paper capabilities are never demanded as generic Bridge chassis. The compatibility matrix is provisional and its canonical rows are cross-checked against the local pins. `scripts/check-bridge-chassis.py` enforces this local self-consistency; the chassis MAJOR gate is executable (a `spec_version` MAJOR bump fails unless `approved_major` is edited in tandem, with the decision recorded at `human/decisions/README.md`).
+Rationale: those structures duplicate the Human-readable contracts, impose a research lifecycle on the paper repository, and create context and maintenance overhead. The paper repository does not own code-repository experiment truth.
 
-Rationale: Writing prepares to consume the Bridge chassis-spec without silently drifting from Research, keeps its own implementation and paper-specific capabilities, and offers only the declarative-registry+parity pattern upstream as a governance-gated candidate. Passing the preflight means the Writing-side adoption surface is internally consistent, not that Writing has been validated against a published Bridge contract.
+This decision supersedes the former evidence-first control-plane, Bridge-preflight, and compatibility-infrastructure decisions.
 
-## DEC-0004: Paper-first Human-facing contract (issues #32 and #39)
+## DEC-0003: Flexible control cues
 
-Decision: make `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, and `paper/` the recommended Human orientation and writing surface. Existing evidence, state, adapter, validator, and release paths remain as compatibility infrastructure during an incremental migration.
+Decision: use `locked`, `bounded`, `free`, and `unresolved` as natural-language collaboration cues, not a rigid permission engine.
 
-The repository must not require a Human to understand capability registries, validator topology, experiment ledgers, or Agent runtime details before starting to write. The Human-facing contract should remain short, natural-language, and useful in discussion.
+Rationale: high-impact boundaries must be visible without turning every paper object into structured state.
 
-Rationale: the template exists to improve Human–Agent collaboration, not to maximize the amount of visible governance. Human memory and cross-file retrieval are limited; Agents should recover context and maintain consistency, while Humans retain final responsibility for scientific and narrative decisions.
+## DEC-0004: Selective Agent context
 
-## DEC-0005: Flexible control cues and selective Agent context
+Decision: Agent knowledge and skills may be rich, but a task loads only the current contracts and one relevant focused skill or knowledge document.
 
-Decision: use `locked`, `bounded`, `free`, and `unresolved` as flexible collaboration cues rather than a rigid machine-enforced state model.
+Rationale: irrelevant context can override current Human intent, apply the wrong venue convention, or make the Agent unnecessarily cautious.
 
-- `locked`: an Agent may analyze and propose but must not silently change the meaning.
-- `bounded`: an Agent may adjust inside the written boundary.
-- `free`: an Agent may handle implementation or wording while respecting higher-level decisions.
-- `unresolved`: Human and Agent have not settled the matter; proceed flexibly, keep uncertainty visible, and request a Human decision before a high-impact or hard-to-reverse choice.
+## DEC-0005: Stable paper-facing interfaces
 
-Agent knowledge and skills may be rich, but they must be loaded selectively. Current Human-facing contracts and explicit decisions outrank generic knowledge, venue conventions, old adapter instructions, and Agent preferences.
+Decision: recurring identity, terminology, notation, results, claims, and artifacts use lightweight Human-readable interfaces, primarily in `paper/macros.tex` and `PAPER_INTERFACES.md`.
 
-Rationale: a complex schema or permission engine would make the template rigid and increase maintenance burden. Natural-language boundaries plus Agent retrieval and reasoning preserve flexibility while still protecting high-impact decisions.
-
-## DEC-0006: Release identity follows authored paper content
-
-Decision: the authoritative release source identity is a synthetic Git tree built from exactly the `paper/` paths consumed by the exporter. A checkout commit may be recorded as an audit hint, but freshness must not require that commit to remain reachable.
-
-Rationale: pull requests are squash-merged. A manifest tied to a branch commit becomes unverifiable immediately after squash even when every authored paper file is unchanged. A paper-scoped Git tree remains stable across squash/rebase, ignores unrelated documentation and Agent changes, and still changes for any exported paper edit. Release file checksums remain independently required.
+Rationale: the Agent can retrieve consumers and maintain consistency while the Human retains responsibility for scientific meaning.
 
 ## Recording future decisions
 
-Use this file for durable, high-impact Human decisions and their rationale. Do not record every sentence edit or temporary discussion. A useful decision states what was chosen, what alternatives were rejected, which paper objects are affected, and what future change would require review. Superseded decisions should remain readable but clearly point to the newer decision.
+Record durable, high-impact Human decisions and rationale here. Do not record every sentence edit or temporary discussion. A useful decision states what was chosen, affected paper objects, rejected alternatives when relevant, and what future change requires review.
