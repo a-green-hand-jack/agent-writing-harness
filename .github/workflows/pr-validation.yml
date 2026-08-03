@@ -45,6 +45,7 @@ jobs:
           python3 scripts/check-release-freshness.py
           python3 scripts/check-arxiv-portability.py
           python3 scripts/check-bridge-chassis.py
+          python3 .agents/tools/check-paper-contracts.py --profile draft
 
       - name: Run negative regression probes
         shell: bash
