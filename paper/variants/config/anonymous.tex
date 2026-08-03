@@ -1,5 +1,7 @@
 % Anonymous submission variant.
-\renewcommand{\PaperVariantName}{anonymous}
-\PaperAnonymoustrue
-\PaperAcknowledgementsfalse
-\PaperFullAppendixtrue
+\expandafter\def\csname ApplyPaperVariant@anonymous\endcsname{%
+  \renewcommand{\PaperVariantName}{anonymous}%
+  \PaperAnonymoustrue
+  \PaperAcknowledgementsfalse
+  \PaperFullAppendixtrue
+}
