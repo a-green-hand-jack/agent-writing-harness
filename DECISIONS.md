@@ -50,6 +50,16 @@ Decision: strict Release builds require all Release contracts to pass and record
 
 Rationale: testing a toolchain must not be misrepresented as Human approval or submission readiness.
 
+## DEC-0010: Downstream template updates use reviewed path-level synchronization
+
+Decision: a paper repository created from this GitHub Template does not merge the upstream template history. It records the last reviewed upstream commit and uses an Agent-assisted three-way plan across that baseline, the requested upstream target, and current downstream files.
+
+Unmodified downstream infrastructure may be applied mechanically. Human contracts, paper content, references, macros, venue configuration, style, and project-specific knowledge are protected and require semantic review. Files changed both upstream and downstream are conflicts. Downstream-only files are preserved unless explicitly removed during review.
+
+The first migration of a repository without a trustworthy baseline uses bootstrap mode, followed by downstream validation and explicit baseline recording. Template synchronization runs on a dedicated branch and reaches the paper repository through its normal PR and exact-head CI process.
+
+Rationale: repositories created from GitHub templates have independent histories. Whole-tree replacement or unrelated-history merge can silently overwrite scientific meaning and project-specific work. A selective Agent workflow uses fast retrieval and comparison without transferring Human responsibility to automation.
+
 ## Recording future decisions
 
 Record durable, high-impact Human decisions and rationale here. Do not record every sentence edit or temporary discussion. A useful decision states what was chosen, affected paper objects, rejected alternatives when relevant, and what future change requires review.

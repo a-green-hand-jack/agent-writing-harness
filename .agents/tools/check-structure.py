@@ -43,12 +43,15 @@ REQUIRED = (
     "paper/variants/camera_ready.tex",
     "paper/variants/arxiv.tex",
     ".agents/knowledge/README.md",
+    ".agents/template-sync.json",
     ".agents/skills/paper-orientation/SKILL.md",
+    ".agents/skills/template-sync/SKILL.md",
     ".agents/tools/verify.sh",
     ".agents/tools/check-publication.py",
     ".agents/tools/release.py",
     ".agents/tools/check-release.py",
     ".agents/tools/check-release-records.py",
+    ".agents/tools/template-sync.py",
     ".agents/runtime/.gitignore",
 )
 SECTION_RE = re.compile(r"^[01]\d_[a-z][a-z0-9_]*\.tex$")

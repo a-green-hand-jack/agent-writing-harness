@@ -20,6 +20,7 @@ The paper project is primary. Start from the current Human-facing contract and l
 - recurring semantic interface → `.agents/skills/paper-interface-maintenance/SKILL.md`
 - publication variant or allowed difference → `.agents/skills/publication-planning/SKILL.md`
 - immutable release candidate → `.agents/skills/release-review/SKILL.md`
+- synchronize a downstream paper repository with the upstream template → `.agents/skills/template-sync/SKILL.md`
 
 Do not load all skills for an ordinary local edit.
 
@@ -32,7 +33,7 @@ Do not load all skills for an ordinary local edit.
 
 The Human decides central claims, claim degradation, the main story, experiment fairness, important result interpretation, stable interface meaning, active variants, permitted cross-version differences, release approval, and external publication.
 
-The Agent performs retrieval, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, and focused validation.
+The Agent performs retrieval, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, template-sync planning, and focused validation.
 
 ## Strong rules
 
@@ -45,7 +46,9 @@ The Agent performs retrieval, impact analysis, alternatives, consistency mainten
 - Keep generated artifacts under ignored `dist/`; never recreate a committed generated `release/` tree.
 - Keep negative or inconclusive evidence visible when it constrains a central claim.
 - Do not make `paper/` depend on `.agents/`, `dist/`, or `releases/`.
+- Do not merge unrelated upstream-template history into a downstream paper repository.
+- Do not apply template updates on the default branch, overwrite protected paper content, or record a new sync baseline before manual review and validation.
 
 ## Handoff
 
-Report changed files, scientific or narrative meaning affected, decisions made or unresolved, impacted interfaces, variants or experiment contracts, generated release ID and manifest when relevant, and validation performed.
+Report changed files, scientific or narrative meaning affected, decisions made or unresolved, impacted interfaces, variants or experiment contracts, generated release ID and manifest when relevant, template baseline/target and conflict set when syncing, and validation performed.

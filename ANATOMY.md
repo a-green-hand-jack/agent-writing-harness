@@ -26,10 +26,33 @@ Variants may control publication-facing presentation. They do not own copied sec
 
 - `AGENTS.md`: thin routing entrypoint.
 - `.agents/knowledge/`: optional reference knowledge loaded only when relevant.
-- `.agents/skills/`: focused procedures for writing, publication planning, and release review.
-- `.agents/tools/`: structure, contract, interface, publication, release-build, manifest, and record checks.
+- `.agents/skills/`: focused procedures for writing, publication planning, release review, and downstream template synchronization.
+- `.agents/template-sync.json`: downstream-local upstream location and last reviewed template baseline.
+- `.agents/tools/`: structure, contract, interface, publication, release-build, manifest, record, and template-sync tools.
 - `.agents/tests/`: positive and negative regressions.
-- `.agents/runtime/`: ignored short-lived coordination state.
+- `.agents/runtime/`: ignored short-lived coordination, release, and template-sync state.
+
+## Downstream template synchronization
+
+A repository created from the GitHub Template has an independent history. Template updates are adopted through a path-level three-way plan, not by merging unrelated histories.
+
+```text
+last reviewed upstream baseline
+        +
+requested upstream target
+        +
+current downstream files
+        ↓
+safe / already / manual / conflict / ignored plan
+        ↓
+safe staged updates + ignored merge bundle
+        ↓
+downstream validation and PR CI
+        ↓
+new recorded upstream baseline
+```
+
+Human contracts and authored paper content are protected by default. Downstream-only files are not deleted merely because they are absent upstream.
 
 ## Generated release instances
 
@@ -58,7 +81,7 @@ Agent task
         ↓
 AGENTS.md → one focused skill / knowledge document
         ↓
-.agents/tools/verify.sh or release workflow
+.agents/tools/verify.sh, template sync, or release workflow
 ```
 
-The paper must not import `.agents/`, `dist/`, or `releases/`. Generic Agent knowledge must not override a current explicit Human decision.
+The paper must not import `.agents/`, `dist/`, or `releases/`. Generic Agent knowledge and upstream template defaults must not override a current explicit Human decision.
