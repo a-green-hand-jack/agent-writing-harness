@@ -1,12 +1,15 @@
 # Scripts Anatomy
 
-Small deterministic validators, indexers, exporters, and sync helpers.
+`scripts/` contains deterministic compatibility implementation used by existing capabilities, real-paper cases, release workflows, and the stable Agent entrypoints in `.agents/tools/`.
+
+It is not the Human command surface. Humans build with `make pdf`; Agents normally invoke `bash .agents/tools/verify.sh` or `bash .agents/tools/release.sh`.
 
 - `paper_harness_checks.py`: shared validator backend. It owns schema, cross-reference, release-surface, and lightweight semantic checks used by the `check-*.py` wrappers.
-- `check-bridge-chassis.py`: Writing-side Bridge chassis adoption-readiness preflight over `state/bridge-chassis.yaml` (profile, fully explicit chassis/protocol semver pins, executable MAJOR baseline gate, provisional compatibility matrix cross-checked against the canonical pins, registry contract/schema versioning and ownership drift, Writing-owned capability classification). Local self-consistency only — it is not upstream Bridge conformance. Rejects missing profile/pins, default-latest or suffixed pins, non-comparator ranges, registry drift, matrix/pin contradiction, and silent chassis MAJOR bumps.
-- `compare-original-pdf.sh`: PDF fidelity gate. Its default paper root is the caller's current working directory, not the directory containing the script copy; `--paper-root` and `--compiled` make the target explicit. Extreme page-count mismatch is treated as a likely identity/setup error rather than an ordinary content diff.
-- `report-numeric-exceptions.py`: JSON visibility report for numeric exception usage. It does not mutate the repo.
-- `check-citation-review-worksheets.py`: validates optional citation sentence review worksheets against active TeX and ledger state.
-- `report-citation-audit.py`: JSON visibility report for citation ledger coverage, paper locators, and audit status. It does not mutate the repo.
-- `test-realkit-gate-negative.sh`: regression proof that `export_venue_template.py` hard-fails (never a false pass) when compiling against a broken venue-class stand-in; restores `state/conference-template.yaml` and removes `release/venue/` afterward.
-- `test-pdf-fidelity-paper-root-negative.sh`: regression for cross-worktree invocation. It proves a script copy in worktree B compares the caller's worktree A and that an extreme page-count gap produces an explicit identity/setup error.
+- `check-bridge-chassis.py`: existing Writing-side Bridge adoption-readiness preflight. It remains compatibility implementation and is not upstream conformance.
+- `compare-original-pdf.sh`: PDF fidelity gate bound to the caller or explicit paper root, with cross-worktree and identity diagnostics.
+- `export-tex-release.sh`: reconstructs TeX-only release surfaces and manifest.
+- `check-latex.sh`: real authored and isolated release compilation review.
+- `report-numeric-exceptions.py`, `check-citation-review-worksheets.py`, and `report-citation-audit.py`: focused visibility and validation helpers.
+- `test-*.sh`: negative regression probes executed by PR CI.
+
+Do not add a new Human-facing workflow here. Add or extend a stable `.agents/tools/` entrypoint, then use scripts as the implementation layer when appropriate. Existing files can move only after capabilities, case branches, workflows, and release evidence prove the replacement is equivalent.

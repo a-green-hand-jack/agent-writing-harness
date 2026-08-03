@@ -37,6 +37,12 @@ Agent knowledge and skills may be rich, but they must be loaded selectively. Cur
 
 Rationale: a complex schema or permission engine would make the template rigid and increase maintenance burden. Natural-language boundaries plus Agent retrieval and reasoning preserve flexibility while still protecting high-impact decisions.
 
+## DEC-0006: Release identity follows authored paper content
+
+Decision: the authoritative release source identity is a synthetic Git tree built from exactly the `paper/` paths consumed by the exporter. A checkout commit may be recorded as an audit hint, but freshness must not require that commit to remain reachable.
+
+Rationale: pull requests are squash-merged. A manifest tied to a branch commit becomes unverifiable immediately after squash even when every authored paper file is unchanged. A paper-scoped Git tree remains stable across squash/rebase, ignores unrelated documentation and Agent changes, and still changes for any exported paper edit. Release file checksums remain independently required.
+
 ## Recording future decisions
 
 Use this file for durable, high-impact Human decisions and their rationale. Do not record every sentence edit or temporary discussion. A useful decision states what was chosen, what alternatives were rejected, which paper objects are affected, and what future change would require review. Superseded decisions should remain readable but clearly point to the newer decision.

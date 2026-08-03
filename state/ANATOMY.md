@@ -1,6 +1,11 @@
 # State Anatomy
 
-Live writing control plane. Read before drafting, reviewing, compiling, or exporting.
+`state/` is the legacy writing control plane retained for existing capabilities, validators, and real-paper case branches.
 
-- `ccfa.yaml`: primary config surface. Declares `profile: writing` and the Bridge `chassis_pin`.
-- `bridge-chassis.yaml`: Writing-side Bridge chassis adoption-readiness preflight (profile, chassis/protocol semver pins, executable MAJOR baseline, provisional compatibility matrix, MAJOR human gate). Writing-owned adoption surface, not upstream Bridge conformance — the Bridge chassis-spec, protocol schemas, and fixtures are not vendored here. Validated locally by `scripts/check-bridge-chassis.py`.
+New Human-facing paper intent belongs in `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, and `DECISIONS.md`. New Agent workflows enter through `.agents/tools/` or a focused skill. Do not grow `state/` merely to mirror those natural-language contracts.
+
+- `ccfa.yaml`: existing project/profile configuration surface.
+- claim, numeric, result, notation, venue, and float maps: current compatibility data consumed by deterministic checks and real cases.
+- `bridge-chassis.yaml`: existing Writing-side Bridge adoption-readiness preflight; not upstream Bridge conformance and not part of the current paper-first roadmap.
+
+This directory can be simplified only after current capabilities and real-paper cases migrate with equivalent executable evidence.
