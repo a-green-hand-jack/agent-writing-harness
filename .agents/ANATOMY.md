@@ -9,6 +9,8 @@
 - `tools/`: stable Agent-facing command surface.
   - `verify.sh` runs deterministic repository verification.
   - `release.sh` applies the strict Release contract, compiles, exports, validates, and independently compiles the arXiv package.
+  - `paper-harness.py` loads the legacy backend with current Agent-side compatibility adapters.
+  - `release_provenance.py` defines squash-stable paper-tree source identity; the checkout commit is audit-only.
   - `check-paper-contracts.py` distinguishes flexible Draft checks from strict Release readiness.
   - `check-paper-state.py` enforces reciprocal claim/number links, scoped numeric exceptions, and actual configured venue use.
   - `check-paper-interfaces.py` verifies lightweight LaTeX interface definitions, documentation, active consumers, and generated-result hooks.
@@ -23,6 +25,7 @@
 - Normal LaTeX authoring and `make pdf` do not require `.agents/`.
 - Draft checks allow visible uncertainty; Release checks reject active placeholders and unresolved current commitments.
 - Semantic checkers validate identity, scope, configured use, and consumer consistency; they do not decide scientific truth.
+- Release freshness follows authored paper content rather than a branch commit that may disappear after squash/rebase.
 - New Agent automation should enter through `.agents/tools/`; existing `scripts/` remain compatibility implementation until current capabilities and real cases can migrate with equivalent evidence.
 
 ## Context hygiene
