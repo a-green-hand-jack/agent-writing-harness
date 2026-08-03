@@ -13,7 +13,7 @@ Current intent lives in `PAPER.md` and `EXPERIMENTS.md`. Stable semantic names l
 - `style/`: reusable project-agnostic display helpers.
 - `macros.tex`: project-specific semantic interfaces, including canonical title and visible author identity.
 - `variants/`: small publication overlays and build drivers.
-- `generated/`: rebuildable paper artifacts; never a second authored source.
+- `generated/`: rebuildable paper artifacts used by the canonical source; never a second authored source.
 - `venue_preamble.tex`: venue-specific preamble surface.
 
 ## Publication variants
@@ -23,6 +23,10 @@ Supported variants are `draft`, `anonymous`, `camera-ready`, and `arxiv`.
 `variants/common.tex` declares switches. `variants/config/*.tex` sets author visibility, acknowledgements, and appendix inclusion. Tiny drivers select a config and input `main.tex`.
 
 Variants must not copy sections, redefine scientific claims, or maintain separate result meanings. Add an allowed difference only through `PUBLICATION.md`, checker/tests, and Human review.
+
+## Release boundary
+
+Release packaging reads `paper/` and a selected variant, then writes an ignored immutable instance under `dist/`. No generated release TeX tree belongs inside `paper/` or as a tracked sibling source. Delivery package generation must not edit canonical files.
 
 ## Lightweight interfaces
 
@@ -35,7 +39,7 @@ Variants must not copy sections, redefine scientific claims, or maintain separat
 - `\MainResult` and `\MainResultUncertainty` for the primary result pair;
 - an optional `generated/results-macros.tex` hook after Human–Agent review.
 
-Anonymous variants hide `\PaperAuthors`; they do not replace the canonical identity with a second source.
+Anonymous variants hide `\PaperAuthors`; they do not replace canonical identity with a second source.
 
 ## File naming
 
@@ -47,4 +51,4 @@ Section, figure-wrapper, and table-wrapper files use `NN_name.tex`:
 
 `main.tex` inputs body sections in ascending order before `\appendix`, then appendix sections in ascending order. Figure wrappers align basenames with source assets under `paper/figures/srcs/`.
 
-`.agents/tools/check-structure.py` enforces section structure and paper independence. `.agents/tools/check-publication.py` enforces the small-overlay variant boundary.
+`.agents/tools/check-structure.py` enforces source structure and independence. `.agents/tools/check-publication.py` enforces the small-overlay variant boundary.

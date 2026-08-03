@@ -7,8 +7,8 @@ The paper project is primary. Start from the current Human-facing contract and l
 1. Read `PAPER.md`.
 2. Read `EXPERIMENTS.md` only for experiment, evidence, claim-support, or result-interpretation work.
 3. Read `PAPER_INTERFACES.md` only for recurring identity, terminology, notation, results, claims, figures, tables, or macros.
-4. Read `PUBLICATION.md` only for variants, venues, delivery targets, or release instances.
-5. Read only relevant decisions in `DECISIONS.md`.
+4. Read `PUBLICATION.md` only for variants, delivery targets, or release instances.
+5. Read only relevant decisions in `DECISIONS.md` and release records.
 6. Inspect the active paper section and current diff.
 7. Load one focused skill or knowledge document.
 
@@ -30,21 +30,22 @@ Do not load all skills for an ordinary local edit.
 - **free** — handle implementation or wording while respecting higher-level decisions.
 - **unresolved** — keep uncertainty visible, prefer reversible progress, and ask before a high-impact or hard-to-reverse choice.
 
-The Human decides central claims, claim degradation, the main story, experiment fairness, important result interpretation, stable interface meaning, active publication variants, permitted cross-version differences, and final publication approval.
+The Human decides central claims, claim degradation, the main story, experiment fairness, important result interpretation, stable interface meaning, active variants, permitted cross-version differences, release approval, and external publication.
 
-The Agent performs retrieval, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, and focused validation.
+The Agent performs retrieval, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, and focused validation.
 
 ## Strong rules
 
-- Do not invent contributions, facts, results, citations, identity, or Human approval.
+- Do not invent contributions, facts, results, citations, identity, approval, or external-platform success.
 - Do not promote expected or unresolved results into verified evidence.
 - Do not turn correlation into causal language without support.
 - Do not silently change a locked claim, story decision, experiment condition, limitation, or interface meaning.
 - Do not copy canonical scientific content into publication variants.
+- Do not overwrite an existing release instance or release record.
+- Keep generated artifacts under ignored `dist/`; never recreate a committed generated `release/` tree.
 - Keep negative or inconclusive evidence visible when it constrains a central claim.
-- Report missing tools or external environments honestly.
-- Do not make `paper/` depend on `.agents/`.
+- Do not make `paper/` depend on `.agents/`, `dist/`, or `releases/`.
 
 ## Handoff
 
-Report changed files, scientific or narrative meaning affected, decisions made or unresolved, impacted interfaces, variants or experiment contracts, and validation performed.
+Report changed files, scientific or narrative meaning affected, decisions made or unresolved, impacted interfaces, variants or experiment contracts, generated release ID and manifest when relevant, and validation performed.

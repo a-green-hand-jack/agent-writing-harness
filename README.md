@@ -8,18 +8,13 @@ A paper-first repository for Human–Agent collaborative scientific writing.
 
 1. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
 2. Record paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
-3. Maintain recurring terminology, notation, identity, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
+3. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
 4. Record publication variants and allowed differences in `PUBLICATION.md`.
-5. Edit the canonical LaTeX source under `paper/`.
-6. Build the daily Draft:
+5. Edit the one canonical LaTeX source under `paper/`.
+6. Build:
 
 ```bash
 make pdf
-```
-
-Build another publication variant:
-
-```bash
 make pdf VARIANT=anonymous
 make pdf VARIANT=camera-ready
 make pdf VARIANT=arxiv
@@ -29,34 +24,44 @@ Clean generated LaTeX files with `make clean`.
 
 ## Human-facing surface
 
-- `PAPER.md` — current positioning, claims, story, style, protected decisions, and unresolved work.
+- `PAPER.md` — positioning, claims, story, style, protected decisions, and unresolved work.
 - `EXPERIMENTS.md` — paper-facing experiment questions and interpretation boundaries.
-- `PAPER_INTERFACES.md` — stable semantic names shared by prose, tables, figures, notation, and variants.
-- `PUBLICATION.md` — active variants, allowed differences, and Human review triggers.
+- `PAPER_INTERFACES.md` — stable semantic names shared by canonical and variant surfaces.
+- `PUBLICATION.md` — variants, delivery targets, release-instance boundaries, and Human review triggers.
 - `DECISIONS.md` — durable rationale for important Human decisions.
-- `paper/` — the one canonical authored LaTeX project.
+- `paper/` — the canonical authored project and small publication overlays.
 
-The cues **locked**, **bounded**, **free**, and **unresolved** are intentionally flexible. They support collaboration without creating a rigid state machine.
+The cues **locked**, **bounded**, **free**, and **unresolved** remain flexible collaboration language, not a rigid state machine.
 
 ## Publication variants
 
-`paper/variants/` contains small overlays for `draft`, `anonymous`, `camera-ready`, and `arxiv`. A variant may change author visibility, acknowledgements, appendix inclusion, and publication-facing presentation hooks. It must not copy or silently diverge scientific prose, claims, result meaning, or experiment interpretation.
+`paper/variants/` contains small overlays for `draft`, `anonymous`, `camera-ready`, and `arxiv`. They may change author visibility, acknowledgements, appendix inclusion, and publication-facing presentation hooks. They must not copy or silently diverge scientific prose, claims, result meaning, limitations, or experiment interpretation.
 
-Variants are not long-lived branches and not separate paper copies. Immutable release instances and delivery packages are produced by the release workflow.
+## Release instances
+
+Generated delivery artifacts are not committed as another paper tree. Build a strict immutable instance with:
+
+```bash
+RELEASE_ID=iclr2027-submission-r1 VARIANT=anonymous \
+  bash .agents/tools/release.sh
+```
+
+The instance appears under ignored `dist/<release-id>/` with `manifest.json`, `build-report.md`, PDF/source artifacts, source fingerprints, checksums, and isolated-compilation receipts. `releases/records/` stores reviewed Markdown provenance only.
+
+The factory template is intentionally unresolved, so strict release builds fail until a real paper has cleared the Release contract. CI uses an explicit Draft-validation profile to verify packaging without claiming submission readiness.
 
 ## Agent sidecar
 
-`AGENTS.md` is a thin router. Agents load the current Human-facing contract, then one focused skill or knowledge document.
+`AGENTS.md` is a thin router. Agents load current contracts and one focused skill or knowledge document.
 
 ```bash
 bash .agents/tools/verify.sh
-bash .agents/tools/release.sh
 ```
 
-`verify.sh` checks structure, Draft contracts, interfaces, publication variants, and regressions. `release.sh` applies the strict Release contract and compiles the canonical publication variant selected by the workflow.
+`verify.sh` checks structure, Draft contracts, interfaces, publication variants, release-record boundaries, and regressions.
 
-## Project boundary
+## Project boundary and CI
 
-The repository has no capability registry, Bridge chassis, experiment ledger, product-specific adapter mirror, or duplicate Human/memory control plane. Scientific and narrative intent remains in root contracts; authored content remains in `paper/`; Agent support remains in `.agents/`.
+The repository has no legacy harness, capability registry, Bridge layer, experiment ledger, product adapter mirror, or committed generated release tree. A clean copy of `paper/` compiles all variants without `.agents/`.
 
-A clean copy of `paper/` must compile all supported variants without `.agents/`. Pull requests must pass the `harness`, variant `latex` matrix, and `paper-only` Actions jobs before merge. See `CONTRIBUTING.md`.
+Pull requests must pass `harness`, four real-TeX variant jobs, `paper-only`, and `release-package`. See `CONTRIBUTING.md`.

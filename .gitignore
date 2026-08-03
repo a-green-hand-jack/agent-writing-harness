@@ -10,5 +10,4 @@ __pycache__/
 *.out
 *.synctex.gz
 paper/main*.pdf
-release/reports/*.log
-release/venue/
+/dist/
