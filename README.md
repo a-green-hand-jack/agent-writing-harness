@@ -58,7 +58,28 @@ The factory template is intentionally unresolved, so strict release builds fail 
 bash .agents/tools/verify.sh
 ```
 
-`verify.sh` checks structure, Draft contracts, interfaces, publication variants, release-record boundaries, and regressions.
+`verify.sh` checks structure, Draft contracts, interfaces, publication variants, release-record boundaries, template-sync configuration, and regressions.
+
+## Syncing a downstream paper repository
+
+A paper repository created from this GitHub Template has an independent Git history. Do not merge the upstream template branch into the paper history. Use the optional Agent skill and path-level synchronization tool instead:
+
+```bash
+python3 .agents/tools/template-sync.py validate
+python3 .agents/tools/template-sync.py fetch
+python3 .agents/tools/template-sync.py plan --bootstrap   # first reviewed sync only
+python3 .agents/tools/template-sync.py apply
+```
+
+The plan separates changes into `safe`, `already`, `manual`, `conflict`, and `ignored`. Safe infrastructure updates can be staged mechanically. Human contracts, paper content, references, macros, venue configuration, style, and project knowledge remain protected and are exported to an ignored merge bundle for Agent review.
+
+After manual merges and successful downstream validation:
+
+```bash
+python3 .agents/tools/template-sync.py record --reviewed
+```
+
+Future synchronizations use the recorded upstream commit as the three-way baseline and normally run `plan` without `--bootstrap`. See `.agents/skills/template-sync/SKILL.md`.
 
 ## Project boundary and CI
 

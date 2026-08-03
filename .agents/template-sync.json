@@ -1,0 +1,13 @@
+{
+  "always_manual": [],
+  "ignored_paths": [],
+  "last_sync_note": "Uninitialized. A downstream repository should run a reviewed bootstrap plan before recording its first upstream baseline.",
+  "last_synced_at": null,
+  "last_synced_commit": null,
+  "schema_version": "paper-template-sync-v1",
+  "upstream": {
+    "branch": "main",
+    "remote": "template",
+    "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git"
+  }
+}
