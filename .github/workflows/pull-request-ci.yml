@@ -1,0 +1,80 @@
+name: Pull request verification
+
+on:
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  harness:
+    name: Harness and regression checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: python -m pip install --disable-pip-version-check pyyaml
+
+      - name: Compile Python entry points
+        run: python -m compileall -q scripts
+
+      - name: Run deterministic checks
+        run: |
+          python scripts/check-capability-parity.py
+          python scripts/check-writing-harness.py
+          python scripts/check-paper-surface.py
+          python scripts/check-conference-template.py
+          python scripts/check-release-package.py
+          python scripts/check-release-freshness.py
+          python scripts/check-arxiv-portability.py
+
+      - name: Run regression probes
+        shell: bash
+        run: |
+          shopt -s nullglob
+          tests=(scripts/test-*.sh)
+          if (( ${#tests[@]} == 0 )); then
+            echo "No regression probes found" >&2
+            exit 1
+          fi
+          for test_script in "${tests[@]}"; do
+            echo "==> ${test_script}"
+            bash "${test_script}"
+          done
+
+  latex:
+    name: LaTeX and release compilation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install TeX toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexmk \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-bibtex-extra \
+            texlive-extra-utils
+
+      - name: Compile authored paper
+        run: bash scripts/check-latex.sh --compile
+
+      - name: Compile arXiv release surfaces
+        run: bash scripts/check-latex.sh --compile-release arxiv
