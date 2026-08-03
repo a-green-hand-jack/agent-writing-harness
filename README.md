@@ -1,5 +1,7 @@
 # TODO Paper Title
 
+[![PR validation](https://github.com/a-green-hand-jack/ccfa-writing-paper-template/actions/workflows/pr-validation.yml/badge.svg?branch=main)](https://github.com/a-green-hand-jack/ccfa-writing-paper-template/actions/workflows/pr-validation.yml)
+
 A paper-first repository for Human–Agent collaborative scientific writing.
 
 The repository behaves like a normal LaTeX paper project. Human-facing contracts explain what the paper is trying to say; Agent knowledge, checks, and release tooling stay in the `.agents/` sidecar.
@@ -58,4 +60,4 @@ Release work is stricter: important claims, experiment interpretation, stable in
 
 `state/`, `lab/`, `.agent/`, `.claude/`, and `scripts/` remain temporarily because existing capabilities, real-paper cases, and release regressions depend on them. They are compatibility implementation, not the Human's navigation model or the default place for new paper-first features.
 
-Release directories are generated TeX-only surfaces. Edit `paper/`, not `release/`. Pull requests are validated by deterministic checks, real TeX compilation, isolated arXiv compilation, and a paper-only build that removes the Agent and legacy control surfaces.
+Release directories are generated TeX-only surfaces. Edit `paper/`, not `release/`. Pull requests are validated by deterministic checks, real TeX compilation, isolated arXiv compilation, and a paper-only build that removes the Agent and legacy control surfaces. See `CONTRIBUTING.md` for the green-check merge contract.
