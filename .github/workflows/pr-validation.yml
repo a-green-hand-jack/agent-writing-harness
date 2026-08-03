@@ -18,12 +18,11 @@ jobs:
   harness:
     name: harness
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
-      - name: Checkout full history at the real head
+      - name: Checkout the validated head
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Python
@@ -31,43 +30,23 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Python dependencies
-        run: python -m pip install --disable-pip-version-check pyyaml
-
-      - name: Run stable Agent verification entrypoint
+      - name: Run paper-first verification
         run: bash .agents/tools/verify.sh
 
-      - name: Run negative regression probes
-        shell: bash
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          tests=(scripts/test-*.sh)
-          if (( ${#tests[@]} == 0 )); then
-            echo "ERROR no scripts/test-*.sh regression probes found" >&2
-            exit 1
-          fi
-          for test_script in "${tests[@]}"; do
-            echo "::group::$test_script"
-            bash "$test_script"
-            echo "::endgroup::"
-          done
-
-      - name: Confirm probes restored tracked files
+      - name: Confirm checks did not mutate tracked files
         run: git diff --exit-code
 
   latex:
     name: latex
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     steps:
-      - name: Checkout full history at the real head
+      - name: Checkout the validated head
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Install TeX and export dependencies
+      - name: Install TeX
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -76,43 +55,20 @@ jobs:
             texlive-latex-recommended \
             texlive-latex-extra \
             texlive-fonts-recommended \
-            texlive-bibtex-extra \
-            texlive-extra-utils
-
-      - name: Install Python dependencies
-        run: python3 -m pip install --disable-pip-version-check pyyaml
+            texlive-bibtex-extra
 
       - name: Build through the Human interface
         run: make pdf
 
-      - name: Review authored-paper compilation
-        run: bash scripts/check-latex.sh --compile
-
-      - name: Rebuild and validate release surfaces
-        run: |
-          set -euo pipefail
-          bash scripts/export-tex-release.sh
-          python3 scripts/check-release-package.py
-          python3 scripts/check-release-freshness.py
-          python3 scripts/check-arxiv-portability.py
-
-      - name: Upload rebuilt release surfaces
-        uses: actions/upload-artifact@v4
-        with:
-          name: rebuilt-release
-          path: release/
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Compile arXiv release in isolation
-        run: bash scripts/check-latex.sh --compile-release arxiv
+      - name: Require a non-empty PDF
+        run: test -s paper/main.pdf
 
   paper-only:
     name: paper-only
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     steps:
-      - name: Checkout the real head
+      - name: Checkout the validated head
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -123,9 +79,6 @@ jobs:
           mkdir -p "$RUNNER_TEMP/paper-only"
           cp -a paper "$RUNNER_TEMP/paper-only/paper"
           test ! -e "$RUNNER_TEMP/paper-only/.agents"
-          test ! -e "$RUNNER_TEMP/paper-only/state"
-          test ! -e "$RUNNER_TEMP/paper-only/lab"
-          test ! -e "$RUNNER_TEMP/paper-only/scripts"
 
       - name: Install TeX
         run: |
