@@ -4,14 +4,15 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
+RUNNER=(python3 .agents/tools/paper-harness.py)
 python3 .agents/tools/check-paper-contracts.py --profile release
 python3 .agents/tools/check-paper-state.py
 python3 .agents/tools/check-paper-interfaces.py
 bash scripts/check-latex.sh --compile
-bash scripts/export-tex-release.sh
-python3 scripts/check-release-package.py
-python3 scripts/check-release-freshness.py
-python3 scripts/check-arxiv-portability.py
+"${RUNNER[@]}" export_release
+"${RUNNER[@]}" release_package
+"${RUNNER[@]}" release_freshness
+"${RUNNER[@]}" arxiv_portability
 bash scripts/check-latex.sh --compile-release arxiv
 
 echo "OK agent release"
