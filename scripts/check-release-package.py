@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import os
 import sys
 
-sys.dont_write_bytecode = True
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from paper_harness_checks import run
-
-raise SystemExit(run("release_package"))
+runner = Path(__file__).resolve().parents[1] / ".agents/tools/paper-harness.py"
+os.execv(sys.executable, [sys.executable, str(runner), "release_package"])
