@@ -6,7 +6,9 @@
 
 - `knowledge/`: optional reference material. Load only what the active task needs.
 - `skills/`: reusable focused procedures. Orientation, control review, decision packets, style alignment, interface maintenance, and release review each declare a trigger and minimum context.
-- `tools/`: Agent-facing checks and helpers. `check-paper-contracts.py` distinguishes flexible Draft checks from strict Release readiness without turning the contracts into a schema.
+- `tools/`: Agent-facing checks and helpers.
+  - `check-paper-contracts.py` distinguishes flexible Draft checks from strict Release readiness without turning the contracts into a schema.
+  - `check-paper-state.py` enforces known paper-state invariants from real-case mutations: reciprocal claim/number links for every claim strength, scoped numeric exceptions, and actual use of a configured venue style.
 - `runtime/`: ignored session or worktree coordination state. Only `.gitignore` is durable; runtime notes are not project truth.
 - `roles/`, `workflows/`, `tool-policies/`, and `handoffs/`: existing Codex adapter surfaces that mirror `.agent/capabilities/`; retained for compatibility during the refactor.
 
@@ -17,6 +19,7 @@
 - Agents load one relevant skill and the minimum related knowledge rather than recursively reading the sidecar.
 - Normal LaTeX authoring and compilation do not require `.agents/` runtime state.
 - Draft checks allow visible uncertainty; Release checks reject active placeholders and unresolved current commitments.
+- Semantic checkers validate identity, scope, and configured use; they do not decide scientific truth.
 - Tool and adapter migration into this sidecar is incremental; existing `.agent/`, `.claude/`, `scripts/`, `state/`, and `lab/` paths remain until separate changes preserve current validation and release behavior.
 
 ## Context hygiene
