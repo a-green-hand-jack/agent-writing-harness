@@ -2,15 +2,6 @@
 
 Paper interfaces are stable, paper-facing names for concepts that appear in several places and whose meaning must not drift silently.
 
-Examples include:
-
-```tex
-\MethodName{}
-\PrimaryMetric{}
-\MainAccuracy{}
-\MainAccuracyStd{}
-```
-
 The interface is the shared meaning, not merely the LaTeX macro. A macro is one convenient implementation consumed by the abstract, body, tables, captions, appendix, and rebuttal.
 
 ## Why interfaces exist
@@ -28,20 +19,24 @@ Interfaces are not an automatic data-import system. Human and Agent may need to 
 
 ## Keep the implementation light
 
-The default implementation remains `paper/macros.tex` plus clear comments. Do not add a schema, generator, or versioning framework until a repeated real cost justifies it.
-
-A useful interface definition looks like:
-
-```tex
-% Interface: MainAccuracy
-% Meaning: mean test accuracy under the primary approved protocol.
-% Control: bounded — the value may change when approved runs change;
-%          metric, split, aggregation, or checkpoint selection require Human review.
-% Status: unresolved
-\newcommand{\MainAccuracy}{\textbf{TODO}}
-```
+The default implementation is `paper/macros.tex` plus clear comments. Do not add a schema, generator, or versioning framework until a repeated real cost justifies it.
 
 The exact comment format is intentionally informal. What matters is that a Human can understand the meaning and an Agent can retrieve the boundary.
+
+## Current minimal interface catalogue
+
+These interfaces ship as a compilable Draft scaffold:
+
+- `\PaperTODO{...}` — explicit Draft-only placeholder; Release rejects active uses.
+- `\MethodName{}` — approved paper-facing method or system name.
+- `\CoreTerm{}` — preferred recurring term for the central concept.
+- `\StateSymbol{}` — stable notation used by the method explanation.
+- `\MainResult{}` — main result under the approved primary protocol.
+- `\MainResultUncertainty{}` — uncertainty paired with `\MainResult` under the same protocol.
+
+Each definition in `paper/macros.tex` records its meaning, practical control boundary, and Human-review trigger. The abstract, Introduction, and Method scaffolds consume these names so they cannot silently become dead definitions.
+
+The value of an unresolved interface is expressed with `\PaperTODO`; do not replace it with a plausible-looking invented value. Reviewed generated numeric macros may extend or override the result surface through `paper/generated/results-macros.tex`.
 
 ## What deserves an interface
 
@@ -59,15 +54,15 @@ Do not interface every local sentence, number, or formatting choice.
 
 ### Identity and terminology
 
-Method names, component names, dataset abbreviations, and important recurring terms.
+Method names, component names, dataset abbreviations, and important recurring terms. The initial surface uses `\MethodName` and `\CoreTerm`.
 
 ### Notation
 
-Symbols whose meaning must stay consistent across sections and equations.
+Symbols whose meaning must stay consistent across sections and equations. The initial surface uses `\StateSymbol`.
 
 ### Results
 
-Paper-facing values together with their metric, conditions, aggregation, uncertainty, unit, and display meaning.
+Paper-facing values together with their metric, conditions, aggregation, uncertainty, unit, and display meaning. The initial surface uses `\MainResult` and `\MainResultUncertainty`.
 
 ### Claims and wording
 
@@ -103,9 +98,14 @@ The Human decides scientific meaning, important result interpretation, and wheth
 
 ## Draft and release
 
-Drafts may contain explicit TODO or unresolved interfaces. They must not look like verified final values.
+Drafts may contain explicit `\PaperTODO` interfaces. They must not look like verified final values.
 
-Before release, required interfaces should have a Human-understood meaning, no active placeholder, consistent consumers, and no silent semantic change. Detailed release policy is tracked separately in #38.
+Before release, required interfaces should have a Human-understood meaning, no active placeholder, consistent consumers, and no silent semantic change. Run:
+
+```bash
+python3 .agents/tools/check-paper-interfaces.py
+python3 .agents/tools/check-paper-contracts.py --profile release
+```
 
 ## Future work
 
