@@ -40,8 +40,7 @@ REQUIRED_HEADINGS = {
     ],
 }
 CONTROL_WORDS = ("locked", "bounded", "free", "unresolved")
-REQUIRED_SKILLS = (
-    "paper-orientation",
+FOCUSED_SKILLS = (
     "control-review",
     "decision-packet",
     "style-alignment",
@@ -112,7 +111,13 @@ def check_draft(root: Path) -> int:
             if re.search(pattern, agents_text, re.I):
                 code |= fail(f"AGENTS.md contains broad context-loading instruction: {pattern}")
 
-    for skill in REQUIRED_SKILLS:
+    orientation = read_text(root, ".agents/skills/paper-orientation/SKILL.md")
+    if orientation is None:
+        code |= fail("missing orientation skill: .agents/skills/paper-orientation/SKILL.md")
+    elif "## Reading order" not in orientation or "## Context hygiene" not in orientation:
+        code |= fail("paper-orientation skill must define reading order and context hygiene")
+
+    for skill in FOCUSED_SKILLS:
         relative = f".agents/skills/{skill}/SKILL.md"
         text = read_text(root, relative)
         if text is None:
