@@ -1,16 +1,42 @@
 # Agent Entry
 
-Read in order:
+The paper project is primary. Begin with the current Human-facing contract and load only the context needed for the active task.
 
-1. `ANATOMY.md`
-2. `state/ccfa.yaml`
-3. `.agent/session-protocol.md`
-4. `memory/current-status.md`
+## Orientation
 
-Rules:
+1. Read `PAPER.md`.
+2. Read `EXPERIMENTS.md` only when the task touches experiments, evidence, claim support, or result interpretation.
+3. Read `PAPER_INTERFACES.md` only when the task changes recurring terminology, notation, results, claims, figures, tables, or macros.
+4. Read the relevant current decisions in `DECISIONS.md`.
+5. Read `.agents/skills/paper-orientation/SKILL.md` when starting a new session or when context is unclear.
+6. Load one task-specific workflow or knowledge document. Do not load every policy, venue, ledger, and historical file by default.
 
-- Do not write factual prose before the supporting claim, number, reference, or float is registered.
-- Do not promote expected results into verified evidence.
+Legacy `state/`, `lab/`, `.agent/`, `.claude/`, adapter, and validator surfaces remain available during the migration. Consult them only when the current task or a declared check requires them.
+
+## Collaboration boundary
+
+The control words are flexible cues, not a rigid permission engine:
+
+- **locked** — analyze or propose, but do not silently change the meaning;
+- **bounded** — adjust inside the written boundary;
+- **free** — handle the implementation or wording while respecting higher-level decisions;
+- **unresolved** — keep uncertainty visible, prefer reversible progress, and ask before a high-impact or hard-to-reverse choice.
+
+The Human decides central claims, whether a claim may degrade, the main story, experiment fairness, important result interpretation, stable interface meaning, and final release approval.
+
+The Agent should do the retrieval work: find relevant contracts and prior decisions, identify affected sections and interfaces, compare alternatives, explain risks, and ask one focused question when a Human decision is needed.
+
+## Strong rules
+
+- Do not invent contributions, facts, results, citations, or Human approval.
+- Do not promote expected or unresolved results into verified evidence.
+- Do not turn correlation into causal language without appropriate support.
+- Do not silently strengthen, weaken, replace, or remove a locked claim, story decision, experiment condition, limitation, or interface meaning.
+- Keep negative or inconclusive evidence visible when it constrains a central claim.
+- Report missing tools or unverified environments honestly; never false-pass.
 - Do not expose `state/`, `lab/`, `memory/`, `.agent/`, `.claude/`, `.agents/`, `.git/`, `.github/`, or `human/` in release surfaces.
-- Do not put symlinks in release surfaces; release exports must be reconstructible from manifest checksums.
-- Update touched ledgers and run the smallest relevant validator before handoff.
+- Do not put symlinks in release surfaces; release exports must be reconstructible from their manifest.
+
+## Handoff
+
+Report the files changed, any scientific or narrative meaning affected, decisions made or still unresolved, impacted paper interfaces or experiment contracts, and the focused validation performed.
