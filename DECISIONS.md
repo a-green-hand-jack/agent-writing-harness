@@ -2,19 +2,11 @@
 
 ## DEC-0001: Paper-first two-layer repository
 
-Decision: the repository consists of a canonical authored paper workspace and an optional Agent sidecar.
-
-- Human intent and collaboration boundaries live in the root contracts.
-- Authored LaTeX lives in `paper/` and compiles independently.
-- Agent knowledge, skills, checks, and runtime coordination live in `.agents/`.
-
-Rationale: users should start writing without learning a governance framework.
+Decision: the repository consists of a canonical authored paper workspace and an optional Agent sidecar. Human intent lives in root contracts; authored LaTeX lives in `paper/`; Agent support lives in `.agents/`.
 
 ## DEC-0002: Remove the old harness and duplicate control planes
 
 Decision: the template contains no capability registry, Bridge preflight, product-specific adapter mirror, experiment/evidence ledger, worktree governance, or duplicate Human/memory store.
-
-Rationale: those structures duplicated Human-readable contracts and imposed a research lifecycle on the paper repository.
 
 ## DEC-0003: Flexible control cues
 
@@ -34,13 +26,29 @@ Decision: `paper/` is the only canonical authored source. `paper/variants/` cont
 
 Variants may control author visibility, acknowledgements, appendix inclusion, and publication-facing presentation hooks. They must not copy canonical sections or silently change claims, experiment interpretation, limitations, or interface meaning.
 
-Rationale: maintaining full paper copies or long-lived publication branches causes semantic drift and merge overhead. Small overlays make every permitted difference explicit and testable.
+## DEC-0007: Variant, target, and release instance are separate
 
-## DEC-0007: Variant and release instance are different concepts
+Decision:
 
-Decision: a variant describes presentation rules; a release instance identifies one immutable published candidate such as `submission-r1` or `arxiv-v2` with artifacts, checks, source revision, and Human approval.
+- a **variant** describes approved presentation differences;
+- a **delivery target** describes PDF/source/arXiv-flat/Overleaf packaging;
+- a **release instance** identifies one immutable artifact set such as `submission-r1` or `arxiv-v2`.
 
-Rationale: anonymous/camera-ready/arXiv differences are not the same as revision history or delivery package format.
+Rationale: these concepts have different lifecycles and must not be encoded as copied directories or long-lived branches.
+
+## DEC-0008: Generated releases are not committed paper copies
+
+Decision: generated instances live under ignored `dist/<release-id>/` and are delivered through CI artifacts or external systems. The repository tracks only Markdown provenance under `releases/records/`.
+
+The obsolete committed `release/` tree is forbidden. An instance and a record refuse overwrite; new artifacts require a new release ID.
+
+Rationale: generated copies create mechanical diff, stale mirrors, and ambiguity about authored source. Immutable instances preserve provenance without introducing another editable paper tree.
+
+## DEC-0009: Release readiness and packaging validation are distinct
+
+Decision: strict Release builds require all Release contracts to pass and record `release_ready: true`. CI may use an explicit Draft-validation profile to exercise packaging, but its manifest records `release_ready: false`.
+
+Rationale: testing a toolchain must not be misrepresented as Human approval or submission readiness.
 
 ## Recording future decisions
 

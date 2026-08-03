@@ -3,7 +3,11 @@
 \input{macros}
 \providecommand{\PaperVariant}{draft}
 \input{variants/common}
-\input{variants/config/\PaperVariant}
+\input{variants/config/draft}
+\input{variants/config/anonymous}
+\input{variants/config/camera_ready}
+\input{variants/config/arxiv}
+\csname ApplyPaperVariant@\PaperVariant\endcsname
 \input{venue_preamble}
 \title{\PaperTitle}
 \ifPaperAnonymous

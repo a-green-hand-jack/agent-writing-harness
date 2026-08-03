@@ -8,9 +8,10 @@ Before merge:
 
 1. wait for the `PR validation` workflow to finish;
 2. require every applicable job to succeed:
-   - `harness` — paper-first checks and Agent-side regressions;
-   - `latex` — the Human build with a real TeX toolchain;
-   - `paper-only` — real TeX compilation with only `paper/` present;
+   - `harness` — paper-first checks and Agent regressions;
+   - `latex (<variant>)` — real TeX builds and variant-surface checks;
+   - `paper-only` — all variants compile with only `paper/` present;
+   - `release-package` — immutable instance build, checksum validation, isolated source/flat compilation, and artifact upload;
 3. inspect job logs and fix the root cause of any failure;
 4. rerun the complete workflow after each fix;
 5. record the successful Actions run ID and conclusions;
@@ -26,4 +27,9 @@ Keep each PR focused on one issue or tightly related design change. The PR body 
 - what changed and why;
 - Human and Agent impact;
 - positive and negative regression coverage;
+- release-instance or artifact impact;
 - external validation that remains out of scope.
+
+## Generated outputs
+
+Do not commit `dist/` or recreate a generated `release/` tree. Tracked release information belongs in Human-reviewed Markdown records under `releases/records/`. Published artifact changes use a new release ID rather than editing an old record.

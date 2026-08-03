@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
-# Validate a release-ready publication variant. Immutable packaging is handled
-# by the release-instance workflow.
+# Build and verify one strict immutable release instance.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-VARIANT="${VARIANT:-draft}"
-python3 .agents/tools/check-structure.py
-python3 .agents/tools/check-paper-contracts.py --profile release
-python3 .agents/tools/check-paper-interfaces.py
-python3 .agents/tools/check-publication.py
-make pdf VARIANT="$VARIANT"
+: "${RELEASE_ID:?Set RELEASE_ID, for example iclr2027-submission-r1}"
+VARIANT="${VARIANT:-anonymous}"
+TARGETS="${TARGETS:-pdf,source-zip,arxiv-flat,overleaf-zip}"
 
-echo "OK release-ready publication variant: $VARIANT"
+python3 .agents/tools/release.py build \
+  --id "$RELEASE_ID" \
+  --variant "$VARIANT" \
+  --profile release \
+  --targets "$TARGETS" \
+  --verify-tex
+python3 .agents/tools/check-release.py "dist/$RELEASE_ID"
+
+echo "OK strict release instance: $RELEASE_ID"

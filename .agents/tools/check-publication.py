@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
@@ -113,6 +112,9 @@ def check(root: Path) -> int:
             for switch in expected_switches:
                 if switch not in text:
                     code |= error(f"{config.relative_to(root)} missing expected switch: {switch}")
+            expected_macro = f"ApplyPaperVariant@{internal}"
+            if expected_macro not in text:
+                code |= error(f"{config.relative_to(root)} missing named application macro: {expected_macro}")
             if "\\input{sections/" in text or "\\include{sections/" in text:
                 code |= error(f"variant config must not own canonical section content: {config.relative_to(root)}")
 
@@ -127,17 +129,22 @@ def check(root: Path) -> int:
         code |= error("missing paper/main.tex")
     else:
         main = main_path.read_text(encoding="utf-8")
-        required_fragments = (
+        required_fragments = [
             "\\providecommand{\\PaperVariant}{draft}",
             "\\input{variants/common}",
-            "\\input{variants/config/\\PaperVariant}",
+            "\\csname ApplyPaperVariant@\\PaperVariant\\endcsname",
             "\\ifPaperAnonymous",
             "\\ifPaperAcknowledgements",
             "\\ifPaperFullAppendix",
+        ]
+        required_fragments.extend(
+            f"\\input{{variants/config/{spec['internal']}}}" for spec in VARIANTS.values()
         )
         for fragment in required_fragments:
             if fragment not in main:
                 code |= error(f"paper/main.tex missing publication variant hook: {fragment}")
+        if "\\input{variants/config/\\PaperVariant}" in main:
+            code |= error("paper/main.tex must not use a dynamic variant input path")
 
     makefile = root / "Makefile"
     if not makefile.is_file():

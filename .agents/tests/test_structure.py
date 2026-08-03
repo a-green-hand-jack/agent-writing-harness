@@ -25,6 +25,8 @@ def fixture(root: Path) -> None:
         "PUBLICATION.md",
         "DECISIONS.md",
         "AGENTS.md",
+        "releases/README.md",
+        "releases/records/README.md",
         "paper/macros.tex",
         "paper/venue_preamble.tex",
         "paper/refs.bib",
@@ -38,6 +40,9 @@ def fixture(root: Path) -> None:
         ".agents/skills/paper-orientation/SKILL.md",
         ".agents/tools/verify.sh",
         ".agents/tools/check-publication.py",
+        ".agents/tools/release.py",
+        ".agents/tools/check-release.py",
+        ".agents/tools/check-release-records.py",
         ".agents/runtime/.gitignore",
     ):
         write(root / relative)
@@ -77,14 +82,14 @@ class StructureChecks(unittest.TestCase):
             result = run(root)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_legacy_surface_fails(self) -> None:
+    def test_obsolete_surface_fails(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             fixture(root)
-            (root / "state").mkdir()
+            (root / "release").mkdir()
             result = run(root)
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("legacy harness surface", result.stdout)
+            self.assertIn("must be removed", result.stdout)
 
     def test_dangling_section_input_fails(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

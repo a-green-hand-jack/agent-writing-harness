@@ -1,5 +1,7 @@
 % Public archival variant.
-\renewcommand{\PaperVariantName}{arxiv}
-\PaperAnonymousfalse
-\PaperAcknowledgementstrue
-\PaperFullAppendixtrue
+\expandafter\def\csname ApplyPaperVariant@arxiv\endcsname{%
+  \renewcommand{\PaperVariantName}{arxiv}%
+  \PaperAnonymousfalse
+  \PaperAcknowledgementstrue
+  \PaperFullAppendixtrue
+}

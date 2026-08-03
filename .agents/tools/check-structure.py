@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the paper-first repository structure without legacy harness state."""
+"""Check the paper-first repository structure and generated-output boundaries."""
 from __future__ import annotations
 
 import argparse
@@ -15,6 +15,7 @@ FORBIDDEN = (
     "human",
     "memory",
     "scripts",
+    "release",
     "PROJECT.md",
 )
 REQUIRED = (
@@ -26,6 +27,8 @@ REQUIRED = (
     "PUBLICATION.md",
     "DECISIONS.md",
     "AGENTS.md",
+    "releases/README.md",
+    "releases/records/README.md",
     "paper/main.tex",
     "paper/macros.tex",
     "paper/venue_preamble.tex",
@@ -43,6 +46,9 @@ REQUIRED = (
     ".agents/skills/paper-orientation/SKILL.md",
     ".agents/tools/verify.sh",
     ".agents/tools/check-publication.py",
+    ".agents/tools/release.py",
+    ".agents/tools/check-release.py",
+    ".agents/tools/check-release-records.py",
     ".agents/runtime/.gitignore",
 )
 SECTION_RE = re.compile(r"^[01]\d_[a-z][a-z0-9_]*\.tex$")
@@ -66,7 +72,7 @@ def check_required(root: Path) -> int:
             code |= error(f"missing required paper-first file: {relative}")
     for relative in FORBIDDEN:
         if (root / relative).exists():
-            code |= error(f"legacy harness surface must be removed: {relative}")
+            code |= error(f"obsolete or generated repository surface must be removed: {relative}")
     return code
 
 
@@ -130,13 +136,11 @@ def check_dependency_boundary(root: Path) -> int:
     code = 0
     forbidden_tokens = (
         "../.agents",
-        "../state",
-        "../lab",
-        "../scripts",
+        "../dist",
+        "../releases",
         "../../.agents",
-        "../../state",
-        "../../lab",
-        "../../scripts",
+        "../../dist",
+        "../../releases",
     )
     for path in sorted((root / "paper").rglob("*.tex")):
         text = active_tex(path.read_text(encoding="utf-8"))

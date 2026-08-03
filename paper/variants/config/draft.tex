@@ -1,5 +1,7 @@
 % Daily writing variant.
-\renewcommand{\PaperVariantName}{draft}
-\PaperAnonymousfalse
-\PaperAcknowledgementsfalse
-\PaperFullAppendixtrue
+\expandafter\def\csname ApplyPaperVariant@draft\endcsname{%
+  \renewcommand{\PaperVariantName}{draft}%
+  \PaperAnonymousfalse
+  \PaperAcknowledgementsfalse
+  \PaperFullAppendixtrue
+}
