@@ -36,8 +36,10 @@ def git(root: Path, *args: str, input_text: str | None = None) -> str:
 
 
 def blob_sha(root: Path, path: Path) -> str:
+    # `mktree` validates referenced objects. `-w` stores a working-tree blob so
+    # uncommitted authored paper changes can participate in the synthetic tree.
     process = subprocess.run(
-        ["git", "hash-object", "--stdin"],
+        ["git", "hash-object", "-w", "--stdin"],
         cwd=root,
         input=path.read_bytes(),
         capture_output=True,
