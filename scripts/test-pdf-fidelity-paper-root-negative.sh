@@ -18,8 +18,8 @@ chmod +x "$B/scripts/compare-original-pdf.sh"
 # fakes in this regression. A's compiled text matches the original; B's does not.
 printf '%%PDF-1.4\nA\n' >"$A/paper/main.pdf"
 printf '%%PDF-1.4\nB\n' >"$B/paper/main.pdf"
-printf '%%PDF-1.4\nORIGINAL\n' >"$A/original-same.pdf"
-printf '%%PDF-1.4\nORIGINAL\n' >"$A/original-large.pdf"
+printf '%%PDF-1.4\nORIGINAL-SAME\n' >"$A/original-same.pdf"
+printf '%%PDF-1.4\nORIGINAL-LARGE\n' >"$A/original-large.pdf"
 printf '%%PDF-1.4\nBAD\n' >"$A/paper/bad.pdf"
 
 cat >"$FAKEBIN/pdftotext" <<'EOF'
@@ -38,11 +38,12 @@ EOF
 cat >"$FAKEBIN/pdfinfo" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-case "${1:-}" in
-  */original-large.pdf) echo "Pages:          21" ;;
-  */bad.pdf) echo "Pages:          2" ;;
-  *) echo "Pages:          2" ;;
-esac
+pdf="${1:-}"
+if grep -q 'ORIGINAL-LARGE' "$pdf"; then
+  echo "Pages:          21"
+else
+  echo "Pages:          2"
+fi
 EOF
 chmod +x "$FAKEBIN/pdftotext" "$FAKEBIN/pdfinfo"
 
@@ -52,7 +53,7 @@ OUT="$TMP/root.out"
   PATH="$FAKEBIN:$PATH" bash "$B/scripts/compare-original-pdf.sh" original-same.pdf --threshold 0
 ) >"$OUT" 2>&1
 
-grep -F "paper root: $A" "$OUT" >/dev/null 
+grep -F "paper root: $A" "$OUT" >/dev/null
 grep -F "compiled : $A/paper/main.pdf" "$OUT" >/dev/null
 if grep -F "$B/paper/main.pdf" "$OUT" >/dev/null; then
   echo "ERROR fidelity gate selected the script copy's paper instead of the caller paper" >&2
