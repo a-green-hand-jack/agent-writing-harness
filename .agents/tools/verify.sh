@@ -3,15 +3,16 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-python3 scripts/check-capability-parity.py
-python3 scripts/check-writing-harness.py
-python3 scripts/check-anatomy-drift.py
-python3 scripts/check-paper-surface.py
-python3 scripts/check-conference-template.py
-python3 scripts/check-release-package.py
-python3 scripts/check-release-freshness.py
-python3 scripts/check-arxiv-portability.py
-python3 scripts/check-bridge-chassis.py
+RUNNER=(python3 .agents/tools/paper-harness.py)
+"${RUNNER[@]}" capability_parity
+"${RUNNER[@]}" writing_harness
+"${RUNNER[@]}" anatomy_drift
+"${RUNNER[@]}" paper_surface
+"${RUNNER[@]}" conference_template
+"${RUNNER[@]}" release_package
+"${RUNNER[@]}" release_freshness
+"${RUNNER[@]}" arxiv_portability
+"${RUNNER[@]}" bridge_chassis_preflight
 python3 .agents/tools/check-paper-contracts.py --profile draft
 python3 .agents/tools/check-paper-state.py
 python3 .agents/tools/check-paper-interfaces.py
