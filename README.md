@@ -37,6 +37,8 @@ The cues **locked**, **bounded**, **free**, and **unresolved** remain flexible c
 
 `paper/variants/` contains small overlays for `draft`, `anonymous`, `camera-ready`, and `arxiv`. They may change author visibility, acknowledgements, appendix inclusion, and publication-facing presentation hooks. They must not copy or silently diverge scientific prose, claims, result meaning, limitations, or experiment interpretation.
 
+The root `paper/main.tex` defaults to `anonymous` for direct Overleaf or source imports. The Makefile keeps `draft` as the daily-writing default, so local `make pdf` and Overleaf do not require the same variant selection.
+
 ## Release instances
 
 Generated delivery artifacts are not committed as another paper tree. Build a strict immutable instance with:

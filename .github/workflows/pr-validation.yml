@@ -108,6 +108,7 @@ jobs:
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             latexmk \
+            poppler-utils \
             texlive-latex-base \
             texlive-latex-recommended \
             texlive-latex-extra \
@@ -123,6 +124,16 @@ jobs:
             latexmk -pdf -jobname="$job" -interaction=nonstopmode -halt-on-error "variants/$variant.tex"
             test -s "$job.pdf"
           done
+
+      - name: Compile root main.tex safe default
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/paper-only/paper"
+          latexmk -pdf -jobname=paper-only-default-main -interaction=nonstopmode -halt-on-error main.tex
+          test -s paper-only-default-main.pdf
+          pdftotext paper-only-default-main.pdf "$RUNNER_TEMP/default-main.txt"
+          ! grep -Fq "TODO Authors" "$RUNNER_TEMP/default-main.txt"
+          ! grep -Fq "Acknowledgements" "$RUNNER_TEMP/default-main.txt"
 
   release-package:
     name: release-package

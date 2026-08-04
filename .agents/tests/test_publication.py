@@ -36,6 +36,22 @@ class PublicationChecks(unittest.TestCase):
         result = run(ROOT)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_draft_root_default_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            main = root / "paper/main.tex"
+            main.write_text(
+                main.read_text(encoding="utf-8").replace(
+                    "\\providecommand{\\PaperVariant}{anonymous}",
+                    "\\providecommand{\\PaperVariant}{draft}",
+                ),
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("must default to anonymous", result.stdout)
+
     def test_missing_config_fails(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
