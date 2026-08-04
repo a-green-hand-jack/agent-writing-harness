@@ -19,4 +19,8 @@ make pdf VARIANT=camera-ready
 make pdf VARIANT=arxiv
 ```
 
+The root `paper/main.tex` defaults to `anonymous` for direct Overleaf or source imports.
+The Makefile keeps `draft` as its daily-writing default and selects other variants
+explicitly.
+
 Add a variant only after updating `PUBLICATION.md`, the checker, tests, and CI matrix. Do not maintain publication variants as long-lived branches or copied paper trees.

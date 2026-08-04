@@ -42,6 +42,7 @@ PUBLICATION_HEADINGS = (
     "## Build interface",
     "## Release instances",
 )
+ROOT_ENTRY_STATEMENT = "root `paper/main.tex` defaults to `anonymous`"
 
 
 def error(message: str) -> int:
@@ -68,6 +69,8 @@ def check(root: Path) -> int:
         for heading in PUBLICATION_HEADINGS:
             if heading not in publication_text:
                 code |= error(f"PUBLICATION.md missing heading: {heading}")
+        if ROOT_ENTRY_STATEMENT not in publication_text:
+            code |= error("PUBLICATION.md must document the anonymous root main.tex default")
 
     variants_root = root / "paper/variants"
     common = variants_root / "common.tex"
@@ -129,8 +132,12 @@ def check(root: Path) -> int:
         code |= error("missing paper/main.tex")
     else:
         main = main_path.read_text(encoding="utf-8")
+        if "\\providecommand{\\PaperVariant}{anonymous}" not in main:
+            code |= error("paper/main.tex must default to anonymous for direct Overleaf/source imports")
+        if "\\providecommand{\\PaperVariant}{draft}" in main:
+            code |= error("paper/main.tex must not silently default to draft")
         required_fragments = [
-            "\\providecommand{\\PaperVariant}{draft}",
+            "\\providecommand{\\PaperVariant}{anonymous}",
             "\\input{variants/common}",
             "\\csname ApplyPaperVariant@\\PaperVariant\\endcsname",
             "\\ifPaperAnonymous",

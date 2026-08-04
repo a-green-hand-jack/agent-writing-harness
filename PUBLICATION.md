@@ -55,7 +55,7 @@ make pdf VARIANT=camera-ready
 make pdf VARIANT=arxiv
 ```
 
-The default variant is `draft`. Unknown variants fail rather than silently falling back.
+`make pdf` defaults to `draft` for daily writing. The root `paper/main.tex` defaults to `anonymous`, so a direct Overleaf or source import compiles the anonymous submission layout. Draft, camera-ready, and arXiv must be selected explicitly. Unknown variants fail rather than silently falling back.
 
 ## Delivery targets
 
