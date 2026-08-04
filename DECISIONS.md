@@ -68,6 +68,12 @@ Only missing Agent-sidecar infrastructure may be staged mechanically. Human cont
 
 Rationale: an arbitrary existing repository has neither a trustworthy template baseline nor guaranteed path equivalence. Treating filename similarity as semantic identity or copying a factory paper tree can destroy working build behavior and silently alter scientific meaning. A separate adoption workflow makes uncertainty, mappings, and Human responsibility explicit before normal three-way synchronization begins.
 
+## DEC-0012: Overleaf is a paper-only two-way working copy
+
+Decision: the configured Overleaf project is a collaborative working copy of canonical `paper/`, not a second canonical source or an immutable release surface. Overleaf receives only the tracked `paper/` tree. Outbound export runs from a clean canonical default branch; inbound online edits are imported only on a clean `sync/overleaf-*` review branch. Existing Overleaf Git history is preserved during one-time bootstrap, and remote edits block outbound replacement until reviewed and imported.
+
+Rationale: this gives active Overleaf collaboration without exposing governance/CI/Agent surfaces or treating the Overleaf tree as a second source of truth. It is complementary to immutable release delivery and still requires real Overleaf web compilation evidence before claiming platform success.
+
 ## Recording future decisions
 
 Record durable, high-impact Human decisions and rationale here. Do not record every sentence edit or temporary discussion. A useful decision states what was chosen, affected paper objects, rejected alternatives when relevant, and what future change requires review.

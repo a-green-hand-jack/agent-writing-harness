@@ -51,6 +51,7 @@ SAFE_PREFIXES = (
 )
 IGNORED_PATHS = (
     ".agents/template-sync.json",
+    ".agents/overleaf-sync.json",
     ".agents/runtime/",
     "dist/",
 )
