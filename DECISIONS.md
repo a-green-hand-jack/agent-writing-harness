@@ -56,9 +56,17 @@ Decision: a paper repository created from this GitHub Template does not merge th
 
 Unmodified downstream infrastructure may be applied mechanically. Human contracts, paper content, references, macros, venue configuration, style, and project-specific knowledge are protected and require semantic review. Files changed both upstream and downstream are conflicts. Downstream-only files are preserved unless explicitly removed during review.
 
-The first migration of a repository without a trustworthy baseline uses bootstrap mode, followed by downstream validation and explicit baseline recording. Template synchronization runs on a dedicated branch and reaches the paper repository through its normal PR and exact-head CI process.
+The first synchronization of a repository already derived from this template but lacking a trustworthy recorded baseline uses bootstrap mode, followed by downstream validation and explicit baseline recording. An arbitrary existing repository with materially different structure uses the separate adoption workflow in DEC-0011. Template synchronization runs on a dedicated branch and reaches the paper repository through its normal PR and exact-head CI process.
 
 Rationale: repositories created from GitHub templates have independent histories. Whole-tree replacement or unrelated-history merge can silently overwrite scientific meaning and project-specific work. A selective Agent workflow uses fast retrieval and comparison without transferring Human responsibility to automation.
+
+## DEC-0011: Initial adoption is a separate evidence-backed migration
+
+Decision: adapting an existing paper repository that was not created from the template is a distinct workflow from ongoing template synchronization. Adoption first inspects the downstream TeX graph, bibliography, assets, styles, experiment/evaluation surfaces, build commands, CI, and Agent instructions; then pins an exact template commit and produces repository-specific mappings plus a conservative path plan.
+
+Only missing Agent-sidecar infrastructure may be staged mechanically. Human contracts, authored paper content, references, macros, venue/style files, build logic, CI, process documents, and project-specific Agent knowledge require semantic review. Adoption prefers reversible wrappers and compatibility layers over immediate moves, preserves downstream-only files by default, and records the selected template commit as the first synchronization baseline only after full-variant validation of the unchanged reviewed state.
+
+Rationale: an arbitrary existing repository has neither a trustworthy template baseline nor guaranteed path equivalence. Treating filename similarity as semantic identity or copying a factory paper tree can destroy working build behavior and silently alter scientific meaning. A separate adoption workflow makes uncertainty, mappings, and Human responsibility explicit before normal three-way synchronization begins.
 
 ## Recording future decisions
 

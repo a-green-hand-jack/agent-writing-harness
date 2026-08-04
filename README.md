@@ -58,16 +58,41 @@ The factory template is intentionally unresolved, so strict release builds fail 
 bash .agents/tools/verify.sh
 ```
 
-`verify.sh` checks structure, Draft contracts, interfaces, publication variants, release-record boundaries, template-sync configuration, and regressions.
+`verify.sh` checks structure, Draft contracts, interfaces, publication variants, release-record boundaries, template-adoption and template-sync configuration, and regressions.
+
+## Adopting the template in an existing repository
+
+An existing paper repository may use different paths, build commands, CI, venue files, and Agent instructions. Do not copy the template tree over it. Run the adoption tool from a trusted template checkout so the target repository does not need `.agents/` in advance:
+
+```bash
+python3 /path/to/ccfa-writing-paper-template/.agents/tools/template-adoption.py \
+  --root /path/to/existing-paper inspect
+python3 /path/to/ccfa-writing-paper-template/.agents/tools/template-adoption.py \
+  --root /path/to/existing-paper plan --fetch
+python3 /path/to/ccfa-writing-paper-template/.agents/tools/template-adoption.py \
+  --root /path/to/existing-paper apply
+```
+
+The inspection infers candidates for the main TeX entrypoint, bibliography, sections, figures, tables, style, experiment/evaluation surfaces, build, CI, and Agent instructions. The plan applies only missing Agent-sidecar anatomy, knowledge, skills, tests, tools, and runtime-ignore infrastructure mechanically and creates an uninitialized downstream sync configuration. Paper content, Human contracts, references, venue/style configuration, build logic, CI, and existing Agent knowledge remain manual or conflict surfaces.
+
+After repository-specific semantic migration and validation:
+
+```bash
+python3 .agents/tools/template-adoption.py verify --variants
+python3 .agents/tools/template-adoption.py finalize --reviewed
+```
+
+Finalization requires a successful full-variant verification report for the unchanged downstream state, then records the exact reviewed template commit in `.agents/template-sync.json`. Subsequent template updates use `template-sync`, not adoption. See `.agents/skills/template-adoption/SKILL.md`.
 
 ## Syncing a downstream paper repository
 
-A paper repository created from this GitHub Template has an independent Git history. Do not merge the upstream template branch into the paper history. Use the optional Agent skill and path-level synchronization tool instead:
+A paper repository created from this GitHub Template, or completed through reviewed adoption, has an independent Git history. Do not merge the upstream template branch into the paper history. Use the optional Agent skill and path-level synchronization tool instead:
 
 ```bash
 python3 .agents/tools/template-sync.py validate
 python3 .agents/tools/template-sync.py fetch
-python3 .agents/tools/template-sync.py plan --bootstrap   # first reviewed sync only
+python3 .agents/tools/template-sync.py plan               # after adoption or a recorded baseline
+python3 .agents/tools/template-sync.py plan --bootstrap   # only when no trustworthy baseline exists
 python3 .agents/tools/template-sync.py apply
 ```
 
@@ -79,7 +104,7 @@ After manual merges and successful downstream validation:
 python3 .agents/tools/template-sync.py record --reviewed
 ```
 
-Future synchronizations use the recorded upstream commit as the three-way baseline and normally run `plan` without `--bootstrap`. See `.agents/skills/template-sync/SKILL.md`.
+Adoption records the first reviewed baseline during `finalize`. A template-created or older repository without a trustworthy baseline instead uses one reviewed `--bootstrap` synchronization. Future synchronizations use the recorded upstream commit as the three-way baseline and run `plan` without `--bootstrap`. See `.agents/skills/template-sync/SKILL.md`.
 
 ## Project boundary and CI
 

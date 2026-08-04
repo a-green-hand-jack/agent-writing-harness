@@ -26,11 +26,33 @@ Variants may control publication-facing presentation. They do not own copied sec
 
 - `AGENTS.md`: thin routing entrypoint.
 - `.agents/knowledge/`: optional reference knowledge loaded only when relevant.
-- `.agents/skills/`: focused procedures for writing, publication planning, release review, and downstream template synchronization.
-- `.agents/template-sync.json`: downstream-local upstream location and last reviewed template baseline.
-- `.agents/tools/`: structure, contract, interface, publication, release-build, manifest, record, and template-sync tools.
+- `.agents/skills/`: focused procedures for writing, publication planning, release review, initial template adoption, and downstream template synchronization.
+- `.agents/template-sync.json`: downstream-local upstream location and template baseline; adoption first creates an uninitialized downstream-specific configuration and records the exact commit only after review.
+- `.agents/tools/`: structure, contract, interface, publication, release-build, manifest, record, template-adoption, and template-sync tools.
 - `.agents/tests/`: positive and negative regressions.
-- `.agents/runtime/`: ignored short-lived coordination, release, and template-sync state.
+- `.agents/runtime/`: ignored short-lived coordination, release, adoption, and template-sync state.
+
+## Initial template adoption
+
+An unrelated existing paper repository first receives an evidence-backed mapping plan rather than a copied template tree.
+
+```text
+existing paper paths + build/CI/Agent evidence
+        +
+exact upstream template target
+        ↓
+entrypoint / references / sections / figures / tables / style / experiments mappings
+        +
+safe / already / manual / conflict / ignored path plan
+        ↓
+missing Agent-sidecar infrastructure staged mechanically
+        +
+reviewed wrappers, semantic migration, and downstream validation
+        ↓
+first recorded template baseline
+```
+
+The adoption tool can run from a separate template checkout against the downstream repository. It never treats path similarity as scientific equivalence and does not automatically move authored content, promote experiment scripts into evidence, replace build or CI behavior, or initialize Human contracts from guesses.
 
 ## Downstream template synchronization
 
@@ -81,7 +103,7 @@ Agent task
         ↓
 AGENTS.md → one focused skill / knowledge document
         ↓
-.agents/tools/verify.sh, template sync, or release workflow
+.agents/tools/verify.sh, template adoption, template sync, or release workflow
 ```
 
 The paper must not import `.agents/`, `dist/`, or `releases/`. Generic Agent knowledge and upstream template defaults must not override a current explicit Human decision.
