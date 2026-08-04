@@ -81,14 +81,20 @@ class OverleafSyncTests(unittest.TestCase):
             check=check,
         )
 
-    def test_unconfigured_template_passes_static_validation(self) -> None:
+    def test_configured_template_passes_static_validation(self) -> None:
         result = run(
             [sys.executable, str(TOOL), "--root", str(ROOT), "validate"],
             ROOT,
             check=False,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("unconfigured", result.stdout)
+        self.assertIn("source=paper/", result.stdout)
+        config = json.loads((ROOT / ".agents/overleaf-sync.json").read_text(encoding="utf-8"))
+        self.assertEqual(config["source_prefix"], "paper")
+        self.assertEqual(
+            config["remote"]["url"],
+            "https://git@git.overleaf.com/6a71e37eeb498fef8922f370",
+        )
 
     def test_bootstrap_exports_only_paper_and_preserves_remote_history(self) -> None:
         result = self.tool("push", "--bootstrap")
