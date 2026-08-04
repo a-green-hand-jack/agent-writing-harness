@@ -56,6 +56,7 @@ REQUIRED = (
     ".agents/tools/check-release-records.py",
     ".agents/tools/template-adoption.py",
     ".agents/tools/template-sync.py",
+    ".agents/tools/overleaf-sync.py",
     ".agents/runtime/.gitignore",
 )
 SECTION_RE = re.compile(r"^[01]\d_[a-z][a-z0-9_]*\.tex$")

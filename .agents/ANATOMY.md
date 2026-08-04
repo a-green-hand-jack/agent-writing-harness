@@ -7,6 +7,7 @@
 - `knowledge/`: conditional reference material. Current project contracts always take priority.
 - `skills/`: focused procedures for orientation, control review, decision packets, style alignment, interface maintenance, publication planning, release review, initial template adoption, and downstream template synchronization.
 - `template-sync.json`: downstream-local upstream URL, remote/branch, reviewed baseline, and optional path-policy extensions; adoption first writes an uninitialized downstream-specific configuration and pins the commit only after review.
+- `overleaf-sync.json`: project-specific Overleaf Git remote/branch and the canonical `paper/` source prefix; never contains credentials.
 - `tools/`:
   - `verify.sh` runs structure, Draft contract, interface, publication, release-record, template-adoption, template-sync, and regression checks.
   - `check-actions.py` rejects first-party GitHub Actions majors that are no longer Node.js 24 compatible.
@@ -17,6 +18,7 @@
   - `check-release-records.py` keeps tracked records Markdown-only and Human-approved where required.
   - `template-adoption.py` inspects an unrelated existing repository, proposes evidence-backed mappings, installs only missing Agent-sidecar infrastructure, verifies the result, and records the first reviewed baseline.
   - `template-sync.py` performs reviewed path-level three-way synchronization after a baseline exists.
+  - `overleaf-sync.py` exports only `paper/` to Overleaf and imports online edits only through a dedicated review branch.
   - `check-structure.py`, `check-paper-contracts.py`, `check-paper-interfaces.py`, and `check-publication.py` enforce the paper-first collaboration model.
 - `tests/`: standard-library positive and negative regressions, including release immutability, checksum drift, adoption safety, and template-sync safety.
 - `runtime/`: ignored session, worktree, release, adoption, or template-sync coordination state; never durable project truth.
@@ -44,6 +46,10 @@ After semantic migration and validation, adoption writes the exact reviewed temp
 A downstream repository does not merge the upstream template history. `template-sync.py` compares the last recorded upstream baseline, the requested upstream target, and current downstream files. It applies only files unchanged downstream, protects paper/Human surfaces, exports manual/conflict versions for Agent review, and records a new baseline only after explicit review and validation.
 
 The initial sync of an older downstream repository uses bootstrap mode. Bootstrap does not silently delete downstream-only project files.
+
+## Overleaf synchronization
+
+`overleaf-sync.py` maps canonical `paper/` to the root of the Overleaf project. Governance, CI, Agent tooling, release records, and other repository files never enter the exported tree. Export runs only from a clean `main`; import runs only from a clean `sync/overleaf-*` branch. An online edit blocks the next export until it has been pulled back for review.
 
 ## Release honesty
 

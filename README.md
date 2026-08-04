@@ -108,6 +108,34 @@ python3 .agents/tools/template-sync.py record --reviewed
 
 Adoption records the first reviewed baseline during `finalize`. A template-created or older repository without a trustworthy baseline instead uses one reviewed `--bootstrap` synchronization. Future synchronizations use the recorded upstream commit as the three-way baseline and run `plan` without `--bootstrap`. See `.agents/skills/template-sync/SKILL.md`.
 
+## Working with Overleaf
+
+The Overleaf Git project receives only the tracked contents of `paper/`, mapped to the Overleaf project root. It never receives repository governance, CI, Agent tooling, contracts, or release records.
+
+Add a project-specific `.agents/overleaf-sync.json` containing the remote name, Overleaf Git URL, branch, and `source_prefix: "paper"`. Credentials are never stored in tracked configuration. Validate and fetch the configured project:
+
+```bash
+python3 .agents/tools/overleaf-sync.py validate
+python3 .agents/tools/overleaf-sync.py fetch
+```
+
+Export an approved clean `main`:
+
+```bash
+python3 .agents/tools/overleaf-sync.py push
+```
+
+When Overleaf contains online edits, import them on a review branch before exporting again:
+
+```bash
+git switch -c sync/overleaf-YYYYMMDD
+python3 .agents/tools/overleaf-sync.py pull
+make pdf
+bash .agents/tools/verify.sh
+```
+
+The one-time initial publication uses `push --bootstrap`; it preserves the pre-existing Overleaf commit in Git history while replacing the visible working tree with canonical `paper/`.
+
 ## Project boundary and CI
 
 The repository has no legacy harness, capability registry, Bridge layer, experiment ledger, product adapter mirror, or committed generated release tree. A clean copy of `paper/` compiles all variants without `.agents/`.

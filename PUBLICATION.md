@@ -68,6 +68,12 @@ A release instance can generate any reviewed subset of:
 
 A successful local package build does not prove a real venue, Overleaf, or arXiv platform accepted it.
 
+## Overleaf working copy
+
+The configured Overleaf project is a collaborative working copy of canonical `paper/`, not a second canonical source or a release instance. Its Git root contains only the tracked `paper/` tree. Repository governance, Agent tooling, CI, contracts, and release records are excluded.
+
+Exports originate from a clean canonical `main`. Online edits return through a dedicated `sync/overleaf-*` branch and must pass the ordinary paper build and repository verification before merge. A detected online edit blocks outbound replacement until reviewed and imported.
+
 ## Release instances
 
 A release instance such as `iclr2027-submission-r1` or `arxiv-v2` binds:

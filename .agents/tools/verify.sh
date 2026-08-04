@@ -15,6 +15,7 @@ python3 .agents/tools/check-publication.py
 python3 .agents/tools/check-release-records.py
 python3 .agents/tools/template-adoption.py validate
 python3 .agents/tools/template-sync.py validate
+python3 .agents/tools/overleaf-sync.py validate
 python3 -m unittest discover -s .agents/tests -p 'test_*.py'
 
 echo "OK agent verify"
