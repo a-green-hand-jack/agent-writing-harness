@@ -5,18 +5,19 @@
 ## Structure
 
 - `knowledge/`: conditional reference material. Current project contracts always take priority.
-- `skills/`: focused procedures for orientation, control review, decision packets, style alignment, interface maintenance, publication planning, release review, and downstream template synchronization.
-- `template-sync.json`: downstream-local upstream URL, remote/branch, last reviewed baseline, and optional path-policy extensions.
+- `skills/`: focused procedures for orientation, control review, decision packets, style alignment, interface maintenance, publication planning, release review, initial template adoption, and downstream template synchronization.
+- `template-sync.json`: downstream-local upstream URL, remote/branch, reviewed baseline, and optional path-policy extensions; adoption first writes an uninitialized downstream-specific configuration and pins the commit only after review.
 - `tools/`:
-  - `verify.sh` runs structure, Draft contract, interface, publication, release-record, template-sync configuration, and regression checks.
+  - `verify.sh` runs structure, Draft contract, interface, publication, release-record, template-adoption, template-sync, and regression checks.
   - `release.sh` builds one strict immutable release instance.
   - `release.py` builds instances and writes non-overwriting release records.
   - `check-release.py` verifies manifest/artifact checksums and package boundaries.
   - `check-release-records.py` keeps tracked records Markdown-only and Human-approved where required.
-  - `template-sync.py` performs reviewed path-level three-way synchronization for downstream paper repositories with unrelated Git history.
+  - `template-adoption.py` inspects an unrelated existing repository, proposes evidence-backed mappings, installs only missing Agent-sidecar infrastructure, verifies the result, and records the first reviewed baseline.
+  - `template-sync.py` performs reviewed path-level three-way synchronization after a baseline exists.
   - `check-structure.py`, `check-paper-contracts.py`, `check-paper-interfaces.py`, and `check-publication.py` enforce the paper-first collaboration model.
-- `tests/`: standard-library positive and negative regressions, including release immutability, checksum drift, and template-sync safety.
-- `runtime/`: ignored session, worktree, release, or template-sync coordination state; never durable project truth.
+- `tests/`: standard-library positive and negative regressions, including release immutability, checksum drift, adoption safety, and template-sync safety.
+- `runtime/`: ignored session, worktree, release, adoption, or template-sync coordination state; never durable project truth.
 
 ## Boundary
 
@@ -25,9 +26,16 @@
 - Publication variants contain only presentation switches.
 - Generated release instances live in ignored `dist/` and never become authored source.
 - Durable tracked release information is Markdown provenance under `releases/records/`.
+- Adoption inspections, plans, verification reports, and merge bundles live in ignored `.agents/runtime/template-adoption/`.
 - Template-sync plans and merge bundles live in ignored `.agents/runtime/template-sync/`.
 - Agents load one relevant skill and minimum context rather than recursively reading the sidecar.
 - `make pdf VARIANT=<name>` and a paper-only checkout do not require `.agents/`.
+
+## Template adoption
+
+`template-adoption.py` can run from a trusted template checkout against an existing unrelated repository. It discovers the actual TeX graph, bibliography, asset/style, experiment/evaluation, build, CI, and Agent-instruction surfaces; proposes mappings; stages only missing sidecar knowledge, skills, tests, tools, and runtime-ignore infrastructure; and exports manual/conflict review copies. Scientific content and repository-specific behavior remain downstream-owned.
+
+After semantic migration and validation, adoption writes the exact reviewed template target as the first `.agents/template-sync.json` baseline. Later changes use `template-sync.py` rather than repeating adoption.
 
 ## Template synchronization
 
@@ -41,4 +49,4 @@ A Draft-validation package proves the packaging mechanism, not submission readin
 
 ## Context hygiene
 
-Rich knowledge is useful only when relevant. Venue guidance, publication practices, experiment advice, historical rationale, and template synchronization are loaded on demand. Generic knowledge and upstream defaults never override a current explicit Human decision.
+Rich knowledge is useful only when relevant. Venue guidance, publication practices, experiment advice, historical rationale, template adoption, and template synchronization are loaded on demand. Generic knowledge and upstream defaults never override a current explicit Human decision.

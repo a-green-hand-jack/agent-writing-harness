@@ -26,7 +26,7 @@ Keep each PR focused on one issue or tightly related design change. The PR body 
 - the failure mode or goal;
 - what changed and why;
 - Human and Agent impact;
-- positive and negative regression coverage;
+- positive and negative regression coverage, including adoption/synchronization safety when relevant;
 - release-instance or artifact impact;
 - external validation that remains out of scope.
 
