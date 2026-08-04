@@ -1,3 +1,8 @@
+---
+name: template-sync
+description: Use when inspecting or applying reviewed updates from the upstream ccfa-writing-paper-template repository to a downstream paper.
+---
+
 # Template Sync
 
 ## Trigger

@@ -1,3 +1,8 @@
+---
+name: style-alignment
+description: Use when setting or revising paper positioning, narrative architecture, section responsibility, paragraph moves, sentence style, or a venue presentation overlay.
+---
+
 # Style Alignment
 
 ## Trigger

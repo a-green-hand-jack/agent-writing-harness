@@ -3,9 +3,12 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-python3 -m compileall -q .agents/tools .agents/tests
+pycache_dir="$(mktemp -d)"
+trap 'rm -rf "$pycache_dir"' EXIT
+PYTHONPYCACHEPREFIX="$pycache_dir" python3 -m compileall -q .agents/tools .agents/tests
 python3 .agents/tools/check-structure.py
 python3 .agents/tools/check-actions.py
+python3 .agents/tools/check-skills.py
 python3 .agents/tools/check-paper-contracts.py --profile draft
 python3 .agents/tools/check-paper-interfaces.py
 python3 .agents/tools/check-publication.py

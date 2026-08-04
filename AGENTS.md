@@ -14,6 +14,7 @@ The paper project is primary. Start from the current Human-facing contract and l
 
 ## Task routing
 
+- unclear paper context or new session → `.agents/skills/paper-orientation/SKILL.md`
 - high-impact meaning or control boundary → `.agents/skills/control-review/SKILL.md`
 - focused Human choice → `.agents/skills/decision-packet/SKILL.md`
 - positioning, structure, or prose style → `.agents/skills/style-alignment/SKILL.md`

@@ -1,3 +1,8 @@
+---
+name: control-review
+description: Use before changing a central claim, story choice, experiment condition, limitation, result interpretation, or stable paper interface.
+---
+
 # Control Review
 
 ## Trigger
