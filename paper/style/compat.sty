@@ -1,16 +1,16 @@
 % compat.sty
-% Venue-conversion compatibility shim for the ccfa-paper Class API.
+% Venue-layout compatibility shim for the paper display API.
 %
-% NOT used by paper/main.tex. This file reimplements the same macro names
-% as ccfa-paper.sty (\parahead, \headbf, \figref/\tabref/\algref/\eqnref,
-% \tablestyle, \cmark/\xmark, compact column types x/y/z/P/Y, optional
-% \papercolor/\paperstyle) on top of whatever packages an official venue
-% class (CVPR/ICCV/NeurIPS, etc.) already loads, so paper/sections/*.tex
-% compiles unmodified under that class. scripts/export-venue-template.sh
-% copies this file into a generated venue conversion output alongside the
-% official kit; it never edits paper/ or the official kit.
+% It is available for venue-layout variants and release packaging. The factory
+% paper/main.tex uses style/ccfa-paper.sty directly, so this shim is not loaded
+% unless a venue-layout variant or official kit activates it. It provides the
+% same macro names as ccfa-paper.sty (\parahead, \headbf, \figref/\tabref/
+% \algref/\eqnref, \tablestyle, \cmark/\xmark, compact column types x/y/z/P/Y,
+% and optional \papercolor/\paperstyle) on top of packages already loaded by the
+% venue style. Canonical sections remain shared across internal and venue
+% layouts.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{compat}[2026/07/17 v1.0 ccfa-paper venue conversion compat shim]
+\ProvidesPackage{compat}[2026/07/17 v1.0 ccfa-paper venue-layout compat shim]
 
 \makeatletter
 \@ifpackageloaded{etoolbox}{}{\RequirePackage{etoolbox}}
@@ -49,7 +49,7 @@
 }
 
 % ---------------------------------------------------------------------
-% Class API: heading and cross-reference helpers
+% Display API: heading and cross-reference helpers
 % ---------------------------------------------------------------------
 \providecommand{\headbf}[1]{{\bfseries\ifbool{ccfaAccentEnabled}{\color{ccfaAccent}}{}#1}}
 \providecommand{\parahead}[1]{\par\noindent\headbf{#1.}\enspace\ignorespaces}
@@ -60,7 +60,7 @@
 \providecommand{\eqnref}[1]{Equation~\eqref{#1}}
 
 % ---------------------------------------------------------------------
-% Class API: compact table helpers
+% Display API: compact table helpers
 % ---------------------------------------------------------------------
 \providecommand{\tablestyle}[2]{\setlength{\tabcolsep}{#1}\renewcommand{\arraystretch}{#2}\centering\small}
 \providecommand{\cmark}{\ding{51}}

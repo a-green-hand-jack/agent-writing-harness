@@ -60,7 +60,7 @@ The factory template is intentionally unresolved, so strict release builds fail 
 bash .agents/tools/verify.sh
 ```
 
-`verify.sh` checks structure, Draft contracts, interfaces, publication variants, release-record boundaries, template-adoption and template-sync configuration, and regressions.
+`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, publication variants, release-record boundaries, template-adoption and template-sync configuration, and regressions.
 
 ## Adopting the template in an existing repository
 

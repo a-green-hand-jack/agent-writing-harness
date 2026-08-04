@@ -8,10 +8,12 @@
 - `skills/`: focused procedures for orientation, control review, decision packets, style alignment, interface maintenance, publication planning, release review, initial template adoption, and downstream template synchronization.
 - `template-sync.json`: downstream-local upstream URL, remote/branch, reviewed baseline, and optional path-policy extensions; adoption first writes an uninitialized downstream-specific configuration and pins the commit only after review.
 - `overleaf-sync.json`: project-specific Overleaf Git remote/branch and the canonical `paper/` source prefix; never contains credentials.
+- `documentation-consistency.json`: expected current facts for README and Human-facing contracts; downstream papers update these facts instead of editing checker source.
 - `tools/`:
-  - `verify.sh` runs structure, Draft contract, interface, publication, release-record, template-adoption, template-sync, and regression checks.
+  - `verify.sh` runs structure, documentation consistency, Draft contract, interface, publication, release-record, template-adoption, template-sync, and regression checks.
   - `check-actions.py` rejects first-party GitHub Actions majors that are no longer Node.js 24 compatible.
   - `check-skills.py` validates repo-local skill frontmatter, router coverage, and stale adapter references.
+  - `check-documentation.py` rejects known retired paths, scripts, venue references, and missing Agent-sidecar references.
   - `release.sh` builds one strict immutable release instance.
   - `release.py` builds instances and writes non-overwriting release records.
   - `check-release.py` verifies manifest/artifact checksums and package boundaries.
@@ -19,7 +21,7 @@
   - `template-adoption.py` inspects an unrelated existing repository, proposes evidence-backed mappings, installs only missing Agent-sidecar infrastructure, verifies the result, and records the first reviewed baseline.
   - `template-sync.py` performs reviewed path-level three-way synchronization after a baseline exists.
   - `overleaf-sync.py` exports only `paper/` to Overleaf and imports online edits only through a dedicated review branch.
-  - `check-structure.py`, `check-paper-contracts.py`, `check-paper-interfaces.py`, and `check-publication.py` enforce the paper-first collaboration model.
+  - `check-structure.py`, `check-documentation.py`, `check-paper-contracts.py`, `check-paper-interfaces.py`, and `check-publication.py` enforce the paper-first collaboration model.
 - `tests/`: standard-library positive and negative regressions, including release immutability, checksum drift, adoption safety, and template-sync safety.
 - `runtime/`: ignored session, worktree, release, adoption, or template-sync coordination state; never durable project truth.
 
