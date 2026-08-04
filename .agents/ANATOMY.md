@@ -9,6 +9,7 @@
 - `template-sync.json`: downstream-local upstream URL, remote/branch, reviewed baseline, and optional path-policy extensions; adoption first writes an uninitialized downstream-specific configuration and pins the commit only after review.
 - `tools/`:
   - `verify.sh` runs structure, Draft contract, interface, publication, release-record, template-adoption, template-sync, and regression checks.
+  - `check-actions.py` rejects first-party GitHub Actions majors that are no longer Node.js 24 compatible.
   - `release.sh` builds one strict immutable release instance.
   - `release.py` builds instances and writes non-overwriting release records.
   - `check-release.py` verifies manifest/artifact checksums and package boundaries.
