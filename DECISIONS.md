@@ -74,6 +74,12 @@ Decision: the configured Overleaf project is a collaborative working copy of can
 
 Rationale: this gives active Overleaf collaboration without exposing governance/CI/Agent surfaces or treating the Overleaf tree as a second source of truth. It is complementary to immutable release delivery and still requires real Overleaf web compilation evidence before claiming platform success.
 
+## DEC-0013: Documentation consistency is a maintained contract
+
+Decision: documentation and relevant LaTeX comments must reflect the current directory structure, tools, publication variants, venue facts, and synchronization workflow. A documentation consistency checker runs in the standard verification path and reads expected current facts from `.agents/documentation-consistency.json`; downstream papers update that configuration rather than editing checker source code.
+
+Rationale: stale documentation is operationally misleading for both human and agent contributors, and a once-only cleanup would let the same class of drift return during normal template evolution.
+
 ## Recording future decisions
 
 Record durable, high-impact Human decisions and rationale here. Do not record every sentence edit or temporary discussion. A useful decision states what was chosen, affected paper objects, rejected alternatives when relevant, and what future change requires review.

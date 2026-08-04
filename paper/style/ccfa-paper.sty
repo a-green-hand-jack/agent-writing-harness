@@ -1,5 +1,5 @@
 % ccfa-paper.sty
-% Reusable presentation macros for the ccfa-paper-template writing layer.
+% Reusable presentation macros for the internal draft/arXiv layout.
 % Project-specific macros belong in paper/macros.tex, not here — this file
 % must stay swappable (e.g. for a compat.sty venue shim) without touching
 % paper/sections/*.tex.
@@ -40,7 +40,7 @@
 }
 
 % ---------------------------------------------------------------------
-% Class API: heading and cross-reference helpers
+% Display API: heading and cross-reference helpers
 % ---------------------------------------------------------------------
 \newcommand{\headbf}[1]{{\bfseries\ifbool{ccfaAccentEnabled}{\color{ccfaAccent}}{}#1}}
 \newcommand{\parahead}[1]{\par\noindent\headbf{#1.}\enspace\ignorespaces}
@@ -51,7 +51,7 @@
 \newcommand{\eqnref}[1]{Equation~\eqref{#1}}
 
 % ---------------------------------------------------------------------
-% Class API: compact table helpers
+% Display API: compact table helpers
 % ---------------------------------------------------------------------
 \newcommand{\tablestyle}[2]{\setlength{\tabcolsep}{#1}\renewcommand{\arraystretch}{#2}\centering\small}
 \newcommand{\cmark}{\ding{51}}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "paper-documentation-consistency-v1",
+  "required_facts": {
+    "PAPER.md": [
+      "Target venue: ICLR 2027"
+    ],
+    "PUBLICATION.md": [
+      "`make pdf` defaults to `draft`",
+      "defaults to `anonymous`",
+      "Git root contains only the tracked `paper/` tree"
+    ],
+    "README.md": [
+      "The factory template is intentionally unresolved",
+      "The one-time initial publication uses `push --bootstrap`"
+    ],
+    "paper/figures/README.md": [
+      "There is no separate figure registry",
+      ".agents/tools/check-structure.py"
+    ],
+    "paper/tables/README.md": [
+      "no separate table registry",
+      "bash .agents/tools/verify.sh"
+    ]
+  }
+}
