@@ -1,0 +1,9 @@
+{
+  "schema_version": "paper-overleaf-sync-v1",
+  "source_prefix": "paper",
+  "remote": {
+    "name": "overleaf",
+    "url": "https://git@git.overleaf.com/6a71e37eeb498fef8922f370",
+    "branch": "main"
+  }
+}

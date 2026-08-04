@@ -38,6 +38,7 @@ def fixture(root: Path) -> None:
         "paper/variants/arxiv.tex",
         ".agents/knowledge/README.md",
         ".agents/template-sync.json",
+        ".agents/overleaf-sync.json",
         ".agents/skills/paper-orientation/SKILL.md",
         ".agents/skills/template-adoption/SKILL.md",
         ".agents/skills/template-sync/SKILL.md",
