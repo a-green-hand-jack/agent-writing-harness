@@ -1,3 +1,8 @@
+---
+name: paper-interface-maintenance
+description: Use when adding or changing a recurring paper-facing name, term, symbol, result, claim form, figure, table, or LaTeX macro.
+---
+
 # Paper Interface Maintenance
 
 ## Trigger

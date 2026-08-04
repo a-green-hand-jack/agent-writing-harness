@@ -1,3 +1,8 @@
+---
+name: template-adoption
+description: Use when adapting an existing paper repository to this template or establishing a reviewed first migration baseline.
+---
+
 # Template Adoption
 
 ## Trigger

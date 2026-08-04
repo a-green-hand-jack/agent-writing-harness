@@ -49,6 +49,7 @@ REQUIRED = (
     ".agents/skills/template-sync/SKILL.md",
     ".agents/tools/verify.sh",
     ".agents/tools/check-actions.py",
+    ".agents/tools/check-skills.py",
     ".agents/tools/check-publication.py",
     ".agents/tools/release.py",
     ".agents/tools/check-release.py",

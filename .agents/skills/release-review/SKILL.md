@@ -1,3 +1,8 @@
+---
+name: release-review
+description: Use when preparing an immutable submission, arXiv version, camera-ready version, or other Human-approved release instance.
+---
+
 # Release Review
 
 ## Trigger

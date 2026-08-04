@@ -1,3 +1,8 @@
+---
+name: decision-packet
+description: Use when a Human must choose among high-impact alternatives or approve a change outside a bounded area.
+---
+
 # Decision Packet
 
 ## Trigger

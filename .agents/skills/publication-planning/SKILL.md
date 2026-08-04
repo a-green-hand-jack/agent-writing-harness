@@ -1,3 +1,8 @@
+---
+name: publication-planning
+description: Use when adding, changing, comparing, or preparing a publication variant such as anonymous submission, camera-ready, arXiv, supplement, or rebuttal.
+---
+
 # Publication Planning
 
 ## Trigger

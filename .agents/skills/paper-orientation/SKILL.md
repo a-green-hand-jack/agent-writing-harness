@@ -1,3 +1,8 @@
+---
+name: paper-orientation
+description: Use at the start of a new session or when paper context is unclear to recover minimum context without loading the repository.
+---
+
 # Paper Orientation Skill
 
 Use this skill at the start of a new session or when paper context is unclear. Recover the minimum context needed for the current task; do not load the entire repository.
