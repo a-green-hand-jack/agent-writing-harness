@@ -1350,6 +1350,7 @@ def pending_sync_config(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
         ),
         "last_synced_at": None,
         "last_synced_commit": None,
+        "reference_integrity": {"adopted": False},
         "schema_version": "paper-template-sync-v1",
         "upstream": {
             "branch": upstream["branch"],
@@ -1643,6 +1644,11 @@ def finalize_adoption(
         "last_sync_note": note or "Reviewed initial adoption from an existing paper repository.",
         "last_synced_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "last_synced_commit": target,
+        "reference_integrity": (
+            existing.get("reference_integrity", {"adopted": False})
+            if existing
+            else {"adopted": False}
+        ),
         "schema_version": "paper-template-sync-v1",
         "upstream": {
             "branch": upstream["branch"],

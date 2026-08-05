@@ -85,12 +85,14 @@ class TemplateSyncTests(unittest.TestCase):
         write(self.upstream, '.agents/tools/conflict.txt', 'conflict-v1\n')
         write(self.upstream, 'PAPER.md', 'paper-v1\n')
         write(self.upstream, 'CONTRIBUTING.md', 'contributing-v1\n')
+        write(self.upstream, 'PUBLICATION.md', 'publication-v1\n')
         self.baseline = commit_all(self.upstream, 'template v1')
 
         init_repo(self.downstream)
         shutil.copytree(self.upstream / '.agents', self.downstream / '.agents')
         shutil.copy2(self.upstream / 'PAPER.md', self.downstream / 'PAPER.md')
         shutil.copy2(self.upstream / 'CONTRIBUTING.md', self.downstream / 'CONTRIBUTING.md')
+        shutil.copy2(self.upstream / 'PUBLICATION.md', self.downstream / 'PUBLICATION.md')
         write(self.downstream, '.agents/template-sync.json', config(self.upstream, self.baseline))
         write(self.downstream, '.agents/skills/template-sync/SKILL.md', skill())
         commit_all(self.downstream, 'paper from template v1')
@@ -103,6 +105,12 @@ class TemplateSyncTests(unittest.TestCase):
         write(self.upstream, '.agents/tools/new.txt', 'new-v2\n')
         write(self.upstream, 'PAPER.md', 'paper-upstream-v2\n')
         write(self.upstream, 'CONTRIBUTING.md', 'contributing-upstream-v2\n')
+        write(self.upstream, 'PUBLICATION.md', 'publication-upstream-v2\n')
+        write(self.upstream, '.agents/tools/check-reference-integrity.py', 'sidecar checker\n')
+        write(self.upstream, '.agents/dependencies/reference-integrity/uv.lock', 'locked dependency\n')
+        write(self.upstream, '.github/workflows/reference-validation.yml', 'inert until policy enables it\n')
+        write(self.upstream, 'REFERENCES.md', 'reference contract\n')
+        write(self.upstream, 'references/ledger.json', '{}\n')
         self.target = commit_all(self.upstream, 'template v2')
         git(self.downstream, 'fetch', 'template', 'main')
 
@@ -127,6 +135,12 @@ class TemplateSyncTests(unittest.TestCase):
         self.assertEqual(by_path['.agents/tools/conflict.txt']['category'], 'conflict')
         self.assertEqual(by_path['PAPER.md']['category'], 'manual')
         self.assertEqual(by_path['CONTRIBUTING.md']['category'], 'manual')
+        self.assertEqual(by_path['PUBLICATION.md']['category'], 'manual')
+        self.assertEqual(by_path['.agents/tools/check-reference-integrity.py']['category'], 'safe')
+        self.assertEqual(by_path['.agents/dependencies/reference-integrity/uv.lock']['category'], 'manual')
+        self.assertEqual(by_path['.github/workflows/reference-validation.yml']['category'], 'manual')
+        self.assertEqual(by_path['REFERENCES.md']['category'], 'manual')
+        self.assertEqual(by_path['references/ledger.json']['category'], 'manual')
 
     def test_apply_safe_and_export_review_bundle(self) -> None:
         plan = self.tool('plan')
@@ -138,11 +152,25 @@ class TemplateSyncTests(unittest.TestCase):
         self.assertEqual((self.downstream / '.agents/tools/conflict.txt').read_text(), 'conflict-downstream\n')
         self.assertEqual((self.downstream / 'PAPER.md').read_text(), 'paper-v1\n')
         self.assertEqual((self.downstream / 'CONTRIBUTING.md').read_text(), 'contributing-v1\n')
+        self.assertEqual((self.downstream / 'PUBLICATION.md').read_text(), 'publication-v1\n')
+        self.assertEqual(
+            (self.downstream / '.agents/tools/check-reference-integrity.py').read_text(),
+            'sidecar checker\n',
+        )
+        self.assertFalse((self.downstream / '.agents/dependencies/reference-integrity/uv.lock').exists())
+        self.assertFalse((self.downstream / '.github/workflows/reference-validation.yml').exists())
+        self.assertFalse((self.downstream / 'REFERENCES.md').exists())
+        self.assertFalse((self.downstream / 'references/ledger.json').exists())
         bundle = self.downstream / '.agents/runtime/template-sync/merge-bundle'
         self.assertEqual((bundle / 'upstream/PAPER.md').read_text(), 'paper-upstream-v2\n')
         self.assertEqual((bundle / 'baseline/PAPER.md').read_text(), 'paper-v1\n')
         self.assertEqual((bundle / 'upstream/CONTRIBUTING.md').read_text(), 'contributing-upstream-v2\n')
         self.assertEqual((bundle / 'baseline/CONTRIBUTING.md').read_text(), 'contributing-v1\n')
+        self.assertEqual(
+            (bundle / 'upstream/.github/workflows/reference-validation.yml').read_text(),
+            'inert until policy enables it\n',
+        )
+        self.assertEqual((bundle / 'upstream/references/ledger.json').read_text(), '{}\n')
 
     def test_apply_refuses_default_branch_and_dirty_tree(self) -> None:
         self.tool('plan')

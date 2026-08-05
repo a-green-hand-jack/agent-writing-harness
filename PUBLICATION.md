@@ -57,6 +57,31 @@ make pdf VARIANT=arxiv
 
 `make pdf` defaults to `draft` for daily writing. The root `paper/main.tex` defaults to `anonymous`, so a direct Overleaf or source import compiles the anonymous submission layout. Draft, camera-ready, and arXiv must be selected explicitly. Unknown variants fail rather than silently falling back.
 
+## Reference integrity
+
+Bibliographic identity and claim support are separate review obligations. The
+ledger and open-source metadata checker are governed by `REFERENCES.md`; neither
+database presence nor an automated verdict approves scientific meaning.
+
+<!-- REFERENCE-INTEGRITY:START -->
+```json
+{
+  "schema_version": "paper-reference-integrity-policy-v1",
+  "enforcement": "enforced",
+  "ledger": "references/ledger.json",
+  "bibliography": "paper/refs.bib"
+}
+```
+<!-- REFERENCE-INTEGRITY:END -->
+
+Downstream repositories must merge this protected block and the activation
+marker in `paper/refs.bib`, then set downstream-local
+`.agents/template-sync.json.reference_integrity.adopted` to `true`, only after
+migrating their existing bibliography and reviewing the resulting ledger.
+Without all three, synchronized sidecar tools and workflows remain inert and
+perform no dependency installation or network access. Once adopted, a missing
+marker or missing/disabled policy is a hard failure rather than a bypass.
+
 ## Delivery targets
 
 A release instance can generate any reviewed subset of:

@@ -4,6 +4,9 @@
   "last_sync_note": "Uninitialized. A downstream repository should run a reviewed bootstrap plan before recording its first upstream baseline.",
   "last_synced_at": null,
   "last_synced_commit": null,
+  "reference_integrity": {
+    "adopted": true
+  },
   "schema_version": "paper-template-sync-v1",
   "upstream": {
     "branch": "main",

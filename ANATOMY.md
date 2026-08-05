@@ -10,6 +10,7 @@ This repository has two primary layers: one canonical authored paper and an opti
 - `EXPERIMENTS.md`: paper-facing experiment questions and interpretation boundaries.
 - `PAPER_INTERFACES.md`: stable identity, terminology, notation, result, claim, and artifact interfaces.
 - `PUBLICATION.md`: variants, delivery targets, release-instance contract, and Human review boundaries.
+- `REFERENCES.md` and `references/ledger.json`: bibliographic identity status and Human-reviewed claim evidence.
 - `DECISIONS.md`: durable rationale for important Human decisions.
 - `paper/`: canonical LaTeX source and small publication overlays.
 - `releases/records/`: durable Markdown provenance for reviewed release instances.
@@ -29,6 +30,7 @@ Variants may control publication-facing presentation. They do not own copied sec
 - `.agents/skills/`: focused procedures for writing, publication planning, release review, initial template adoption, and downstream template synchronization.
 - `.agents/template-sync.json`: downstream-local upstream location and template baseline; adoption first creates an uninitialized downstream-specific configuration and records the exact commit only after review.
 - `.agents/tools/`: structure, contract, interface, publication, release-build, manifest, record, template-adoption, and template-sync tools.
+- `.agents/dependencies/`: optional Agent-tool dependency projects with exact locks; never a `paper/` runtime dependency.
 - `.agents/tests/`: positive and negative regressions.
 - `.agents/runtime/`: ignored short-lived coordination, release, adoption, and template-sync state.
 

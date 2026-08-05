@@ -6,9 +6,10 @@ A pull request is not ready merely because GitHub reports it as mergeable.
 
 Before merge:
 
-1. wait for the `PR validation` workflow to finish;
+1. wait for both the `PR validation` and `Reference validation` workflows to finish;
 2. require every applicable job to succeed:
    - `harness` — paper-first checks and Agent regressions;
+   - `references` (in `Reference validation`) — offline ledger enforcement plus the locked, non-generative metadata audit when the protected policy enables it;
    - `latex (<variant>)` — real TeX builds and variant-surface checks;
    - `paper-only` — all variants compile with only `paper/` present;
    - `release-package` — immutable instance build, checksum validation, isolated source/flat compilation, and artifact upload;
@@ -18,6 +19,12 @@ Before merge:
 6. merge only the validated head SHA.
 
 Do not remove a check to obtain a green result. External platforms or official kits that were not actually exercised remain `UNVERIFIED`.
+
+The online reference audit may fail because of a positive metadata mismatch or
+because scholarly infrastructure is unavailable. Inspect the generated
+`reference-integrity-*` artifact before classifying the failure. A database miss,
+timeout, or rate limit is not evidence that a citation was fabricated, and a
+successful metadata match does not approve manuscript claim support.
 
 ## Scope and evidence
 
