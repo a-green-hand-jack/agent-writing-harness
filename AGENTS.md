@@ -30,6 +30,7 @@ This removes template-specific governance IDs, resets downstream-local metadata,
 - positioning, structure, or prose style → `.agents/skills/style-alignment/SKILL.md`
 - recurring semantic interface → `.agents/skills/paper-interface-maintenance/SKILL.md`
 - publication variant or allowed difference → `.agents/skills/publication-planning/SKILL.md`
+- venue planning, deadlines, page budget, or official submission rules → `.agents/skills/publication-planning/SKILL.md` and `.agents/knowledge/venues/README.md`
 - immutable release candidate → `.agents/skills/release-review/SKILL.md`
 - adapt an existing paper repository to this template → `.agents/skills/template-adoption/SKILL.md`
 - synchronize an adopted downstream repository with the upstream template → `.agents/skills/template-sync/SKILL.md`

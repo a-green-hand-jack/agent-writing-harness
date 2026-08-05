@@ -43,6 +43,8 @@ These are options, not universal rules.
 
 Load venue-specific knowledge only when venue adaptation is the active task. Distinguish stable observations about audience and style from current official requirements, which must be checked against an official source at the time of submission work.
 
+Active venue planning facts live in `.agents/knowledge/venues/<venue>-<year>.md`. See `.agents/knowledge/venues/README.md` for the schema, freshness contract, and strict verification entry point.
+
 ## Project truth priority
 
 When sources conflict, prefer:

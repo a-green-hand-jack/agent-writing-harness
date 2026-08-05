@@ -15,6 +15,7 @@ Use when preparing an immutable submission, arXiv version, camera-ready version,
 - current applicable decisions;
 - selected variant and canonical paper diff;
 - release-instance record or candidate manifest;
+- `.agents/knowledge/venues/<venue>-<year>.md` and its current official-source freshness when a venue is active;
 - venue rules only from current official sources when a venue is involved.
 
 Do not load historical alternatives unless a current conflict requires them.
@@ -22,12 +23,13 @@ Do not load historical alternatives unless a current conflict requires them.
 ## Procedure
 
 1. Confirm the selected variant and permitted differences from the canonical paper.
-2. Run the Draft and Release contract checks; do not suppress unresolved or placeholder failures.
-3. List high-impact changes since the last Human review.
-4. Check claim strength, experiment interpretation, stable interfaces, limitations, negative evidence, anonymity, author/acknowledgement behavior, appendix inclusion, references, figures, tables, and compilation.
-5. Build the exact release candidate and verify its manifest and artifact checksums.
-6. Mark unavailable external environments as unverified, not successful.
-7. Produce a short release summary with blockers, accepted exceptions, residual risks, and an Agent recommendation.
+2. If a venue is active, run `python3 .agents/tools/check-venue-knowledge.py --strict` and recheck official venue facts before relying on deadlines, page limits, anonymity, or operational rules.
+3. Run the Draft and Release contract checks; do not suppress unresolved or placeholder failures.
+4. List high-impact changes since the last Human review.
+5. Check claim strength, experiment interpretation, stable interfaces, limitations, negative evidence, anonymity, author/acknowledgement behavior, appendix inclusion, references, figures, tables, and compilation.
+6. Build the exact release candidate and verify its manifest and artifact checksums.
+7. Mark unavailable external environments as unverified, not successful.
+8. Produce a short release summary with blockers, accepted exceptions, residual risks, and an Agent recommendation.
 
 ## Human decision
 

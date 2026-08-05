@@ -11,6 +11,7 @@ python3 .agents/tools/paper-init.py status
 python3 .agents/tools/check-actions.py
 python3 .agents/tools/check-skills.py
 python3 .agents/tools/check-documentation.py
+python3 .agents/tools/check-venue-knowledge.py
 python3 .agents/tools/check-paper-contracts.py --profile draft
 python3 .agents/tools/check-paper-interfaces.py
 python3 .agents/tools/check-publication.py

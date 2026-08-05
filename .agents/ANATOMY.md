@@ -5,6 +5,7 @@
 ## Structure
 
 - `knowledge/`: conditional reference material. Current project contracts always take priority.
+- `knowledge/venues/`: generic per-venue planning schema plus active `<venue>-<year>.md` files; template files stay venue-agnostic.
 - `skills/`: focused procedures for orientation, control review, decision packets, style alignment, interface maintenance, publication planning, release review, initial template adoption, and downstream template synchronization.
 - `template-sync.json`: downstream-local upstream URL, remote/branch, reviewed baseline, and optional path-policy extensions; adoption first writes an uninitialized downstream-specific configuration and pins the commit only after review.
 - `overleaf-sync.json`: project-specific Overleaf Git remote/branch and the canonical `paper/` source prefix; never contains credentials.
@@ -16,6 +17,7 @@
   - `check-actions.py` rejects first-party GitHub Actions majors that are no longer Node.js 24 compatible.
   - `check-skills.py` validates repo-local skill frontmatter, router coverage, and stale adapter references.
   - `check-documentation.py` rejects known retired paths, scripts, venue references, and missing Agent-sidecar references.
+  - `check-venue-knowledge.py` validates active venue planning files and reports `UNVERIFIED` freshness/page-budget states.
   - `release.sh` builds one strict immutable release instance.
   - `release.py` builds instances and writes non-overwriting release records.
   - `check-release.py` verifies manifest/artifact checksums and package boundaries.

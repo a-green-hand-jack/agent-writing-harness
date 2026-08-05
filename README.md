@@ -7,12 +7,13 @@ A paper-first repository for Human–Agent collaborative scientific writing.
 ## Start writing
 
 1. If this repository was created from the template and `.agents/init-state.json` does not exist, run `python3 .agents/tools/paper-init.py clean --commit` before editing paper content. This strips upstream template governance IDs and records the initialization.
-1. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
+2. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
 2. Record paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
 3. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
 4. Record publication variants and allowed differences in `PUBLICATION.md`.
-5. Edit the one canonical LaTeX source under `paper/`.
-6. Build:
+5. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
+6. Edit the one canonical LaTeX source under `paper/`.
+7. Build:
 
 ```bash
 make pdf

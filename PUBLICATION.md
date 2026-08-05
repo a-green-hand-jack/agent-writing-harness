@@ -68,6 +68,18 @@ A release instance can generate any reviewed subset of:
 
 A successful local package build does not prove a real venue, Overleaf, or arXiv platform accepted it.
 
+## Venue planning knowledge
+
+Active venue planning facts are stored under `.agents/knowledge/venues/<venue>-<year>.md` and follow the schema in `.agents/knowledge/venues/README.md`. Official deadlines, page limits, anonymity requirements, and operational rules are current constraints only when they come from a checked official source with an explicit `last_checked` value.
+
+Agent scheduling must use official timeline facts as hard constraints and derive internal writing, experiment, review, and approval buffers separately. Internal milestones are not official deadlines. Before deadline-sensitive planning or strict release, recheck the official venue source and run:
+
+```bash
+python3 .agents/tools/check-venue-knowledge.py --strict
+```
+
+This venue planning input is distinct from capability authenticity (#21) and real environment availability (#31), but strict venue planning depends on the same honest source and freshness rules.
+
 ## Overleaf working copy
 
 The configured Overleaf project is a collaborative working copy of canonical `paper/`, not a second canonical source or a release instance. Its Git root contains only the tracked `paper/` tree. Repository governance, Agent tooling, CI, contracts, and release records are excluded.
