@@ -80,6 +80,14 @@ Decision: documentation and relevant LaTeX comments must reflect the current dir
 
 Rationale: stale documentation is operationally misleading for both human and agent contributors, and a once-only cleanup would let the same class of drift return during normal template evolution.
 
+## DEC-0014: Case branches and verification trackers are protected evidence
+
+Decision: the real-paper case branches `case/arxiv-2505-22954`, `case/arxiv-2604-01658`, and `case/arxiv-2605-03042`, their corresponding case issues (#23, #24, #30), and the standing verification trackers (#21, #31) are protected evidence. Do not propose, plan, or perform their deletion. Do not include them in routine cleanup reports or branch/worktree/PR deletion discussions. New `case/` branches and their case issues receive the same protection unless a Human decision records otherwise.
+
+Rationale: these branches and issues carry real-paper verification evidence, source/PDF previews, Round 2 state, and long-running validation contracts. Treating them as ordinary stale feature branches would erase evidence and break references used by active tracker contracts.
+
+This decision governs this upstream template repository. Downstream paper repositories must record their own protected case branches and tracker issues in their own `DECISIONS.md`; do not copy these IDs as project facts.
+
 ## Recording future decisions
 
 Record durable, high-impact Human decisions and rationale here. Do not record every sentence edit or temporary discussion. A useful decision states what was chosen, affected paper objects, rejected alternatives when relevant, and what future change requires review.

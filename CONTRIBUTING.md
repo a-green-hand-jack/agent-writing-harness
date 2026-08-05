@@ -34,6 +34,10 @@ Keep each PR focused on one issue or tightly related design change. The PR body 
 
 Do not commit `dist/` or recreate a generated `release/` tree. Tracked release information belongs in Human-reviewed Markdown records under `releases/records/`. Published artifact changes use a new release ID rather than editing an old record.
 
+## Protected evidence surface
+
+The repository protects its current and future real-paper case branches and the corresponding case and standing verification issues. Do not propose or perform their deletion, and do not include them in cleanup PRs or branch/worktree/PR deletion discussions. Record the exact list in that repository's own `DECISIONS.md`; do not copy another repository's IDs.
+
 ## Documentation consistency
 
 Treat documentation changes as part of venue, variant, synchronization, and tooling changes. Update the relevant README and Human-facing contract in the same change, then run `bash .agents/tools/verify.sh`. The documentation check rejects known retired paths, obsolete venue references, and missing Agent tool or skill paths. Current repository facts are configured in `.agents/documentation-consistency.json`; semantic review is still required for claims that cannot be proved mechanically.

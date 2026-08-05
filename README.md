@@ -136,6 +136,10 @@ bash .agents/tools/verify.sh
 
 The one-time initial publication uses `push --bootstrap`; it preserves the pre-existing Overleaf commit in Git history while replacing the visible working tree with canonical `paper/`.
 
+## Protected evidence surface
+
+The repository protects its current and future real-paper case branches and the corresponding case and standing verification issues. Do not propose or perform their deletion, and do not include them in routine cleanup or branch/worktree/PR deletion discussions. The exact upstream template list is recorded in `DECISIONS.md`; downstream paper repositories must maintain their own protected list instead of copying template IDs.
+
 ## Project boundary and CI
 
 The repository has no legacy harness, capability registry, Bridge layer, experiment ledger, product adapter mirror, or committed generated release tree. A clean copy of `paper/` compiles all variants without `.agents/`.

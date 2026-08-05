@@ -155,6 +155,7 @@ if __name__ == "__main__":
             + "\n",
         )
         write(self.upstream, "README.md", "# Template README\n")
+        write(self.upstream, "CONTRIBUTING.md", "# Template Contributing\n")
         write(self.upstream, "PAPER.md", "# Paper contract template\n")
         write(self.upstream, "Makefile", "pdf:\n\t@echo template\n")
         write(
@@ -269,6 +270,7 @@ if __name__ == "__main__":
         self.assertEqual(by_path[".agents/tools/linked.py"]["category"], "conflict")
         self.assertIn("symlink", by_path[".agents/tools/linked.py"]["reason"])
         self.assertEqual(by_path["PAPER.md"]["category"], "manual")
+        self.assertEqual(by_path["CONTRIBUTING.md"]["category"], "manual")
         self.assertEqual(by_path["README.md"]["category"], "manual")
         self.assertEqual(by_path["paper/main.tex"]["category"], "manual")
         self.assertEqual(by_path["Makefile"]["category"], "manual")
@@ -291,6 +293,7 @@ if __name__ == "__main__":
         )
         self.assertFalse((self.downstream / ".agents/tools/linked.py").exists())
         self.assertFalse((self.downstream / "PAPER.md").exists())
+        self.assertFalse((self.downstream / "CONTRIBUTING.md").exists())
         pending = json.loads(
             (self.downstream / ".agents/template-sync.json").read_text(encoding="utf-8")
         )

@@ -84,11 +84,13 @@ class TemplateSyncTests(unittest.TestCase):
         write(self.upstream, '.agents/tools/base.txt', 'base-v1\n')
         write(self.upstream, '.agents/tools/conflict.txt', 'conflict-v1\n')
         write(self.upstream, 'PAPER.md', 'paper-v1\n')
+        write(self.upstream, 'CONTRIBUTING.md', 'contributing-v1\n')
         self.baseline = commit_all(self.upstream, 'template v1')
 
         init_repo(self.downstream)
         shutil.copytree(self.upstream / '.agents', self.downstream / '.agents')
         shutil.copy2(self.upstream / 'PAPER.md', self.downstream / 'PAPER.md')
+        shutil.copy2(self.upstream / 'CONTRIBUTING.md', self.downstream / 'CONTRIBUTING.md')
         write(self.downstream, '.agents/template-sync.json', config(self.upstream, self.baseline))
         write(self.downstream, '.agents/skills/template-sync/SKILL.md', skill())
         commit_all(self.downstream, 'paper from template v1')
@@ -100,6 +102,7 @@ class TemplateSyncTests(unittest.TestCase):
         write(self.upstream, '.agents/tools/conflict.txt', 'conflict-upstream-v2\n')
         write(self.upstream, '.agents/tools/new.txt', 'new-v2\n')
         write(self.upstream, 'PAPER.md', 'paper-upstream-v2\n')
+        write(self.upstream, 'CONTRIBUTING.md', 'contributing-upstream-v2\n')
         self.target = commit_all(self.upstream, 'template v2')
         git(self.downstream, 'fetch', 'template', 'main')
 
@@ -123,6 +126,7 @@ class TemplateSyncTests(unittest.TestCase):
         self.assertEqual(by_path['.agents/tools/new.txt']['category'], 'safe')
         self.assertEqual(by_path['.agents/tools/conflict.txt']['category'], 'conflict')
         self.assertEqual(by_path['PAPER.md']['category'], 'manual')
+        self.assertEqual(by_path['CONTRIBUTING.md']['category'], 'manual')
 
     def test_apply_safe_and_export_review_bundle(self) -> None:
         plan = self.tool('plan')
@@ -133,9 +137,12 @@ class TemplateSyncTests(unittest.TestCase):
         self.assertEqual((self.downstream / '.agents/tools/new.txt').read_text(), 'new-v2\n')
         self.assertEqual((self.downstream / '.agents/tools/conflict.txt').read_text(), 'conflict-downstream\n')
         self.assertEqual((self.downstream / 'PAPER.md').read_text(), 'paper-v1\n')
+        self.assertEqual((self.downstream / 'CONTRIBUTING.md').read_text(), 'contributing-v1\n')
         bundle = self.downstream / '.agents/runtime/template-sync/merge-bundle'
         self.assertEqual((bundle / 'upstream/PAPER.md').read_text(), 'paper-upstream-v2\n')
         self.assertEqual((bundle / 'baseline/PAPER.md').read_text(), 'paper-v1\n')
+        self.assertEqual((bundle / 'upstream/CONTRIBUTING.md').read_text(), 'contributing-upstream-v2\n')
+        self.assertEqual((bundle / 'baseline/CONTRIBUTING.md').read_text(), 'contributing-v1\n')
 
     def test_apply_refuses_default_branch_and_dirty_tree(self) -> None:
         self.tool('plan')

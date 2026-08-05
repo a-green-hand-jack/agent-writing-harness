@@ -25,6 +25,7 @@ DEFAULT_MANUAL_PATHS = (
     ".gitignore",
     "README.md",
     "AGENTS.md",
+    "CONTRIBUTING.md",
     "PAPER.md",
     "EXPERIMENTS.md",
     "PAPER_INTERFACES.md",

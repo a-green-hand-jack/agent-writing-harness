@@ -45,6 +45,8 @@ The Agent performs retrieval, impact analysis, alternatives, consistency mainten
 - Do not silently change a locked claim, story decision, experiment condition, limitation, or interface meaning.
 - Do not copy canonical scientific content into publication variants.
 - Do not overwrite an existing release instance or release record.
+- Never propose or perform deletion of the protected case branches (`case/arxiv-2505-22954`, `case/arxiv-2604-01658`, `case/arxiv-2605-03042`), their case issues (#23, #24, #30), or the standing verification trackers (#21, #31); do not include them in routine cleanup or deletion reports.
+- Protected branch and issue lists are repository-local; downstream papers must maintain their own lists instead of inheriting this template's IDs.
 - Keep generated artifacts under ignored `dist/`; never recreate a committed generated `release/` tree.
 - Keep negative or inconclusive evidence visible when it constrains a central claim.
 - Do not make `paper/` depend on `.agents/`, `dist/`, or `releases/`.

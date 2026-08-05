@@ -100,7 +100,7 @@ Record the target only after the bootstrap migration has been reviewed and valid
 
 - Never merge the unrelated upstream and downstream repository histories merely to obtain template updates.
 - Never apply on the default branch or with a dirty worktree.
-- Never auto-overwrite `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, `PUBLICATION.md`, `DECISIONS.md`, paper sections, figures, tables, references, macros, venue configuration, style, or project knowledge.
+- Never auto-overwrite root governance documents (`README.md`, `AGENTS.md`, `CONTRIBUTING.md`), `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, `PUBLICATION.md`, `DECISIONS.md`, paper sections, figures, tables, references, macros, venue configuration, style, or project knowledge.
 - Never delete downstream-only project files because they are absent upstream.
 - Never treat an Agent conflict resolution as Human approval of changed scientific meaning.
 - Never record a new baseline before manual review and validation.
