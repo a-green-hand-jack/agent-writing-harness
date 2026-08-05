@@ -23,9 +23,12 @@ EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 DEFAULT_BRANCHES = {"main", "master", "trunk"}
 DEFAULT_MANUAL_PATHS = (
     ".gitignore",
+    ".github/",
     "README.md",
+    "REFERENCES.md",
     "AGENTS.md",
     "CONTRIBUTING.md",
+    "Makefile",
     "PAPER.md",
     "EXPERIMENTS.md",
     "PAPER_INTERFACES.md",
@@ -41,6 +44,8 @@ DEFAULT_MANUAL_PATHS = (
     "paper/generated/",
     "paper/supplementary/",
     "paper/style/",
+    "references/",
+    ".agents/dependencies/",
     ".agents/knowledge/",
 )
 DEFAULT_IGNORED_PATHS = (
@@ -120,6 +125,12 @@ def validate_config_data(data: dict[str, Any]) -> None:
         not isinstance(baseline, str) or len(baseline) != 40 or any(ch not in "0123456789abcdef" for ch in baseline)
     ):
         raise SyncError("last_synced_commit must be null or a 40-character lowercase Git SHA")
+    reference_integrity = data.get("reference_integrity")
+    if reference_integrity is not None and (
+        not isinstance(reference_integrity, dict)
+        or not isinstance(reference_integrity.get("adopted"), bool)
+    ):
+        raise SyncError("template sync reference_integrity.adopted must be boolean")
     for key in ("always_manual", "ignored_paths"):
         values = data.get(key, [])
         if not isinstance(values, list) or not all(isinstance(value, str) and value for value in values):

@@ -102,6 +102,7 @@ Record the target only after the bootstrap migration has been reviewed and valid
 - Never merge the unrelated upstream and downstream repository histories merely to obtain template updates.
 - Never apply on the default branch or with a dirty worktree.
 - Never auto-overwrite root governance documents (`README.md`, `AGENTS.md`, `CONTRIBUTING.md`), `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, `PUBLICATION.md`, `DECISIONS.md`, paper sections, figures, tables, references, macros, venue configuration, style, or project knowledge.
+- Treat CI workflows, build logic, dependency locks, `REFERENCES.md`, and `references/` ledgers as manual review surfaces. An older downstream sync engine may classify newly added files as safe, so every synchronized workflow must remain inert until the protected Human policy, the `paper/refs.bib` activation marker, and downstream-local `.agents/template-sync.json.reference_integrity.adopted=true` explicitly enable it.
 - Never delete downstream-only project files because they are absent upstream.
 - Never treat an Agent conflict resolution as Human approval of changed scientific meaning.
 - Never record a new baseline before manual review and validation.

@@ -40,6 +40,7 @@ SOURCE_CONTRACTS = (
     "PUBLICATION.md",
     "DECISIONS.md",
 )
+REFERENCE_CONTRACTS = ("REFERENCES.md", "references/ledger.json")
 
 
 class ReleaseError(RuntimeError):
@@ -92,6 +93,12 @@ def iter_source_files(root: Path) -> list[tuple[Path, str]]:
         if not path.is_file():
             raise ReleaseError(f"missing release source contract: {relative_text}")
         entries.append((path, relative_text))
+    if reference_integrity_adopted(root):
+        for relative_text in REFERENCE_CONTRACTS:
+            path = root / relative_text
+            if not path.is_file():
+                raise ReleaseError(f"missing activated reference source contract: {relative_text}")
+            entries.append((path, relative_text))
     paper_root = root / "paper"
     if not paper_root.is_dir():
         raise ReleaseError("missing canonical paper directory: paper/")
@@ -112,6 +119,46 @@ def source_fingerprint(root: Path) -> str:
         digest.update(path.read_bytes())
         digest.update(b"\0")
     return digest.hexdigest()
+
+
+def reference_integrity_adopted(root: Path) -> bool:
+    path = root / ".agents/template-sync.json"
+    if not path.is_file():
+        return False
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ReleaseError(f"invalid downstream-local template sync metadata: {exc}") from exc
+    if not isinstance(data, dict):
+        raise ReleaseError("downstream-local template sync metadata must be a JSON object")
+    state = data.get("reference_integrity")
+    if state is None:
+        return False
+    if not isinstance(state, dict) or not isinstance(state.get("adopted"), bool):
+        raise ReleaseError("template sync reference_integrity.adopted must be boolean")
+    return state["adopted"]
+
+
+def reference_provenance(root: Path, profile: str) -> dict[str, object]:
+    if not reference_integrity_adopted(root):
+        return {
+            "enforcement": "not-adopted",
+            "offline_profile": profile,
+            "offline_gate_passed": None,
+            "online_metadata_required": False,
+            "online_metadata_outcome": "not-applicable",
+        }
+    return {
+        "enforcement": "enforced",
+        "contract_sha256": sha256_file(root / "REFERENCES.md"),
+        "ledger_sha256": sha256_file(root / "references/ledger.json"),
+        "bibliography_sha256": sha256_file(root / "paper/refs.bib"),
+        "dependency_lock_sha256": sha256_file(root / ".agents/dependencies/reference-integrity/uv.lock"),
+        "offline_profile": profile,
+        "offline_gate_passed": True,
+        "online_metadata_required": False,
+        "online_metadata_outcome": "not-required-for-release",
+    }
 
 
 def git_audit(root: Path) -> tuple[str | None, bool | None]:
@@ -152,6 +199,7 @@ def run_profile_checks(root: Path, profile: str) -> None:
         [sys.executable, ".agents/tools/check-structure.py"],
         [sys.executable, ".agents/tools/check-paper-contracts.py", "--profile", profile],
         [sys.executable, ".agents/tools/check-paper-interfaces.py"],
+        [sys.executable, ".agents/tools/check-reference-integrity.py", "--profile", profile],
         [sys.executable, ".agents/tools/check-publication.py"],
     ]
     for command in commands:
@@ -339,6 +387,7 @@ def build_instance(args: argparse.Namespace) -> Path:
             artifacts.append(artifact_entry(target, temporary, "arxiv-flat"))
 
         commit, dirty = git_audit(root)
+        reference_state = reference_provenance(root, args.profile)
         manifest = {
             "schema_version": "paper-release-instance-v1",
             "release_id": args.release_id,
@@ -356,6 +405,7 @@ def build_instance(args: argparse.Namespace) -> Path:
                     root / "paper/variants/config" / f"{VARIANTS[args.variant]}.tex"
                 ),
             },
+            "reference_integrity": reference_state,
             "targets": targets,
             "checks": checks,
             "artifacts": artifacts,
@@ -370,6 +420,9 @@ def build_instance(args: argparse.Namespace) -> Path:
             f"- Profile: `{args.profile}`",
             f"- Release ready: `{str(args.profile == 'release').lower()}`",
             f"- Source fingerprint: `{manifest['source']['fingerprint_sha256']}`",
+            f"- Reference integrity: `{reference_state['enforcement']}`",
+            f"- Reference ledger SHA-256: `{reference_state.get('ledger_sha256', 'not-applicable')}`",
+            f"- Online metadata audit: `{reference_state['online_metadata_outcome']}`",
             f"- Git audit commit: `{commit or 'unavailable'}`",
             f"- Git dirty at build: `{dirty}`",
             f"- Targets: {', '.join(targets)}",

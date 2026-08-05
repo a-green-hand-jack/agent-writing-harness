@@ -14,6 +14,7 @@ python3 .agents/tools/check-documentation.py
 python3 .agents/tools/check-venue-knowledge.py
 python3 .agents/tools/check-paper-contracts.py --profile draft
 python3 .agents/tools/check-paper-interfaces.py
+python3 .agents/tools/check-reference-integrity.py --profile draft
 python3 .agents/tools/check-publication.py
 python3 .agents/tools/check-release-records.py
 python3 .agents/tools/template-adoption.py validate

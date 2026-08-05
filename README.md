@@ -11,9 +11,10 @@ A paper-first repository for Human–Agent collaborative scientific writing.
 2. Record paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
 3. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
 4. Record publication variants and allowed differences in `PUBLICATION.md`.
-5. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
-6. Edit the one canonical LaTeX source under `paper/`.
-7. Build:
+5. Add bibliography records and claim-support evidence through `REFERENCES.md` and `references/ledger.json`; do not generate free-form BibTeX.
+6. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
+7. Edit the one canonical LaTeX source under `paper/`.
+8. Build:
 
 ```bash
 make pdf
@@ -30,6 +31,7 @@ Clean generated LaTeX files with `make clean`.
 - `EXPERIMENTS.md` — paper-facing experiment questions and interpretation boundaries.
 - `PAPER_INTERFACES.md` — stable semantic names shared by canonical and variant surfaces.
 - `PUBLICATION.md` — variants, delivery targets, release-instance boundaries, and Human review triggers.
+- `REFERENCES.md` and `references/ledger.json` — bibliographic identity states and Human-reviewed claim evidence.
 - `DECISIONS.md` — durable rationale for important Human decisions.
 - `paper/` — the canonical authored project and small publication overlays.
 
@@ -62,7 +64,7 @@ The factory template is intentionally unresolved, so strict release builds fail 
 bash .agents/tools/verify.sh
 ```
 
-`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, publication variants, release-record boundaries, template-adoption and template-sync configuration, and regressions.
+`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, the offline reference ledger, publication variants, release-record boundaries, template-adoption and template-sync configuration, and regressions. The separate `Reference validation` workflow installs a hash-locked open-source metadata checker only after the protected publication policy enables it.
 
 ## Adopting the template in an existing repository
 
@@ -100,7 +102,7 @@ python3 .agents/tools/template-sync.py plan --bootstrap   # only when no trustwo
 python3 .agents/tools/template-sync.py apply
 ```
 
-The plan separates changes into `safe`, `already`, `manual`, `conflict`, and `ignored`. Safe infrastructure updates can be staged mechanically. Human contracts, paper content, references, macros, venue configuration, style, and project knowledge remain protected and are exported to an ignored merge bundle for Agent review.
+The plan separates changes into `safe`, `already`, `manual`, `conflict`, and `ignored`. Safe infrastructure updates can be staged mechanically. Human contracts, paper content, references, macros, CI, build logic, dependency locks, venue configuration, style, and project knowledge remain protected and are exported to an ignored merge bundle for Agent review. Reference-integrity tooling received by an older sync engine remains inert until the protected `PUBLICATION.md` policy and `paper/refs.bib` activation marker are merged after ledger migration and downstream-local `.agents/template-sync.json` records `reference_integrity.adopted=true`.
 
 After manual merges and successful downstream validation:
 
@@ -146,4 +148,4 @@ The repository protects its current and future real-paper case branches and the 
 
 The repository has no legacy harness, capability registry, Bridge layer, experiment ledger, product adapter mirror, or committed generated release tree. A clean copy of `paper/` compiles all variants without `.agents/`.
 
-Pull requests must pass `harness`, four real-TeX variant jobs, `paper-only`, and `release-package`. See `CONTRIBUTING.md`.
+Pull requests must pass `harness`, `references`, four real-TeX variant jobs, `paper-only`, and `release-package`. See `CONTRIBUTING.md`.

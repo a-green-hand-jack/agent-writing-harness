@@ -79,6 +79,36 @@ def fake_instance(root: Path, release_id: str = "test-release-r1") -> Path:
 
 
 class ReleaseInstanceTests(unittest.TestCase):
+    def test_reference_evidence_is_release_provenance(self) -> None:
+        provenance = paper_release.reference_provenance(ROOT, "release")
+        self.assertEqual(provenance["offline_profile"], "release")
+        self.assertTrue(provenance["offline_gate_passed"])
+        self.assertFalse(provenance["online_metadata_required"])
+        self.assertEqual(provenance["ledger_sha256"], paper_release.sha256_file(ROOT / "references/ledger.json"))
+        self.assertIn("REFERENCES.md", paper_release.REFERENCE_CONTRACTS)
+        self.assertIn("references/ledger.json", paper_release.REFERENCE_CONTRACTS)
+
+    def test_legacy_downstream_release_provenance_remains_inert(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "paper").mkdir()
+            (root / "paper/refs.bib").write_text("@article{legacy, title={Legacy}}\n", encoding="utf-8")
+            provenance = paper_release.reference_provenance(root, "draft")
+            self.assertEqual(provenance["enforcement"], "not-adopted")
+            self.assertEqual(provenance["online_metadata_outcome"], "not-applicable")
+
+    def test_adopted_provenance_does_not_downgrade_after_marker_deletion(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / ".agents").mkdir()
+            (root / "paper").mkdir()
+            (root / ".agents/template-sync.json").write_text(
+                '{"reference_integrity":{"adopted":true}}\n', encoding="utf-8"
+            )
+            (root / "paper/refs.bib").write_text("", encoding="utf-8")
+            with self.assertRaises(FileNotFoundError):
+                paper_release.reference_provenance(root, "release")
+
     def test_invalid_release_id_fails_before_build(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             result = run_release(
