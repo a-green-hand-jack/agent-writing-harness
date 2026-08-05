@@ -65,7 +65,8 @@ The plan uses the same safety vocabulary as template synchronization:
    ```
 
    The tool stages missing Agent-sidecar anatomy, knowledge, skills, tests, tools, and runtime-ignore infrastructure, creates a downstream-specific `.agents/template-sync.json` with an uninitialized baseline, and exports upstream/downstream review copies under `.agents/runtime/template-adoption/merge-bundle/`. It does not create Human contracts, move paper content, replace build logic, rewrite CI, or record the target as reviewed.
-5. Perform the semantic migration deliberately:
+5. If `.agents/init-state.json` is missing, run `python3 .agents/tools/paper-init.py clean --commit` to remove upstream template-specific governance residue.
+6. Perform the semantic migration deliberately:
    - prefer a thin `paper/main.tex` compatibility wrapper before moving a working entrypoint;
    - preserve section identity and input order while paths are normalized;
    - map one authoritative bibliography rather than copying references into divergent files;
@@ -73,21 +74,21 @@ The plan uses the same safety vocabulary as template synchronization:
    - merge Make targets and CI jobs into the existing build and protection model instead of replacing it;
    - merge Agent routing and safety rules while retaining project-specific knowledge;
    - initialize `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, `PUBLICATION.md`, and `DECISIONS.md` only from repository evidence and Human decisions. Mark unknown claims, authorship, results, venue choices, and approval as unresolved.
-6. Inspect downstream-only files and obsolete surfaces. Do not delete them merely because the template lacks them. Remove or redirect a surface only after its replacement and dependency impact are understood.
-7. Run focused validation after the repository has the intended template shape:
+7. Inspect downstream-only files and obsolete surfaces. Do not delete them merely because the template lacks them. Remove or redirect a surface only after its replacement and dependency impact are understood.
+8. Run focused validation after the repository has the intended template shape:
 
    ```bash
    python3 .agents/tools/template-adoption.py verify --variants
    ```
 
    The verification report records the exact template target and a fingerprint of the reviewed downstream state. Also run any repository-specific experiment, artifact, or deployment checks that the generic template cannot know about. External venue portals, Overleaf import, and arXiv compilation remain unverified until actually exercised.
-8. After Human review and successful full-variant validation, record the exact template target as the first sync baseline. Finalization refuses a missing, failed, agent-only, wrong-target, or stale verification report:
+9. After Human review and successful full-variant validation, record the exact template target as the first sync baseline. Finalization refuses a missing, failed, agent-only, wrong-target, or stale verification report:
 
    ```bash
    python3 .agents/tools/template-adoption.py finalize --reviewed
    ```
 
-9. Review the staged `.agents/template-sync.json`, commit the migration, open a PR, and merge only after the downstream repository's exact-head CI succeeds. Future template updates use `template-sync.py plan`, not adoption.
+10. Review the staged `.agents/template-sync.json`, commit the migration, open a PR, and merge only after the downstream repository's exact-head CI succeeds. Future template updates use `template-sync.py plan`, not adoption.
 
 ## Mapping principles
 

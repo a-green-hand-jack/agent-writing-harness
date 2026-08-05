@@ -2,6 +2,16 @@
 
 The paper project is primary. Start from the current Human-facing contract and load only the context required for the active task.
 
+## First session in a downstream repository
+
+If this repository is not the upstream template and `.agents/init-state.json` does not exist, run:
+
+```bash
+python3 .agents/tools/paper-init.py clean --commit
+```
+
+This removes template-specific governance IDs, resets downstream-local metadata, writes an initialization marker, and commits the cleanup before paper work begins. A downstream paper must not keep the upstream template's case-branch or issue IDs.
+
 ## Orientation
 
 1. Read `PAPER.md`.

@@ -36,7 +36,8 @@ The classification is a review aid, not permission to alter scientific meaning.
 ## Procedure
 
 1. Create a checkpoint commit and a dedicated branch such as `chore/template-sync`. Do not work on `main`, `master`, or `trunk`.
-2. Run:
+2. If `.agents/init-state.json` is missing, run `python3 .agents/tools/paper-init.py clean --commit` first to remove upstream template-specific governance residue.
+3. Run:
 
    ```bash
    python3 .agents/tools/template-sync.py validate
@@ -44,7 +45,7 @@ The classification is a review aid, not permission to alter scientific meaning.
    python3 .agents/tools/template-sync.py fetch
    ```
 
-3. Generate the plan:
+4. Generate the plan:
 
    ```bash
    python3 .agents/tools/template-sync.py plan
@@ -56,17 +57,17 @@ The classification is a review aid, not permission to alter scientific meaning.
    python3 .agents/tools/template-sync.py plan --bootstrap
    ```
 
-4. Read `.agents/runtime/template-sync/plan.md`. Explain the safe, manual, and conflict sets before applying anything.
-5. With a clean worktree on the dedicated branch, apply only the safe set:
+5. Read `.agents/runtime/template-sync/plan.md`. Explain the safe, manual, and conflict sets before applying anything.
+6. With a clean worktree on the dedicated branch, apply only the safe set:
 
    ```bash
    python3 .agents/tools/template-sync.py apply
    ```
 
    Safe changes are staged. Manual and conflict versions are exported under `.agents/runtime/template-sync/merge-bundle/` with `baseline/` and `upstream/` copies.
-6. Merge manual and conflict files deliberately. Preserve the downstream paper's scientific claims, story, experiments, interfaces, venue choices, authorship, and project-specific Agent knowledge. Do not copy the upstream skeleton over populated paper content.
-7. Inspect removed or renamed upstream infrastructure and remove obsolete downstream surfaces only when the replacement is understood.
-8. Run repository validation, all relevant publication variants, and the downstream PR CI. At minimum:
+7. Merge manual and conflict files deliberately. Preserve the downstream paper's scientific claims, story, experiments, interfaces, venue choices, authorship, and project-specific Agent knowledge. Do not copy the upstream skeleton over populated paper content.
+8. Inspect removed or renamed upstream infrastructure and remove obsolete downstream surfaces only when the replacement is understood.
+9. Run repository validation, all relevant publication variants, and the downstream PR CI. At minimum:
 
    ```bash
    bash .agents/tools/verify.sh
@@ -76,13 +77,13 @@ The classification is a review aid, not permission to alter scientific meaning.
    make pdf VARIANT=arxiv
    ```
 
-9. After manual review and successful validation, record the exact upstream target:
+10. After manual review and successful validation, record the exact upstream target:
 
    ```bash
    python3 .agents/tools/template-sync.py record --reviewed
    ```
 
-10. Commit the migration, open a PR, wait for the exact-head Actions run, and merge only after every applicable job succeeds.
+11. Commit the migration, open a PR, wait for the exact-head Actions run, and merge only after every applicable job succeeds.
 
 ## First synchronization
 

@@ -47,6 +47,7 @@ DEFAULT_IGNORED_PATHS = (
     ".agents/template-sync.json",
     ".agents/overleaf-sync.json",
     ".agents/documentation-consistency.json",
+    ".agents/init-state.json",
     ".agents/runtime/",
     "dist/",
 )

@@ -6,6 +6,7 @@ A paper-first repository for Human–Agent collaborative scientific writing.
 
 ## Start writing
 
+1. If this repository was created from the template and `.agents/init-state.json` does not exist, run `python3 .agents/tools/paper-init.py clean --commit` before editing paper content. This strips upstream template governance IDs and records the initialization.
 1. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
 2. Record paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
 3. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
@@ -138,7 +139,7 @@ The one-time initial publication uses `push --bootstrap`; it preserves the pre-e
 
 ## Protected evidence surface
 
-The repository protects its current and future real-paper case branches and the corresponding case and standing verification issues. Do not propose or perform their deletion, and do not include them in routine cleanup or branch/worktree/PR deletion discussions. The exact upstream template list is recorded in `DECISIONS.md`; downstream paper repositories must maintain their own protected list instead of copying template IDs.
+The repository protects its current and future real-paper case branches and the corresponding case and standing verification issues. Do not propose or perform their deletion, and do not include them in routine cleanup or branch/worktree/PR deletion discussions. Record the exact list in that repository's own `DECISIONS.md`; do not copy another repository's IDs.
 
 ## Project boundary and CI
 

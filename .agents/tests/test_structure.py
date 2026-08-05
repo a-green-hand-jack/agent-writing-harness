@@ -53,6 +53,7 @@ def fixture(root: Path) -> None:
         ".agents/tools/template-adoption.py",
         ".agents/tools/template-sync.py",
         ".agents/tools/overleaf-sync.py",
+        ".agents/tools/paper-init.py",
         ".agents/runtime/.gitignore",
     ):
         write(root / relative)

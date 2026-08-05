@@ -7,6 +7,7 @@ pycache_dir="$(mktemp -d)"
 trap 'rm -rf "$pycache_dir"' EXIT
 PYTHONPYCACHEPREFIX="$pycache_dir" python3 -m compileall -q .agents/tools .agents/tests
 python3 .agents/tools/check-structure.py
+python3 .agents/tools/paper-init.py status
 python3 .agents/tools/check-actions.py
 python3 .agents/tools/check-skills.py
 python3 .agents/tools/check-documentation.py
