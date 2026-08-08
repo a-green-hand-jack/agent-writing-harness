@@ -57,6 +57,21 @@ Draft blocks malformed ledgers, duplicate or uncovered keys, and
 as warnings. Release fails closed on every unresolved reference or claim-evidence
 review.
 
+## BibTeX format gate
+
+The locked MIT-licensed Pybtex parser independently checks classic BibTeX
+syntax, supported entry types, standard required fields, and four-digit years.
+It never rewrites the bibliography:
+
+```bash
+python3 .agents/tools/check-bibtex-format.py
+```
+
+Its report is written to `dist/reference-integrity/format.json`. The template
+uses classic BibTeX with `plain.bst`, so BibLaTeX-only entry types are rejected
+rather than silently accepted by a different data model. Actual LaTeX/BibTeX
+compilation remains a separate integration check.
+
 ## Online metadata audit
 
 The optional online audit uses the MIT-licensed `bibtex-updater` project's
@@ -82,6 +97,16 @@ project, regenerate `uv.lock`, inspect the diff and third-party licenses, run th
 fixture tests, then exercise a small known-good/known-bad bibliography before
 merging. Do not install optional Scholar, Zotero, organizer, embedding, or LLM
 extras.
+
+`bibtex-check` and Pybtex are separate tools, but only `bibtex-check` performs
+online publication-identity checks. Adding another wrapper around the same
+Crossref/OpenAlex records would not create independent evidence. A second
+identity checker should be required only when it has a usable open-source
+license, pinned releases, safe behavior on untrusted pull requests, stable
+machine output, and materially independent primary or proceedings sources.
+Paper-BibChecker is not a required gate yet because its current repository has
+no declared software license or tagged release and follows arbitrary URLs from
+contributor-controlled BibTeX.
 
 ## Downstream activation
 

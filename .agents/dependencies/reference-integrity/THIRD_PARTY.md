@@ -1,18 +1,22 @@
 # Reference-integrity third-party dependencies
 
-This lock is used only by the optional online metadata audit. No dependency is
-vendored into the repository or required to compile `paper/`.
+This lock is used by the non-mutating BibTeX format gate and the optional
+online metadata audit. No dependency is vendored into the repository or
+required to compile `paper/`.
 
-Direct dependency:
+Direct dependencies:
 
 - `bibtex-updater==1.6.1` — MIT; upstream is marked Beta. Only its core
   dependency set is installed, with `--non-generative`; optional Scholar,
   Zotero, organizer, embedding, and LLM extras are excluded.
+- `pybtex==0.26.1` — MIT; used only to parse classic BibTeX for syntax, entry
+  type, and required-field validation. The gate does not rewrite the input.
 
 The resolved core currently contains:
 
 - MIT: `anyio`, `bibtex-updater`, `charset-normalizer`, `crossref-commons`
-  (classifier), `h11`, `pyparsing`, `rapidfuzz`, `ratelimit`, and `urllib3`;
+  (classifier), `h11`, `latexcodec`, `pybtex`, `pyparsing`, `PyYAML`,
+  `rapidfuzz`, `ratelimit`, and `urllib3`;
 - BSD-3-Clause: `httpcore`, `httpx`, and `idna`;
 - Apache-2.0: `requests`;
 - MPL-2.0: `certifi`;

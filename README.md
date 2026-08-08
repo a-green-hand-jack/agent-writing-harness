@@ -64,7 +64,7 @@ The factory template is intentionally unresolved, so strict release builds fail 
 bash .agents/tools/verify.sh
 ```
 
-`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, the offline reference ledger, publication variants, release-record boundaries, template-adoption and template-sync configuration, and regressions. The separate `Reference validation` workflow installs a hash-locked open-source metadata checker only after the protected publication policy enables it.
+`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, the offline reference ledger, publication variants, release-record boundaries, template-adoption and template-sync configuration, and regressions. The separate `Reference validation` workflow installs hash-locked Pybtex format validation and the open-source metadata checker only after the protected publication policy enables them.
 
 ## Adopting the template in an existing repository
 

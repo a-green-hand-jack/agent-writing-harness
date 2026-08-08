@@ -58,6 +58,16 @@ jobs:
           enable-cache: true
           cache-dependency-glob: .agents/dependencies/reference-integrity/uv.lock
 
+      - name: Run the locked BibTeX format gate
+        if: steps.policy.outputs.enabled == 'true'
+        env:
+          UV_PROJECT_ENVIRONMENT: ${{ github.workspace }}/dist/reference-integrity/venv
+          UV_CACHE_DIR: ${{ github.workspace }}/dist/reference-integrity/uv-cache
+        run: |
+          uv run --project .agents/dependencies/reference-integrity --frozen --no-dev \
+            python .agents/tests/test_bibtex_format_helper.py
+          python3 .agents/tools/check-bibtex-format.py
+
       - name: Run the non-generative online metadata audit
         if: steps.policy.outputs.enabled == 'true'
         run: python3 .agents/tools/check-reference-metadata.py

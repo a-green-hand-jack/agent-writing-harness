@@ -11,6 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CHECKER = ROOT / ".agents/tools/check-reference-integrity.py"
 METADATA = ROOT / ".agents/tools/check-reference-metadata.py"
+FORMAT = ROOT / ".agents/tools/check-bibtex-format.py"
 
 
 def write(path: Path, text: str) -> None:
@@ -435,6 +436,117 @@ target.write_text(json.dumps({
                 self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
                 summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
                 self.assertEqual(summary["outcome"], "infrastructure_error")
+
+
+class BibtexFormatTests(unittest.TestCase):
+    def run_format(self, root: Path, uv: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(FORMAT), "--root", str(root), "--uv", uv, "--timeout", "5"],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def add_tools(self, root: Path) -> None:
+        write(root / ".agents/dependencies/reference-integrity/uv.lock", "fixture lock\n")
+        write(root / ".agents/tools/check-reference-integrity.py", CHECKER.read_text(encoding="utf-8"))
+        write(root / ".agents/tools/_validate-bibtex-with-pybtex.py", "# fixture helper\n")
+
+    def test_empty_bibliography_skips_without_uv(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_tools(root)
+            fixture(root, "", [])
+            result = self.run_format(root, "definitely-missing-uv")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/format-run.json").read_text())
+            self.assertEqual(summary["outcome"], "skipped")
+            self.assertFalse(summary["rewrites_bibliography"])
+
+    def test_valid_complete_pybtex_report_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_tools(root)
+            fixture(root, "@article{real, author={A}, title={T}, journal={J}, year={2026}}\n", [reference("real")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                "#!/usr/bin/env python3\nimport json, pathlib, sys\n"
+                "target = pathlib.Path(sys.argv[-1])\n"
+                "target.parent.mkdir(parents=True, exist_ok=True)\n"
+                "target.write_text(json.dumps({'schema_version': 'paper-bibtex-format-report-v1', "
+                "'checker': 'pybtex', 'passed': True, 'keys': ['real'], 'errors': []}) + '\\n')\n",
+            )
+            runner.chmod(0o755)
+            result = self.run_format(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/format-run.json").read_text())
+            self.assertEqual(summary["outcome"], "passed")
+
+    def test_pybtex_format_problem_is_not_infrastructure_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_tools(root)
+            fixture(root, "@article{bad, title={T}}\n", [reference("bad")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                "#!/usr/bin/env python3\nimport json, pathlib, sys\n"
+                "target = pathlib.Path(sys.argv[-1])\n"
+                "target.parent.mkdir(parents=True, exist_ok=True)\n"
+                "target.write_text(json.dumps({'schema_version': 'paper-bibtex-format-report-v1', "
+                "'checker': 'pybtex', 'passed': False, 'keys': ['bad'], "
+                "'errors': [{'key': 'bad', 'message': 'missing required field: author'}]}) + '\\n')\n"
+                "raise SystemExit(1)\n",
+            )
+            runner.chmod(0o755)
+            result = self.run_format(root, str(runner))
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/format-run.json").read_text())
+            self.assertEqual(summary["outcome"], "format_problem")
+
+    def test_contradictory_pybtex_report_is_infrastructure_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_tools(root)
+            fixture(root, "@article{real, title={T}}\n", [reference("real")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                "#!/usr/bin/env python3\nimport json, pathlib, sys\n"
+                "target = pathlib.Path(sys.argv[-1])\n"
+                "target.parent.mkdir(parents=True, exist_ok=True)\n"
+                "target.write_text(json.dumps({'schema_version': 'paper-bibtex-format-report-v1', "
+                "'checker': 'pybtex', 'passed': True, 'keys': ['real'], "
+                "'errors': [{'key': 'real', 'message': 'contradiction'}]}) + '\\n')\n",
+            )
+            runner.chmod(0o755)
+            result = self.run_format(root, str(runner))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("contradicts", result.stdout)
+
+    def test_stale_report_cannot_mask_helper_crash(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_tools(root)
+            fixture(root, "@article{real, title={T}}\n", [reference("real")])
+            stale = root / "dist/reference-integrity/format.json"
+            write(
+                stale,
+                json.dumps({
+                    "schema_version": "paper-bibtex-format-report-v1",
+                    "checker": "pybtex",
+                    "passed": False,
+                    "keys": ["real"],
+                    "errors": [{"key": "real", "message": "old finding"}],
+                }) + "\n",
+            )
+            runner = root / "fake-uv"
+            write(runner, "#!/usr/bin/env python3\nraise SystemExit(2)\n")
+            runner.chmod(0o755)
+            result = self.run_format(root, str(runner))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("invalid or missing Pybtex report", result.stdout)
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@
 - `template-sync.json`: downstream-local upstream URL, remote/branch, reviewed baseline, and optional path-policy extensions; adoption first writes an uninitialized downstream-specific configuration and pins the commit only after review.
 - `overleaf-sync.json`: project-specific Overleaf Git remote/branch and the canonical `paper/` source prefix; never contains credentials.
 - `documentation-consistency.json`: expected current facts for README and Human-facing contracts; downstream papers update these facts instead of editing checker source.
-- `dependencies/reference-integrity/`: exact, hash-bearing lock for the optional non-generative bibliography metadata checker; no package is vendored.
+- `dependencies/reference-integrity/`: exact, hash-bearing lock for the non-mutating Pybtex format gate and optional non-generative bibliography metadata checker; no package is vendored.
 - `init-state.json`: downstream initialization marker written after template-specific governance residue is removed; absent in the upstream template.
 - `tools/`:
   - `verify.sh` runs structure, documentation consistency, Draft contract, interface, publication, release-record, template-adoption, template-sync, and regression checks.
@@ -19,7 +19,7 @@
   - `check-skills.py` validates repo-local skill frontmatter, router coverage, and stale adapter references.
   - `check-documentation.py` rejects known retired paths, scripts, venue references, and missing Agent-sidecar references.
   - `check-venue-knowledge.py` validates active venue planning files and reports `UNVERIFIED` freshness/page-budget states.
-  - `check-reference-integrity.py` performs the offline, standard-library bibliography/ledger/claim-evidence gate; `check-reference-metadata.py` runs the locked online identity audit and never approves claim support.
+  - `check-reference-integrity.py` performs the offline, standard-library bibliography/ledger/claim-evidence gate; `check-bibtex-format.py` runs locked classic-BibTeX syntax and field validation; `check-reference-metadata.py` runs the locked online identity audit and never approves claim support.
   - `release.sh` builds one strict immutable release instance.
   - `release.py` builds instances and writes non-overwriting release records.
   - `check-release.py` verifies manifest/artifact checksums and package boundaries.
