@@ -6,6 +6,7 @@ import argparse
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -14,6 +15,19 @@ from types import ModuleType
 from typing import Any
 
 SUMMARY_SCHEMA = "paper-reference-metadata-run-v1"
+RATE_LIMIT_TOKENS = (
+    "rate-limited/unavailable",
+    "rate_limit",
+    "http 429",
+    "status 429",
+    "response 429",
+    "429 too many requests",
+    "circuit open for service",
+)
+THROTTLED_SERVICE_PATTERNS = (
+    re.compile(r"service ['\"]([^'\"]+)['\"] is rate-limited/unavailable", re.IGNORECASE),
+    re.compile(r"circuit open for service\s+([^\s,;]+)", re.IGNORECASE),
+)
 
 
 def load_integrity_module(root: Path) -> ModuleType:
@@ -95,21 +109,91 @@ def classify_records(records: list[dict[str, Any]]) -> str:
             unverified = True
         else:
             problematic = True
-    if infrastructure_error:
-        return "infrastructure_error"
     if problematic:
         return "reference_problem"
+    if infrastructure_error:
+        return "infrastructure_error"
     if unverified:
         return "unverified"
     return "passed"
+
+
+def rate_limited(result: subprocess.CompletedProcess[str], records: list[dict[str, Any]]) -> bool:
+    diagnostics = f"{result.stdout}\n{result.stderr}".lower()
+    if any(token in diagnostics for token in RATE_LIMIT_TOKENS):
+        return True
+    return any(
+        "rate_limit" in str(record["status"]).lower()
+        or any(token in str(error).lower() for token in RATE_LIMIT_TOKENS)
+        for record in records
+        for error in (record["errors"] or [""])
+    )
+
+
+def normalized_service(value: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", value.lower())
+
+
+def throttled_services(result: subprocess.CompletedProcess[str], records: list[dict[str, Any]]) -> set[str]:
+    diagnostics = [result.stdout, result.stderr]
+    diagnostics.extend(str(error) for record in records for error in record["errors"])
+    services: set[str] = set()
+    for text in diagnostics:
+        for pattern in THROTTLED_SERVICE_PATTERNS:
+            services.update(normalized_service(match) for match in pattern.findall(text))
+    return services
+
+
+def only_transient_provider_infrastructure(records: list[dict[str, Any]]) -> bool:
+    incomplete = [
+        record
+        for record in records
+        if record["coverage_incomplete"] is True
+        or any(token in str(record["status"]).lower() for token in ("api_error", "timeout", "infrastructure"))
+    ]
+
+    def transient(record: dict[str, Any], error: Any) -> bool:
+        detail = str(error).lower()
+        if any(token in detail for token in RATE_LIMIT_TOKENS):
+            return True
+        if "network failure after retries" in detail or detail == "request timed out":
+            return True
+        status = str(record["status"]).lower()
+        return not detail and any(token in status for token in ("rate_limit", "timeout"))
+
+    return bool(incomplete) and all(
+        transient(record, error)
+        for record in incomplete
+        for error in (record["errors"] or [""])
+    )
+
+
+def only_rate_limit_infrastructure(records: list[dict[str, Any]], services: set[str]) -> bool:
+    incomplete = [record for record in records if record["coverage_incomplete"] is True]
+
+    def rate_related(record: dict[str, Any], error: Any) -> bool:
+        detail = str(error).lower()
+        if any(token in detail for token in RATE_LIMIT_TOKENS):
+            return True
+        if "network failure after retries" in detail:
+            return any(service and service in normalized_service(detail) for service in services)
+        return not detail and "rate_limit" in str(record["status"]).lower()
+
+    return bool(incomplete) and all(
+        rate_related(record, error)
+        for record in incomplete
+        for error in (record["errors"] or [""])
+    )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--uv", default="uv", help="uv executable used with the committed lock")
-    parser.add_argument("--attempts", type=int, default=2)
-    parser.add_argument("--timeout", type=int, default=600)
+    parser.add_argument("--attempts", type=int, default=1)
+    parser.add_argument("--timeout", type=int, default=720)
+    parser.add_argument("--rate-limit", type=int, default=30, help="per-service requests per minute")
+    parser.add_argument("--workers", type=int, default=1, help="concurrent bibliography entries")
     args = parser.parse_args()
     root = args.root.expanduser().resolve()
     output = root / "dist/reference-integrity"
@@ -176,6 +260,10 @@ def main() -> int:
         "--non-generative",
         "--strict",
         "--strict-warn-cnv",
+        "--rate-limit",
+        str(max(1, args.rate_limit)),
+        "--workers",
+        str(max(1, args.workers)),
         "--cache-file",
         str(output / "metadata-cache.db"),
         "--jsonl",
@@ -204,6 +292,16 @@ def main() -> int:
         if records is not None:
             validation_error = validate_records(records, bibliography_keys)
             outcome = "infrastructure_error" if validation_error else classify_records(records)
+            throttled = not validation_error and rate_limited(result, records)
+            services = set() if validation_error else throttled_services(result, records)
+            if throttled and outcome == "unverified":
+                outcome = "rate_limited"
+            elif outcome == "infrastructure_error" and only_transient_provider_infrastructure(records):
+                outcome = (
+                    "rate_limited"
+                    if throttled and only_rate_limit_infrastructure(records, services)
+                    else "provider_unavailable"
+                )
             if outcome == "passed" and result.returncode != 0:
                 outcome = "infrastructure_error"
             write_summary(
@@ -213,6 +311,8 @@ def main() -> int:
                 attempts=attempt,
                 checker_returncode=result.returncode,
                 report="dist/reference-integrity/metadata.jsonl",
+                rate_limit_degraded=throttled,
+                rate_limited_services=sorted(services),
             )
             if result.stdout:
                 print(result.stdout, end="")
@@ -220,6 +320,12 @@ def main() -> int:
                 print(result.stderr, end="", file=sys.stderr)
             if outcome == "passed" and result.returncode == 0:
                 print("OK reference_metadata identity audit passed; claim support not approved")
+                return 0
+            if outcome == "rate_limited":
+                print("WARN reference metadata audit was rate-limited; evidence retained and CI not blocked")
+                return 0
+            if outcome == "provider_unavailable":
+                print("WARN reference metadata provider was unavailable; evidence retained and CI not blocked")
                 return 0
             if outcome == "unverified":
                 print("ERROR reference metadata audit is unverified; this is not evidence of fabrication")

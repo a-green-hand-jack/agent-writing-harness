@@ -98,6 +98,20 @@ fixture tests, then exercise a small known-good/known-bad bibliography before
 merging. Do not install optional Scholar, Zotero, organizer, embedding, or LLM
 extras.
 
+The wrapper uses one worker and a conservative per-service request rate by
+default, runs at most once for 12 minutes so CI retains time to upload evidence,
+reuses its SQLite cache, and honors `BIBTEX_CHECK_MAILTO` for
+Crossref/OpenAlex polite-pool identification. Configure that variable to a
+monitored project contact address in trusted local or repository-variable
+environments; it is not a secret. If a provider still returns 429 or activates
+the checker's rate-limit circuit breaker, the run is recorded as
+`rate_limited` and its evidence is uploaded. Provider network failures and
+timeouts for which the upstream checker no longer exposes the original HTTP
+status are recorded separately as `provider_unavailable`. Neither transient
+outcome blocks CI or classifies a reference as false. Parser/runtime/report
+failures and positive metadata mismatches found by available sources still
+fail the audit.
+
 `bibtex-check` and Pybtex are separate tools, but only `bibtex-check` performs
 online publication-identity checks. Adding another wrapper around the same
 Crossref/OpenAlex records would not create independent evidence. A second

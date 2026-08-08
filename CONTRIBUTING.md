@@ -25,6 +25,9 @@ because scholarly infrastructure is unavailable. Inspect the generated
 `reference-integrity-*` artifact before classifying the failure. A database miss,
 timeout, or rate limit is not evidence that a citation was fabricated, and a
 successful metadata match does not approve manuscript claim support.
+Rate-limited or temporarily unavailable provider runs are advisory and do not
+block CI; rerun them with the cache after provider cooldown. Positive
+mismatches remain blocking even when another provider is throttled.
 
 ## Scope and evidence
 

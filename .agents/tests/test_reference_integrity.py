@@ -345,6 +345,8 @@ class ReferenceMetadataTests(unittest.TestCase):
                 runner,
                 """#!/usr/bin/env python3
 import json, pathlib, sys
+assert sys.argv[sys.argv.index('--rate-limit') + 1] == '30'
+assert sys.argv[sys.argv.index('--workers') + 1] == '1'
 target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text(json.dumps({
@@ -409,6 +411,313 @@ target.write_text(json.dumps({
             self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
             summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
             self.assertEqual(summary["outcome"], "infrastructure_error")
+
+    def test_rate_limit_is_advisory_not_a_reference_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'strict_warn_cnv', 'abstained': False,
+    'coverage_incomplete': False, 'errors': []
+}) + '\\n')
+print("Service 'dblp' is rate-limited/unavailable", file=sys.stderr)
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("CI not blocked", result.stdout)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "rate_limited")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_rate_limit_does_not_hide_positive_metadata_problem(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{bad, title={A}}\n", [reference("bad")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'bad', 'status': 'author_mismatch', 'abstained': False,
+    'coverage_incomplete': False, 'errors': []
+}) + '\\n')
+print("Service 'semanticscholar' is rate-limited/unavailable", file=sys.stderr)
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "reference_problem")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_authenticated_rate_limit_banner_is_not_throttling(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'strict_warn_cnv', 'abstained': False,
+    'coverage_incomplete': False, 'errors': []
+}) + '\\n')
+print('Using Semantic Scholar API key (authenticated rate limits)')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "unverified")
+            self.assertFalse(summary["rate_limit_degraded"])
+
+    def test_cached_rate_limit_circuit_is_advisory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'api_error', 'abstained': True,
+    'coverage_incomplete': True,
+    'errors': ['circuit open for service semanticscholar']
+}) + '\\n')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "rate_limited")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_rate_limit_does_not_hide_unrelated_infrastructure_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(
+                root,
+                "@article{limited, title={A}}\n@article{broken, title={B}}\n",
+                [reference("limited", status="unverified"), reference("broken", status="unverified")],
+            )
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+records = [
+    {'key': 'limited', 'status': 'api_error', 'abstained': True,
+     'coverage_incomplete': True, 'errors': ['circuit open for service dblp']},
+    {'key': 'broken', 'status': 'api_error', 'abstained': True,
+     'coverage_incomplete': True, 'errors': ['unexpected parser failure']},
+]
+target.write_text(''.join(json.dumps(record) + '\\n' for record in records))
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "infrastructure_error")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_active_rate_limit_circuit_with_network_retry_error_is_advisory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'api_error', 'abstained': True,
+    'coverage_incomplete': True,
+    'errors': ['Network failure after retries for Semantic Scholar']
+}) + '\\n')
+print("Service 'semanticscholar' is rate-limited/unavailable", file=sys.stderr)
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "rate_limited")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_rate_limit_status_does_not_hide_parser_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{broken, title={A}}\n", [reference("broken", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'broken', 'status': 'rate_limit', 'abstained': True,
+    'coverage_incomplete': True, 'errors': ['unexpected parser failure']
+}) + '\\n')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "infrastructure_error")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_parser_timeout_text_is_not_a_provider_outage(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{broken, title={A}}\n", [reference("broken", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'broken', 'status': 'api_error', 'abstained': True,
+    'coverage_incomplete': True, 'errors': ['Exception: bibliography parser timed out']
+}) + '\\n')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "infrastructure_error")
+
+    def test_upstream_request_timeout_is_advisory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'api_error', 'abstained': True,
+    'coverage_incomplete': True, 'errors': ['Request timed out']
+}) + '\\n')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "provider_unavailable")
+
+    def test_provider_network_failures_are_advisory_without_claiming_rate_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(
+                root,
+                "@article{dblp, title={A}}\n@article{openalex, title={B}}\n",
+                [reference("dblp", status="unverified"), reference("openalex", status="unverified")],
+            )
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+records = [
+    {'key': 'dblp', 'status': 'api_error', 'abstained': True,
+     'coverage_incomplete': True, 'errors': ['Network failure after retries for DBLP']},
+    {'key': 'openalex', 'status': 'api_error', 'abstained': True,
+     'coverage_incomplete': True, 'errors': ['Network failure after retries for OpenAlex']},
+]
+target.write_text(''.join(json.dumps(record) + '\\n' for record in records))
+print("Service 'dblp' is rate-limited/unavailable", file=sys.stderr)
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "provider_unavailable")
+            self.assertEqual(summary["rate_limited_services"], ["dblp"])
+
+    def test_pre_circuit_provider_network_failure_is_advisory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'api_error', 'abstained': True,
+    'coverage_incomplete': True,
+    'errors': ['Network failure after retries for https://api.semanticscholar.org']
+}) + '\\n')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "provider_unavailable")
+            self.assertFalse(summary["rate_limit_degraded"])
 
     def test_malformed_or_wrong_key_report_is_infrastructure_error(self) -> None:
         cases = (
