@@ -11,6 +11,7 @@ from typing import Any
 import bibtexparser
 from bibtexparser.bparser import BibTexParser
 from bibtex_updater.utils import doi_normalize, latex_to_plain
+from _bib_identity import duplicate_groups, normalize_doi, normalize_title
 
 SCHEMA = "paper-reference-correction-validation-v1"
 REPORT_FIELDS = {
@@ -38,6 +39,31 @@ def validate(source: Path, candidate: Path, report: Path) -> dict[str, Any]:
                 "errors": [f"BibTeX parse failed: {exc}"]}
     if set(old) != set(new):
         errors.append("candidate changed bibliography key coverage")
+
+    old_doi_groups = {tuple(group["keys"]) for group in duplicate_groups({
+        key: normalize_doi(entry.get("doi")) for key, entry in old.items()
+    })}
+    old_title_groups = {tuple(group["keys"]) for group in duplicate_groups({
+        key: normalize_title(entry.get("title")) for key, entry in old.items()
+    })}
+    new_duplicate_dois = [
+        group for group in duplicate_groups({key: normalize_doi(entry.get("doi")) for key, entry in new.items()})
+        if tuple(group["keys"]) not in old_doi_groups
+    ]
+    new_duplicate_titles = [
+        group for group in duplicate_groups({key: normalize_title(entry.get("title")) for key, entry in new.items()})
+        if tuple(group["keys"]) not in old_title_groups
+    ]
+    semantic_title_change_keys = sorted(
+        key for key in old.keys() & new.keys()
+        if normalize_title(old[key].get("title")) != normalize_title(new[key].get("title"))
+    )
+    if new_duplicate_dois:
+        errors.append("candidate introduced duplicate DOI identities")
+    if new_duplicate_titles:
+        errors.append("candidate introduced duplicate title identities")
+    if semantic_title_change_keys:
+        errors.append("candidate changed title wording and requires independent identity resolution")
 
     records: list[dict[str, Any]] = []
     try:
@@ -100,6 +126,9 @@ def validate(source: Path, candidate: Path, report: Path) -> dict[str, Any]:
         "passed": not errors,
         "changed_keys": sorted(changed_keys),
         "incomplete_keys": sorted(incomplete_keys),
+        "new_duplicate_dois": new_duplicate_dois,
+        "new_duplicate_titles": new_duplicate_titles,
+        "semantic_title_change_keys": semantic_title_change_keys,
         "errors": errors,
     }
 

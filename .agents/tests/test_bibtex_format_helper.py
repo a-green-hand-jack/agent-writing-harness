@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import tempfile
 import unittest
+import sys
 from pathlib import Path
 
 try:
@@ -12,6 +13,7 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[2]
 HELPER = ROOT / ".agents/tools/_validate-bibtex-with-pybtex.py"
+sys.path.insert(0, str(HELPER.parent))
 
 
 @unittest.skipIf(pybtex is None, "Pybtex is installed only in the locked reference environment")
@@ -73,6 +75,31 @@ class PybtexHelperTests(unittest.TestCase):
         self.assertFalse(report["passed"])
         child_errors = [record["message"] for record in report["errors"] if record["key"] == "child"]
         self.assertEqual(child_errors, ["missing required field: title"])
+
+    def test_duplicate_doi_and_normalized_title_fail(self) -> None:
+        report = self.validate(
+            "@article{one, author={A}, title={{Same} Work}, journal={J}, year={2026}, doi={10.1/X}}\n"
+            "@article{two, author={B}, title={same work}, journal={J}, year={2026}, doi={https://doi.org/10.1/x}}\n"
+        )
+        self.assertFalse(report["passed"])
+        messages = [record["message"] for record in report["errors"]]
+        self.assertTrue(any("duplicate DOI identity" in message for message in messages))
+        self.assertTrue(any("duplicate normalized title identity" in message for message in messages))
+
+    def test_doi_resolver_tracking_and_semantic_macros_normalize_safely(self) -> None:
+        duplicate = self.validate(
+            "@article{one, author={A}, title={One}, journal={J}, year={2026}, doi={10.1/X}}\n"
+            "@article{two, author={B}, title={Two}, journal={J}, year={2026}, "
+            "doi={https://www.doi.org/10.1/x?utm_source=test#fragment}}\n"
+        )
+        self.assertFalse(duplicate["passed"])
+        self.assertTrue(any("duplicate DOI identity" in record["message"] for record in duplicate["errors"]))
+
+        distinct = self.validate(
+            "@article{one, author={A}, title={Learning \\LaTeX}, journal={J}, year={2026}}\n"
+            "@article{two, author={B}, title={Learning \\BibTeX}, journal={J}, year={2026}}\n"
+        )
+        self.assertTrue(distinct["passed"], distinct["errors"])
 
 
 if __name__ == "__main__":

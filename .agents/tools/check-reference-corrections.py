@@ -226,8 +226,16 @@ def main() -> int:
         print("ERROR reference correction audit detected canonical bibliography mutation")
         return 2
     if validation_result is None or validation_result.returncode != 0 or not isinstance(validation, dict) or not validation.get("passed"):
-        detail = "correction report does not match candidate content"
-        write_summary(summary, outcome="unsafe_output", detail=detail, updater_returncode=result.returncode)
+        detail = "correction candidate failed report or identity-safety validation"
+        findings = validation if isinstance(validation, dict) else {}
+        write_summary(
+            summary, outcome="unsafe_output", detail=detail, updater_returncode=result.returncode,
+            candidate="dist/reference-integrity/corrections/candidate.bib",
+            report="dist/reference-integrity/corrections/report.jsonl",
+            new_duplicate_dois=findings.get("new_duplicate_dois", []),
+            new_duplicate_titles=findings.get("new_duplicate_titles", []),
+            semantic_title_change_keys=findings.get("semantic_title_change_keys", []),
+        )
         print(f"ERROR reference correction audit: {detail}")
         return 2
 

@@ -16,6 +16,7 @@ POLICY_SCHEMA = "paper-reference-integrity-policy-v1"
 LEDGER_SCHEMA = "paper-reference-ledger-v1"
 REFERENCE_STATUSES = {"verified", "problematic", "unverified"}
 HUMAN_REVIEW_STATES = {"pending", "human-confirmed", "human-rejected"}
+REFERENCE_REVIEW_STATES = HUMAN_REVIEW_STATES | {"agent-resolved"}
 VERIFICATION_SOURCES = {"crossref", "openalex", "dblp", "openreview", "semantic-scholar", "publisher", "manual"}
 STABLE_IDENTIFIERS = {"doi", "arxiv", "openalex", "dblp", "openreview", "semantic_scholar", "isbn", "url"}
 USAGE_CLASSES = {"claim-support", "background", "method", "dataset", "other"}
@@ -294,7 +295,7 @@ def validate_reference_record(record: Any, profile: str, index: int) -> tuple[in
         code |= error(f"{label}.human_review must be an object")
         review = {}
     review_state = review.get("state")
-    if review_state not in HUMAN_REVIEW_STATES:
+    if review_state not in REFERENCE_REVIEW_STATES:
         code |= error(f"{label}.human_review.state has an unsupported value")
     rationale = review.get("rationale")
     if not isinstance(rationale, str):
@@ -316,8 +317,12 @@ def validate_reference_record(record: Any, profile: str, index: int) -> tuple[in
 
     if review_state == "human-rejected":
         code |= error(f"reference {key or index} was rejected by Human review")
-    elif profile == "release" and review_state != "human-confirmed":
-        code |= error(f"reference {key or index} lacks Human confirmation for release")
+    elif review_state == "agent-resolved" and status != "verified":
+        code |= error(f"reference {key or index} cannot be agent-resolved unless verified")
+    elif review_state == "agent-resolved" and not nonempty(rationale):
+        code |= error(f"reference {key or index} agent resolution lacks rationale")
+    elif profile == "release" and review_state not in {"human-confirmed", "agent-resolved"}:
+        code |= error(f"reference {key or index} lacks resolved identity review for release")
     elif review_state == "pending":
         warning(f"reference {key or index} awaits Human review")
     return code, key

@@ -273,6 +273,46 @@ class ReferenceIntegrityTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("reference bad is problematic", result.stdout)
 
+    def test_agent_resolved_verified_identity_passes_release(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            record = reference("real")
+            record["human_review"] = {"state": "agent-resolved", "rationale": "Matched exact DOI and publisher record."}
+            fixture(root, "@article{real, title={A}}\n", [record])
+            result = run_checker(root, "release")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_agent_resolved_cannot_mark_unverified_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            record = reference("real", status="unverified")
+            record["human_review"] = {"state": "agent-resolved", "rationale": "Insufficient evidence."}
+            fixture(root, "@article{real, title={A}}\n", [record])
+            result = run_checker(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("cannot be agent-resolved unless verified", result.stdout)
+
+    def test_agent_resolved_identity_does_not_bypass_pending_usage_review(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            record = reference("real")
+            record["human_review"] = {"state": "agent-resolved", "rationale": "Exact DOI and publisher match."}
+            fixture(
+                root,
+                "@article{real, title={A}}\n",
+                [record],
+                usages=[{
+                    "citation_key": "real",
+                    "manuscript_location": "paper/section.tex:1",
+                    "classification": "background",
+                    "human_review_state": "pending",
+                }],
+            )
+            write(root / "paper/section.tex", "\\cite{real}\n")
+            result = run_checker(root, "release")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("lacks Human confirmation for release", result.stdout)
+
     def test_claim_evidence_required_fields(self) -> None:
         for field in (
             "citation_key",

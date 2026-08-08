@@ -24,6 +24,14 @@ Each bibliography record has one of three states:
 infrastructure outcomes recorded in generated reports, not scientific states in
 the ledger.
 
+Reference identity review may be `agent-resolved` when the Agent has matched an
+authoritative record with a stable identifier, recorded sources and date, and a
+non-empty rationale. The legacy ledger field remains named `human_review` for
+schema compatibility. `human-confirmed` is reserved for an identity/version
+choice the Human actually decided. This distinction does not apply to
+`citation_usages` or `claim_evidence`, which still require Human confirmation at
+release.
+
 ## Claim evidence
 
 Every cited key must have a `citation_usages` record classifying its use as
@@ -140,11 +148,25 @@ format, and records every proposal in `report.jsonl` and `run.json`. It does not
 enable in-place edits, rekeying, deduplication, Google Scholar, Google Books,
 Zotero, or any optional dependency extra.
 
-`candidates_found` and incomplete provider lookups are advisory because an
-upgrade from a preprint or a metadata replacement can change the scientific
-object cited by the manuscript. A Human must inspect the artifact diff and
-approve each change before editing `paper/refs.bib` or the durable ledger. The
-candidate does not approve bibliographic changes or claim support.
+`candidates_found` and incomplete provider lookups are retrieval leads because
+an upgrade from a preprint or a metadata replacement can change the scientific
+object cited by the manuscript. Updater confidence never approves identity.
+The candidate fails closed if it introduces a duplicate DOI/title identity or
+changes normalized title wording; those findings remain available under
+`dist/` for investigation.
+
+The Agent inspects the evidence, retrieves authoritative records, and edits
+`paper/refs.bib` plus the durable ledger. The Human is not expected to edit
+BibTeX or approve routine same-object repairs. A Human decision is required only
+when multiple plausible identities or versions remain and choosing among them
+can affect claim support, source locators, or scientific meaning. The Agent may
+record an unambiguous verified identity as `agent-resolved`; claim evidence and
+citation-use classifications still require Human confirmation for release.
+
+The canonical format gate independently rejects every unresolved duplicate DOI
+or normalized title identity. An intentional preprint/published pair must be
+resolved to the version actually cited rather than retained as indistinguishable
+records.
 
 ## Service configuration
 
@@ -187,8 +209,9 @@ support.
 
 ## CiteCheck assessment
 
-`color4-alt/CiteCheck` is not included. It is MIT-licensed, but as reviewed on
-2026-08-08 it has no Git tag or GitHub release, publishes an Alpha `0.1.0`
+`color4-alt/CiteCheck` is not included. Its default branch was reviewed at
+commit `fae7888bf7c1ce92bbafad15faf61cf55b7e2bd7` on 2026-08-08. It is
+MIT-licensed, but has no Git tag or GitHub release, publishes an Alpha `0.1.0`
 package without a dependency lock, emits only Markdown, and does not return a
 failing status for citation findings. Most provider checks accept the first
 title-search result without the field-level identity matching required here,
@@ -204,6 +227,10 @@ properties make it unsuitable even as an advisory CI stage today. Reconsider
 only after tagged releases, locked dependencies, non-generative fail-closed
 operation, stable JSON output and exit codes, provider-failure classification,
 repository-contained input handling, and field-level matching are available.
+Useful concepts, not its implementation, are retained here: per-occurrence
+citation inventory, unused-entry warnings, domain-primary retrieval leads, and
+claim-support triage that produces source-locator review work rather than a
+numeric approval score.
 
 ## Downstream activation
 

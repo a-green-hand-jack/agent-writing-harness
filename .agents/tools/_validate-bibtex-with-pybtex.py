@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from pybtex.database import parse_file
+from _bib_identity import duplicate_groups, normalize_doi, normalize_title
 
 SCHEMA = "paper-bibtex-format-report-v1"
 YEAR_RE = re.compile(r"\d{4}")
@@ -95,11 +96,30 @@ def validate(path: Path) -> dict[str, Any]:
         if year is not None and not YEAR_RE.fullmatch(year.strip()):
             errors.append({"key": key, "message": "year must contain exactly four digits"})
 
+    duplicate_dois = duplicate_groups({
+        key: normalize_doi(entry.fields.get("doi")) for key, entry in bibliography.entries.items()
+    })
+    duplicate_titles = duplicate_groups({
+        key: normalize_title(entry.fields.get("title")) for key, entry in bibliography.entries.items()
+    })
+    for group in duplicate_dois:
+        errors.append({
+            "key": ",".join(group["keys"]),
+            "message": f"duplicate DOI identity: {group['value']}",
+        })
+    for group in duplicate_titles:
+        errors.append({
+            "key": ",".join(group["keys"]),
+            "message": f"duplicate normalized title identity: {group['value']}",
+        })
+
     return {
         "schema_version": SCHEMA,
         "checker": "pybtex",
         "passed": not errors,
         "keys": sorted(bibliography.entries),
+        "duplicate_dois": duplicate_dois,
+        "duplicate_titles": duplicate_titles,
         "errors": errors,
     }
 

@@ -28,10 +28,12 @@ successful metadata match does not approve manuscript claim support.
 Rate-limited or temporarily unavailable provider runs are advisory and do not
 block CI; rerun them with the cache after provider cooldown. Positive
 mismatches remain blocking even when another provider is throttled.
-Correction candidates are advisory artifacts, not approved edits. Review
-`corrections/candidate.bib`, `corrections/report.jsonl`, and
-`corrections/run.json`; apply only Human-approved changes to `paper/refs.bib`
-and update the durable ledger separately.
+Correction candidates are retrieval artifacts, not approved edits. The Agent
+reviews `corrections/candidate.bib`, `corrections/report.jsonl`, and
+`corrections/run.json`, retrieves authoritative evidence, and updates
+`paper/refs.bib` and the durable ledger together for unambiguous same-object
+repairs. Ask the Human only when an identity/version choice can change meaning,
+claim support, or source locators.
 
 ## Scope and evidence
 
