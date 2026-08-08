@@ -9,7 +9,7 @@ Before merge:
 1. wait for both the `PR validation` and `Reference validation` workflows to finish;
 2. require every applicable job to succeed:
    - `harness` — paper-first checks and Agent regressions;
-   - `references` (in `Reference validation`) — offline ledger enforcement plus the locked, non-generative metadata audit when the protected policy enables it;
+   - `references` (in `Reference validation`) — offline ledger enforcement plus locked correction-candidate and non-generative metadata audits when the protected policy enables them;
    - `latex (<variant>)` — real TeX builds and variant-surface checks;
    - `paper-only` — all variants compile with only `paper/` present;
    - `release-package` — immutable instance build, checksum validation, isolated source/flat compilation, and artifact upload;
@@ -28,6 +28,10 @@ successful metadata match does not approve manuscript claim support.
 Rate-limited or temporarily unavailable provider runs are advisory and do not
 block CI; rerun them with the cache after provider cooldown. Positive
 mismatches remain blocking even when another provider is throttled.
+Correction candidates are advisory artifacts, not approved edits. Review
+`corrections/candidate.bib`, `corrections/report.jsonl`, and
+`corrections/run.json`; apply only Human-approved changes to `paper/refs.bib`
+and update the durable ledger separately.
 
 ## Scope and evidence
 

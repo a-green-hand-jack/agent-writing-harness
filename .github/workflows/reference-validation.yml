@@ -18,12 +18,12 @@ jobs:
   references:
     name: references
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout the validated head
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'refs/heads/main' || github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -66,10 +66,36 @@ jobs:
         run: |
           uv run --project .agents/dependencies/reference-integrity --frozen --no-dev \
             python .agents/tests/test_bibtex_format_helper.py
+          uv run --project .agents/dependencies/reference-integrity --frozen --no-dev \
+            python .agents/tests/test_bibtex_correction_helper.py
           python3 .agents/tools/check-bibtex-format.py
 
-      - name: Run the non-generative online metadata audit
-        if: steps.policy.outputs.enabled == 'true'
+      - name: Run keyless correction audit
+        if: steps.policy.outputs.enabled == 'true' && github.event_name == 'pull_request'
+        env:
+          BIBTEX_CHECK_MAILTO: ${{ vars.BIBTEX_CHECK_MAILTO || 'jieke.wu@kaust.edu.sa' }}
+        run: python3 .agents/tools/check-reference-corrections.py
+
+      - name: Run keyless metadata audit
+        if: steps.policy.outputs.enabled == 'true' && github.event_name == 'pull_request'
+        env:
+          BIBTEX_CHECK_MAILTO: ${{ vars.BIBTEX_CHECK_MAILTO || 'jieke.wu@kaust.edu.sa' }}
+        run: python3 .agents/tools/check-reference-metadata.py
+
+      - name: Run trusted correction audit
+        if: steps.policy.outputs.enabled == 'true' && github.event_name != 'pull_request'
+        env:
+          BIBTEX_CHECK_MAILTO: ${{ vars.BIBTEX_CHECK_MAILTO || 'jieke.wu@kaust.edu.sa' }}
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
+          S2_API_KEY: ${{ secrets.S2_API_KEY }}
+        run: python3 .agents/tools/check-reference-corrections.py
+
+      - name: Run trusted metadata audit
+        if: steps.policy.outputs.enabled == 'true' && github.event_name != 'pull_request'
+        env:
+          BIBTEX_CHECK_MAILTO: ${{ vars.BIBTEX_CHECK_MAILTO || 'jieke.wu@kaust.edu.sa' }}
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
+          S2_API_KEY: ${{ secrets.S2_API_KEY }}
         run: python3 .agents/tools/check-reference-metadata.py
 
       - name: Upload reference audit evidence
@@ -77,6 +103,15 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: reference-integrity-${{ github.run_id }}
-          path: dist/reference-integrity/
+          path: |
+            dist/reference-integrity/format.json
+            dist/reference-integrity/format-run.json
+            dist/reference-integrity/metadata.jsonl
+            dist/reference-integrity/run.json
+            dist/reference-integrity/corrections/candidate.bib
+            dist/reference-integrity/corrections/report.jsonl
+            dist/reference-integrity/corrections/run.json
+            dist/reference-integrity/corrections/format.json
+            dist/reference-integrity/corrections/validation.json
           if-no-files-found: warn
           retention-days: 14

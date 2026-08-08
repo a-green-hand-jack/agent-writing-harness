@@ -231,6 +231,19 @@ def main() -> int:
         print("SKIP reference_metadata bibliography has no entries")
         return 0
 
+    try:
+        env_path = root / ".agents/tools/_reference_env.py"
+        spec = importlib.util.spec_from_file_location("paper_reference_env", env_path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"cannot load environment helper: {env_path}")
+        env_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(env_module)
+        env_module.load_reference_env(root)
+    except Exception as exc:
+        write_summary(summary, outcome="infrastructure_error", detail=str(exc), attempts=0)
+        print(f"ERROR reference metadata audit could not load .env: {exc}")
+        return 2
+
     uv = shutil.which(args.uv)
     if uv is None:
         write_summary(summary, outcome="infrastructure_error", detail=f"uv executable not found: {args.uv}", attempts=0)
@@ -266,6 +279,7 @@ def main() -> int:
         str(max(1, args.workers)),
         "--cache-file",
         str(output / "metadata-cache.db"),
+        "--no-google-books",
         "--jsonl",
         str(report),
     ]

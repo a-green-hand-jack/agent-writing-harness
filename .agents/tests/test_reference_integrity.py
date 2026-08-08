@@ -314,6 +314,7 @@ class ReferenceMetadataTests(unittest.TestCase):
     def add_lock(self, root: Path) -> None:
         write(root / ".agents/dependencies/reference-integrity/uv.lock", "fixture lock\n")
         write(root / ".agents/tools/check-reference-integrity.py", CHECKER.read_text(encoding="utf-8"))
+        write(root / ".agents/tools/_reference_env.py", (ROOT / ".agents/tools/_reference_env.py").read_text(encoding="utf-8"))
 
     def test_policy_absent_skips_without_uv(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -347,6 +348,7 @@ class ReferenceMetadataTests(unittest.TestCase):
 import json, pathlib, sys
 assert sys.argv[sys.argv.index('--rate-limit') + 1] == '30'
 assert sys.argv[sys.argv.index('--workers') + 1] == '1'
+assert '--no-google-books' in sys.argv
 target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text(json.dumps({

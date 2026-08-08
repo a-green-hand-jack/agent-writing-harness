@@ -122,6 +122,89 @@ Paper-BibChecker is not a required gate yet because its current repository has
 no declared software license or tagged release and follows arbitrary URLs from
 contributor-controlled BibTeX.
 
+## Correction candidate audit
+
+The formal online workflow also runs the locked `bibtex-update` command before
+the identity audit:
+
+```bash
+python3 .agents/tools/check-reference-corrections.py
+```
+
+This stage checks required fields, attempts to fill missing required metadata,
+and looks for reliable published versions of preprints. It never invokes the
+updater on `paper/refs.bib`: the wrapper copies the canonical bibliography to
+`dist/reference-integrity/corrections/source.bib`, writes the proposed result to
+`candidate.bib`, validates exact citation-key coverage and classic BibTeX
+format, and records every proposal in `report.jsonl` and `run.json`. It does not
+enable in-place edits, rekeying, deduplication, Google Scholar, Google Books,
+Zotero, or any optional dependency extra.
+
+`candidates_found` and incomplete provider lookups are advisory because an
+upgrade from a preprint or a metadata replacement can change the scientific
+object cited by the manuscript. A Human must inspect the artifact diff and
+approve each change before editing `paper/refs.bib` or the durable ledger. The
+candidate does not approve bibliographic changes or claim support.
+
+## Service configuration
+
+Trusted local runs automatically read the ignored root `.env` using a strict
+non-shell parser. Only these names are accepted, and already-exported process
+environment values take precedence:
+
+```dotenv
+BIBTEX_CHECK_MAILTO=jieke.wu@kaust.edu.sa
+OPENALEX_API_KEY=
+S2_API_KEY=
+```
+
+`.env.example` is the tracked template; `.env` is ignored and must never be
+committed. The contact address is not secret. OpenAlex and Semantic Scholar API
+keys are secrets. The correction wrapper translates the contact address into a
+controlled updater User-Agent and both online wrappers inherit the API keys.
+
+For GitHub Actions, create the contact as a repository variable and each key as
+a repository secret:
+
+```bash
+gh variable set BIBTEX_CHECK_MAILTO --body "jieke.wu@kaust.edu.sa"
+gh secret set OPENALEX_API_KEY
+gh secret set S2_API_KEY
+```
+
+The workflow is intentionally split. Pull requests run the same online audits
+without API secrets. Pushes to protected `main` and manual dispatches use the
+repository secrets; manual dispatch checks out canonical `main`, not a
+caller-selected feature branch. Secrets are never placed at workflow or shared
+job scope. Missing optional secrets degrade to keyless provider access.
+Uploaded Actions artifacts use an explicit report whitelist: dependency
+environments and HTTP/SQLite caches are excluded because authenticated request
+URLs or parameters can contain API keys.
+
+Google Books and Zotero are not used by the formal workflow. The metadata audit
+passes `--no-google-books`, and the locked core dependency set excludes Zotero
+support.
+
+## CiteCheck assessment
+
+`color4-alt/CiteCheck` is not included. It is MIT-licensed, but as reviewed on
+2026-08-08 it has no Git tag or GitHub release, publishes an Alpha `0.1.0`
+package without a dependency lock, emits only Markdown, and does not return a
+failing status for citation findings. Most provider checks accept the first
+title-search result without the field-level identity matching required here,
+and provider failures are not separated from negative evidence.
+
+CiteCheck also reads an inherited `OPENAI_API_KEY` automatically and may send
+manuscript citation context to `gpt-4o-mini`; its heuristic fallback does not
+provide source locators or evidence excerpts sufficient for claim-support
+review. Crossref, OpenAlex, DBLP, and Semantic Scholar duplicate the existing
+cascade, while its additional arXiv and PubMed paths do not validate first
+results rigorously enough to provide independent positive evidence. These
+properties make it unsuitable even as an advisory CI stage today. Reconsider
+only after tagged releases, locked dependencies, non-generative fail-closed
+operation, stable JSON output and exit codes, provider-failure classification,
+repository-contained input handling, and field-level matching are available.
+
 ## Downstream activation
 
 Reference-integrity enforcement is activated by the durable marker in the
