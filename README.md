@@ -11,7 +11,7 @@ A paper-first repository for Human–Agent collaborative scientific writing.
 2. Record paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
 3. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
 4. Record publication variants and allowed differences in `PUBLICATION.md`.
-5. Add bibliography records and claim-support evidence through `REFERENCES.md` and `references/ledger.json`; do not generate free-form BibTeX.
+5. Have the Agent construct and repair BibTeX from retrieved authoritative evidence, maintain `references/ledger.json` in the same change, and follow `REFERENCES.md`; never invent free-form metadata.
 6. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
 7. Edit the one canonical LaTeX source under `paper/`.
 8. Build:
