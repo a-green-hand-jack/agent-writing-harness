@@ -29,6 +29,7 @@ This removes template-specific governance IDs, resets downstream-local metadata,
 - focused Human choice → `.agents/skills/decision-packet/SKILL.md`
 - positioning, structure, or prose style → `.agents/skills/style-alignment/SKILL.md`
 - recurring semantic interface → `.agents/skills/paper-interface-maintenance/SKILL.md`
+- bibliography identity, metadata, duplicate, or version repair → `.agents/skills/reference-repair/SKILL.md`
 - publication variant or allowed difference → `.agents/skills/publication-planning/SKILL.md`
 - venue planning, deadlines, page budget, or official submission rules → `.agents/skills/publication-planning/SKILL.md` and `.agents/knowledge/venues/README.md`
 - immutable release candidate → `.agents/skills/release-review/SKILL.md`
@@ -44,9 +45,9 @@ Do not load all skills for an ordinary local edit.
 - **free** — handle implementation or wording while respecting higher-level decisions.
 - **unresolved** — keep uncertainty visible, prefer reversible progress, and ask before a high-impact or hard-to-reverse choice.
 
-The Human decides central claims, claim degradation, the main story, experiment fairness, important result interpretation, stable interface meaning, active variants, permitted cross-version differences, release approval, and external publication.
+The Human decides central claims, claim degradation, the main story, experiment fairness, important result interpretation, ambiguous citation identity/version choices that affect meaning, stable interface meaning, active variants, permitted cross-version differences, release approval, and external publication.
 
-The Agent performs retrieval, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, template-adoption inspection and mapping, template-sync planning, and focused validation.
+The Agent performs retrieval, evidence-backed BibTeX and ledger repair, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, template-adoption inspection and mapping, template-sync planning, and focused validation.
 
 ## Strong rules
 
