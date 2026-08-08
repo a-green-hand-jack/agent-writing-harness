@@ -1,13 +1,15 @@
 ---
 name: style-alignment
-description: Use when setting or revising paper positioning, narrative architecture, section responsibility, paragraph moves, sentence style, or a venue presentation overlay.
+description: Use when setting or changing paper positioning, narrative architecture, section responsibility, writing policy, or a venue presentation overlay.
 ---
 
 # Style Alignment
 
 ## Trigger
 
-Use when setting or revising paper positioning, narrative architecture, section responsibility, paragraph moves, sentence style, or a venue presentation overlay.
+Use when setting or changing paper positioning, narrative architecture, section responsibility, writing policy, or a venue presentation overlay.
+
+Use `section-writing` instead when drafting or revising prose within the current choices.
 
 ## Minimum context
 

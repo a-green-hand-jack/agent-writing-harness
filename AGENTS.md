@@ -27,7 +27,9 @@ This removes template-specific governance IDs, resets downstream-local metadata,
 - unclear paper context or new session → `.agents/skills/paper-orientation/SKILL.md`
 - high-impact meaning or control boundary → `.agents/skills/control-review/SKILL.md`
 - focused Human choice → `.agents/skills/decision-packet/SKILL.md`
-- positioning, structure, or prose style → `.agents/skills/style-alignment/SKILL.md`
+- drafting or substantially revising a specific paper section → `.agents/skills/section-writing/SKILL.md`
+- setting or changing positioning, narrative architecture, section responsibility, or writing policy → `.agents/skills/style-alignment/SKILL.md`
+- Human-requested consistency review after a manuscript version is ready → `.agents/skills/manuscript-consistency-review/SKILL.md`
 - recurring semantic interface → `.agents/skills/paper-interface-maintenance/SKILL.md`
 - bibliography identity, metadata, duplicate, or version repair → `.agents/skills/reference-repair/SKILL.md`
 - publication variant or allowed difference → `.agents/skills/publication-planning/SKILL.md`
@@ -37,6 +39,7 @@ This removes template-specific governance IDs, resets downstream-local metadata,
 - synchronize an adopted downstream repository with the upstream template → `.agents/skills/template-sync/SKILL.md`
 
 Do not load all skills for an ordinary local edit.
+Do not inject manuscript-wide reviewer passes into section drafting. Version-level consistency review is explicit, starts only after the Human marks a manuscript version ready, and is findings-only by default.
 
 ## Collaboration cues
 

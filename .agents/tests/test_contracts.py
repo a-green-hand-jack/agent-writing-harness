@@ -101,7 +101,9 @@ The release instance is approved.
     for skill in (
         "control-review",
         "decision-packet",
+        "section-writing",
         "style-alignment",
+        "manuscript-consistency-review",
         "paper-interface-maintenance",
         "publication-planning",
         "release-review",
@@ -110,6 +112,14 @@ The release instance is approved.
             root / f".agents/skills/{skill}/SKILL.md",
             f"# {skill}\n## Trigger\nRelevant task.\n## Minimum context\nCurrent contract.\n## Procedure\nReview and act.\n",
         )
+    write(
+        root / ".agents/skills/section-writing/SKILL.md",
+        "# section-writing\n## Trigger\nDraft a section.\n## Minimum context\nCurrent contract.\n## Procedure\nDraft.\nDo not invoke a reviewer persona.\n",
+    )
+    write(
+        root / ".agents/skills/manuscript-consistency-review/SKILL.md",
+        "# manuscript-consistency-review\n## Trigger\nUse after the Human identifies a manuscript version as ready.\n## Minimum context\nRead the complete paper.\n## Procedure\nReport findings only. Do not edit files.\n",
+    )
     write(root / ".agents/runtime/.gitignore", "*\n!.gitignore\n")
     write(
         root / "paper/main.tex",
@@ -134,6 +144,30 @@ class ContractChecks(unittest.TestCase):
             completed_fixture(fixture)
             result = run(fixture, "release")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_section_writing_requires_no_reviewer_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = Path(directory)
+            completed_fixture(fixture)
+            path = fixture / ".agents/skills/section-writing/SKILL.md"
+            path.write_text(path.read_text(encoding="utf-8").replace(
+                "Do not invoke a reviewer persona.", "Review the manuscript."
+            ), encoding="utf-8")
+            result = run(fixture, "draft")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("must prohibit reviewer passes during drafting", result.stdout)
+
+    def test_consistency_review_requires_findings_only_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = Path(directory)
+            completed_fixture(fixture)
+            path = fixture / ".agents/skills/manuscript-consistency-review/SKILL.md"
+            path.write_text(path.read_text(encoding="utf-8").replace(
+                "Report findings only.", "Rewrite the manuscript."
+            ), encoding="utf-8")
+            result = run(fixture, "draft")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("missing required boundary: Report findings only", result.stdout)
 
 
 if __name__ == "__main__":

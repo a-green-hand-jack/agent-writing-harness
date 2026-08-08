@@ -6,7 +6,7 @@
 
 - `knowledge/`: conditional reference material. Current project contracts always take priority.
 - `knowledge/venues/`: generic per-venue planning schema plus active `<venue>-<year>.md` files; template files stay venue-agnostic.
-- `skills/`: focused procedures for orientation, control review, decision packets, style alignment, interface maintenance, publication planning, release review, initial template adoption, and downstream template synchronization.
+- `skills/`: focused procedures for orientation, control review, decision packets, section writing, style alignment, post-version manuscript consistency review, interface maintenance, publication planning, release review, initial template adoption, and downstream template synchronization.
 - `template-sync.json`: downstream-local upstream URL, remote/branch, reviewed baseline, and optional path-policy extensions; adoption first writes an uninitialized downstream-specific configuration and pins the commit only after review.
 - `overleaf-sync.json`: project-specific Overleaf Git remote/branch and the canonical `paper/` source prefix; never contains credentials.
 - `documentation-consistency.json`: expected current facts for README and Human-facing contracts; downstream papers update these facts instead of editing checker source.
@@ -41,6 +41,7 @@
 - Adoption inspections, plans, verification reports, and merge bundles live in ignored `.agents/runtime/template-adoption/`.
 - Template-sync plans and merge bundles live in ignored `.agents/runtime/template-sync/`.
 - Agents load one relevant skill and minimum context rather than recursively reading the sidecar.
+- Section writing does not automatically invoke reviewer passes. Manuscript consistency review runs only after the Human identifies a manuscript version as ready and reports findings without editing by default.
 - `make pdf VARIANT=<name>` and a paper-only checkout do not require `.agents/`.
 - A downstream repository initialized from the template must not keep upstream template branch/issue IDs in its governance documents.
 

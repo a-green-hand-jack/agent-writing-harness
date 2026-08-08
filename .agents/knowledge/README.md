@@ -31,6 +31,8 @@ These normally apply across tasks:
 
 Writing and organization advice is usually conditional. A heuristic must not override `PAPER.md`, `EXPERIMENTS.md`, `DECISIONS.md`, or a current Human instruction.
 
+`scientific-writing.md` contains section-specific drafting guidance. Load only the active section's guidance; do not use it as a reason to interrupt drafting with a manuscript-wide review.
+
 Examples:
 
 - a gap-first introduction can be effective;
