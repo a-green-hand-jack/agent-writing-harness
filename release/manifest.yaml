@@ -4,8 +4,8 @@
   "template_skeleton": true,
   "source_revision": {
     "treeish": "HEAD",
-    "commit": "f56418005437ba3e752a30e56d1572903fc4db6d",
-    "tree": "9b4e6a952bb0fdf4d766b31b67d02677ef8616df"
+    "commit": "aca1a71b20ab2cb0e1b527df32b815f317683e01",
+    "tree": "86b22908f6a12190888506fb1d764b9cbc8f545a"
   },
   "surfaces": [
     {
@@ -249,6 +249,11 @@
           "relpath": "supplementary/README.md",
           "sha256": "bceab752a4e05ccdf1210ccd881d18d0c285acb32e45075783debb73f6383ecf",
           "size": 95
+        },
+        {
+          "relpath": "supplementary/original-arxiv-2605.03042.pdf",
+          "sha256": "2f9e22ebacb7a56b43b9675441ab18465729f2ff6f3d34175560368a116ba382",
+          "size": 933612
         },
         {
           "relpath": "supplementary/source-attribution.md",
@@ -522,6 +527,11 @@
           "size": 95
         },
         {
+          "relpath": "supplementary/original-arxiv-2605.03042.pdf",
+          "sha256": "2f9e22ebacb7a56b43b9675441ab18465729f2ff6f3d34175560368a116ba382",
+          "size": 933612
+        },
+        {
           "relpath": "supplementary/source-attribution.md",
           "sha256": "149370a45c826bef3e367ebcce23a9243f8a3bf8dfb2c9a28b4c83851c00887b",
           "size": 9361
@@ -791,6 +801,11 @@
           "relpath": "supplementary/README.md",
           "sha256": "bceab752a4e05ccdf1210ccd881d18d0c285acb32e45075783debb73f6383ecf",
           "size": 95
+        },
+        {
+          "relpath": "supplementary/original-arxiv-2605.03042.pdf",
+          "sha256": "2f9e22ebacb7a56b43b9675441ab18465729f2ff6f3d34175560368a116ba382",
+          "size": 933612
         },
         {
           "relpath": "supplementary/source-attribution.md",

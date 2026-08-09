@@ -7,3 +7,5 @@
 *.synctex.gz
 release/reports/*.log
 release/venue/
+/.orca/
+/.env

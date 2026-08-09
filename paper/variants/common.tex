@@ -1,0 +1,9 @@
+% Shared publication-variant switches. Static config files define named
+% application macros; main.tex selects one without a dynamic \input path.
+\newif\ifPaperAnonymous
+\newif\ifPaperAcknowledgements
+\newif\ifPaperFullAppendix
+\PaperAnonymousfalse
+\PaperAcknowledgementsfalse
+\PaperFullAppendixtrue
+\providecommand{\PaperVariantName}{draft}
