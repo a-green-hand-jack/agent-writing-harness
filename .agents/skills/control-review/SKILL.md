@@ -27,6 +27,8 @@ Do not load unrelated venue, release, history, or ledger material.
 5. For locked, prepare a proposal rather than modifying the meaning.
 6. For unresolved, prefer reversible progress; ask before a high-impact or hard-to-reverse choice.
 7. List affected sections, experiments, interfaces, and limitations.
+<!-- paper-skill-contract: F7-CR-001-v1 -->
+8. When independent semantic choices are present, use a separate Human approval gate for each and record each decision; approval of one choice does not approve another.
 
 ## Human decision
 

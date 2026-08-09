@@ -73,7 +73,8 @@ Order findings by severity:
 
 Each finding must include:
 
-- exact file and line references for every conflicting surface;
+<!-- paper-skill-contract: F7-MCR-001-v1 -->
+- an enumeration of every conflicting or affected surface found, with exact file and line references;
 - short quotations or values that demonstrate the conflict;
 - the governing contract or interface when one exists;
 - why the inconsistency matters;

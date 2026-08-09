@@ -109,6 +109,21 @@ echo fixture-verify-ok
 """,
             executable=True,
         )
+        for checker in (
+            "check-structure.py",
+            "paper-init.py",
+            "check-actions.py",
+            "check-skills.py",
+            "check-documentation.py",
+            "check-venue-knowledge.py",
+            "check-paper-contracts.py",
+            "check-paper-interfaces.py",
+            "check-reference-integrity.py",
+            "check-publication.py",
+            "check-release-records.py",
+            "overleaf-sync.py",
+        ):
+            write(self.upstream, f".agents/tools/{checker}", "raise SystemExit(0)\n")
         write(
             self.upstream,
             ".agents/tests/test_fixture.py",
@@ -241,6 +256,16 @@ if __name__ == "__main__":
         path = self.downstream / ".agents/runtime/template-adoption/plan.json"
         return json.loads(path.read_text(encoding="utf-8"))
 
+    def complete_semantic_migration(self) -> None:
+        for contract in (
+            "PAPER.md",
+            "EXPERIMENTS.md",
+            "PAPER_INTERFACES.md",
+            "PUBLICATION.md",
+            "DECISIONS.md",
+        ):
+            write(self.downstream, contract, f"# Reviewed {contract}\n")
+
     def test_inspection_detects_existing_repository_surfaces(self) -> None:
         result = self.tool("inspect")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -257,6 +282,79 @@ if __name__ == "__main__":
         self.assertEqual(mappings["Makefile"]["candidate"], "Makefile")
         self.assertEqual(mappings[".github/workflows/"]["candidate"], ".github/workflows/existing.yml")
         self.assertEqual(mappings["AGENTS.md"]["candidate"], "CLAUDE.md")
+
+    def test_inspection_recursively_resolves_nested_tex_from_main_directory(self) -> None:
+        write(
+            self.downstream,
+            "paper/main.tex",
+            "\\documentclass{article}\n\\begin{document}\n\\input{sections/intro}\n\\end{document}\n",
+        )
+        write(self.downstream, "paper/sections/intro.tex", "\\input{figures/result}\n")
+        write(
+            self.downstream,
+            "paper/figures/result.tex",
+            "\\includegraphics{result}\n",
+        )
+        (self.downstream / "paper/figures/result.pdf").write_bytes(b"%PDF nested fixture\n")
+
+        result = self.tool("inspect")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        inspection = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/inspection.json").read_text()
+        )
+        self.assertEqual(inspection["selected_main"], "paper/main.tex")
+        self.assertIn("paper/figures/result.tex", inspection["tex_graph"]["files"])
+        self.assertIn("paper/figures/result.pdf", inspection["graphics"]["resolved"])
+        mappings = {item["template_surface"]: item for item in inspection["mappings"]}
+        self.assertEqual(mappings["paper/figures/"]["candidate"], "paper/figures")
+
+    def test_inspection_recognizes_evidenced_custom_build_entrypoint(self) -> None:
+        (self.downstream / "Makefile").unlink()
+        write(
+            self.downstream,
+            "README.md",
+            "# Existing Paper\n\nBuild with `scripts/build-paper.sh`.\n",
+        )
+        write(self.downstream, "scripts/build-paper.sh", "#!/usr/bin/env bash\nexit 99\n")
+        write(
+            self.downstream,
+            ".github/workflows/existing.yml",
+            "name: existing-ci\nrun: scripts/build-paper.sh\n",
+        )
+
+        result = self.tool("inspect")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        inspection = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/inspection.json").read_text()
+        )
+        self.assertIn("scripts/build-paper.sh", inspection["build_files"])
+        mappings = {item["template_surface"]: item for item in inspection["mappings"]}
+        self.assertEqual(mappings["Makefile"]["candidate"], "scripts/build-paper.sh")
+
+    def test_inspection_uses_parsed_command_paths_without_name_or_suffix_heuristics(self) -> None:
+        (self.downstream / "Makefile").unlink()
+        write(self.downstream, "scripts/run.sh", "#!/bin/sh\nexit 91\n")
+        write(self.downstream, "tools/render", "#!/bin/sh\nexit 92\n")
+        write(self.downstream, "scripts/build-looking.sh", "#!/bin/sh\nexit 93\n")
+        write(
+            self.downstream,
+            "README.md",
+            "Build with `scripts/run.sh --release`. The scripts/build-looking.sh file is unrelated.\n",
+        )
+        write(
+            self.downstream,
+            ".github/workflows/existing.yml",
+            "steps:\n  - run: sh tools/render --paper\n",
+        )
+
+        result = self.tool("inspect")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        inspection = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/inspection.json").read_text()
+        )
+        self.assertIn("scripts/run.sh", inspection["build_files"])
+        self.assertIn("tools/render", inspection["build_files"])
+        self.assertNotIn("scripts/build-looking.sh", inspection["build_files"])
 
     def test_plan_classifies_safe_manual_conflict_and_ignored(self) -> None:
         plan = self.plan()
@@ -373,6 +471,13 @@ if __name__ == "__main__":
                     "last_synced_commit": self.target,
                     "last_synced_at": "2026-08-03T00:00:00+00:00",
                     "last_sync_note": "Already reviewed.",
+                    "adoption": {
+                        "status": "reviewed",
+                        "target_commit": self.target,
+                        "reviewed_at": "2026-08-03T00:00:00+00:00",
+                        "verification_repository_fingerprint": "a" * 64,
+                        "prior_sync_history": [],
+                    },
                     "always_manual": [],
                     "ignored_paths": [],
                 },
@@ -382,11 +487,53 @@ if __name__ == "__main__":
         )
         commit_all(self.downstream, "record existing template baseline")
         self.plan()
-        refused = self.tool("apply")
+        refused = self.tool("apply", "--recover-reviewed")
         self.assertNotEqual(refused.returncode, 0)
         self.assertIn("use template-sync", refused.stderr)
 
-    def test_apply_refuses_uninitialized_sync_config_for_another_upstream(self) -> None:
+    def test_apply_recovers_invalid_reviewed_provenance_and_preserves_all_metadata(self) -> None:
+        prior = {
+            "schema_version": "paper-template-sync-v1",
+            "upstream": {
+                "url": str(self.upstream),
+                "remote": "template",
+                "branch": "main",
+            },
+            "last_synced_commit": self.start_head,
+            "last_synced_at": "2026-08-03T00:00:00+00:00",
+            "last_sync_note": "Trapped reviewed state.",
+            "adoption": {
+                "status": "reviewed",
+                "target_commit": self.target,
+                "reviewed_at": "2026-08-03T00:00:00+00:00",
+                "verification_repository_fingerprint": "a" * 64,
+                "prior_sync_history": [],
+            },
+            "reference_integrity": {"adopted": True},
+            "always_manual": ["local-policy.md"],
+            "ignored_paths": ["local-output/"],
+            "downstream_extension": {"preserve": True},
+        }
+        write(
+            self.downstream,
+            ".agents/template-sync.json",
+            json.dumps(prior, indent=2, sort_keys=True) + "\n",
+        )
+        commit_all(self.downstream, "record invalid reviewed provenance")
+        self.plan()
+
+        refused = self.tool("apply")
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("--recover-reviewed", refused.stderr)
+
+        recovered = self.tool("apply", "--recover-reviewed")
+        self.assertEqual(recovered.returncode, 0, recovered.stdout + recovered.stderr)
+        pending = json.loads(
+            (self.downstream / ".agents/template-sync.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(pending["adoption"]["prior_sync_history"][-1], prior)
+
+    def test_apply_requires_reviewed_recovery_for_stale_baseline_metadata(self) -> None:
         write(
             self.downstream,
             ".agents/template-sync.json",
@@ -398,9 +545,9 @@ if __name__ == "__main__":
                         "remote": "another-template",
                         "branch": "stable",
                     },
-                    "last_synced_commit": None,
-                    "last_synced_at": None,
-                    "last_sync_note": "Not reviewed.",
+                    "last_synced_commit": self.start_head,
+                    "last_synced_at": "2026-08-01T00:00:00+00:00",
+                    "last_sync_note": "Premature baseline.",
                     "always_manual": [],
                     "ignored_paths": [],
                 },
@@ -408,11 +555,122 @@ if __name__ == "__main__":
             )
             + "\n",
         )
-        commit_all(self.downstream, "add unrelated uninitialized sync metadata")
+        commit_all(self.downstream, "add stale incomplete-adoption metadata")
         self.plan()
         refused = self.tool("apply")
         self.assertNotEqual(refused.returncode, 0)
-        self.assertIn("different upstream", refused.stderr)
+        self.assertIn("--recover-reviewed", refused.stderr)
+
+        recovered = self.tool("apply", "--recover-reviewed")
+        self.assertEqual(recovered.returncode, 0, recovered.stdout + recovered.stderr)
+        pending = json.loads(
+            (self.downstream / ".agents/template-sync.json").read_text(encoding="utf-8")
+        )
+        self.assertIsNone(pending["last_synced_commit"])
+        self.assertEqual(pending["adoption"]["status"], "in_progress")
+        self.assertEqual(
+            pending["adoption"]["prior_sync_history"][-1]["last_synced_commit"],
+            self.start_head,
+        )
+
+    def test_in_progress_contradictions_require_recovery_and_preserve_adoption(self) -> None:
+        contradictions = (
+            {"last_synced_commit": self.target},
+            {"last_synced_at": "2026-08-01T00:00:00+00:00"},
+            {"target_commit": "a" * 40},
+            {"reviewed_at": "2026-08-01T00:00:00+00:00"},
+            {"upstream_url": "https://example.invalid/wrong-template.git"},
+        )
+        for index, contradiction in enumerate(contradictions):
+            with self.subTest(contradiction=contradiction):
+                adoption = {
+                    "status": "in_progress",
+                    "target_commit": contradiction.get("target_commit", self.target),
+                    "prior_sync_history": [],
+                }
+                if "reviewed_at" in contradiction:
+                    adoption["reviewed_at"] = contradiction["reviewed_at"]
+                config = {
+                    "schema_version": "paper-template-sync-v1",
+                    "upstream": {
+                        "url": contradiction.get("upstream_url", str(self.upstream)),
+                        "remote": "template",
+                        "branch": "main",
+                    },
+                    "last_synced_commit": contradiction.get("last_synced_commit"),
+                    "last_synced_at": contradiction.get("last_synced_at"),
+                    "last_sync_note": "Contradictory pending state.",
+                    "adoption": adoption,
+                    "always_manual": [],
+                    "ignored_paths": [],
+                }
+                write(
+                    self.downstream,
+                    ".agents/template-sync.json",
+                    json.dumps(config, indent=2) + "\n",
+                )
+                commit_all(self.downstream, f"contradictory state {index}")
+                self.plan()
+                refused = self.tool("apply")
+                self.assertNotEqual(refused.returncode, 0)
+                self.assertIn("--recover-reviewed", refused.stderr)
+                recovered = self.tool("apply", "--recover-reviewed")
+                self.assertEqual(recovered.returncode, 0, recovered.stdout + recovered.stderr)
+                pending = json.loads(
+                    (self.downstream / ".agents/template-sync.json").read_text()
+                )
+                history = pending["adoption"]["prior_sync_history"]
+                self.assertEqual(history[-1]["adoption"], adoption)
+                git(self.downstream, "reset", "--hard", "HEAD")
+
+    def test_reviewed_adoption_remains_valid_after_sync_baseline_advances(self) -> None:
+        config = {
+            "schema_version": "paper-template-sync-v1",
+            "upstream": {"url": str(self.upstream), "remote": "template", "branch": "main"},
+            "last_synced_commit": self.start_head,
+            "last_synced_at": "2026-08-04T00:00:00+00:00",
+            "last_sync_note": "Later reviewed synchronization.",
+            "adoption": {
+                "status": "reviewed",
+                "target_commit": self.target,
+                "reviewed_at": "2026-08-03T00:00:00+00:00",
+                "verification_repository_fingerprint": "b" * 64,
+                "prior_sync_history": [],
+            },
+            "always_manual": [],
+            "ignored_paths": [],
+        }
+        write(self.downstream, ".agents/template-sync.json", json.dumps(config, indent=2) + "\n")
+        commit_all(self.downstream, "advance baseline after reviewed adoption")
+        status = self.tool("status")
+        self.assertEqual(status.returncode, 0, status.stdout + status.stderr)
+        self.assertIn(self.start_head, status.stdout)
+
+    def test_equal_unreviewed_baseline_is_not_adoption_proof(self) -> None:
+        write(
+            self.downstream,
+            ".agents/template-sync.json",
+            json.dumps(
+                {
+                    "schema_version": "paper-template-sync-v1",
+                    "upstream": {
+                        "url": str(self.upstream),
+                        "remote": "template",
+                        "branch": "main",
+                    },
+                    "last_synced_commit": self.target,
+                    "always_manual": [],
+                    "ignored_paths": [],
+                },
+                indent=2,
+            )
+            + "\n",
+        )
+        commit_all(self.downstream, "add unreviewed equal baseline")
+        self.plan()
+        refused = self.tool("apply")
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("not trustworthy evidence", refused.stderr)
 
     def test_plan_refuses_symlinked_agent_control_directory(self) -> None:
         shutil.rmtree(self.downstream / ".agents")
@@ -426,40 +684,86 @@ if __name__ == "__main__":
         self.assertIn("symlinked control directory", refused.stderr)
         self.assertFalse((escaped / "runtime/template-adoption/plan.json").exists())
 
-    def test_finalize_requires_current_full_variant_verification(self) -> None:
+    def test_finalize_reruns_current_full_variant_verification(self) -> None:
         self.plan()
         applied = self.tool("apply")
         self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
-
-        missing = self.tool("finalize", "--reviewed")
-        self.assertNotEqual(missing.returncode, 0)
-        self.assertIn("verify --variants", missing.stderr)
-
-        agent_only = self.tool("verify")
-        self.assertEqual(agent_only.returncode, 0, agent_only.stdout + agent_only.stderr)
-        incomplete = self.tool("finalize", "--reviewed")
-        self.assertNotEqual(incomplete.returncode, 0)
-        self.assertIn("all publication variants", incomplete.stderr)
-
-        full = self.tool("verify", "--variants")
-        self.assertEqual(full.returncode, 0, full.stdout + full.stderr)
-        report_path = self.downstream / ".agents/runtime/template-adoption/verification.json"
-        report = json.loads(report_path.read_text(encoding="utf-8"))
-        report["checks"].pop()
-        report_path.write_text(
-            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        self.complete_semantic_migration()
+        run_log = self.downstream / ".agents/runtime/template-adoption/finalize-runs"
+        verify = self.downstream / ".agents/tools/verify.sh"
+        verify.write_text(
+            "#!/usr/bin/env bash\n"
+            "printf 'run\\n' >> .agents/runtime/template-adoption/finalize-runs\n",
+            encoding="utf-8",
         )
-        malformed = self.tool("finalize", "--reviewed")
-        self.assertNotEqual(malformed.returncode, 0)
-        self.assertIn("complete expected command set", malformed.stderr)
+        verified = self.tool("verify", "--variants")
+        self.assertEqual(verified.returncode, 0, verified.stdout + verified.stderr)
 
-        full = self.tool("verify", "--variants")
-        self.assertEqual(full.returncode, 0, full.stdout + full.stderr)
-        main = self.downstream / "main.tex"
-        main.write_text(main.read_text() + "% changed after verification\n", encoding="utf-8")
-        stale = self.tool("finalize", "--reviewed")
-        self.assertNotEqual(stale.returncode, 0)
-        self.assertIn("changed since verification", stale.stderr)
+        finalized = self.tool("finalize", "--reviewed")
+        self.assertEqual(finalized.returncode, 0, finalized.stdout + finalized.stderr)
+        report = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/verification.json").read_text()
+        )
+        self.assertEqual(len(report["checks"]), 5)
+        self.assertTrue(all(check["returncode"] == 0 for check in report["checks"]))
+        self.assertEqual(run_log.read_text().splitlines(), ["run", "run"])
+
+    def test_finalize_rejects_coherent_forged_report_when_fresh_commands_fail(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        self.complete_semantic_migration()
+        marker = self.downstream / ".agents/runtime/template-adoption/fail-finalize"
+        verify = self.downstream / ".agents/tools/verify.sh"
+        verify.write_text(
+            "#!/usr/bin/env bash\n"
+            "test ! -e .agents/runtime/template-adoption/fail-finalize\n",
+            encoding="utf-8",
+        )
+        marker.touch()
+        failed = self.tool("verify", "--variants")
+        self.assertNotEqual(failed.returncode, 0)
+        report_path = self.downstream / ".agents/runtime/template-adoption/verification.json"
+        report = json.loads(report_path.read_text())
+        report["success"] = True
+        for check in report["checks"]:
+            check["returncode"] = 0
+            check["success"] = True
+        report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+
+        refused = self.tool("finalize", "--reviewed")
+
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("failed during finalize", refused.stderr)
+
+    def test_assessment_collects_multiple_failures_and_cannot_authorize_finalize(self) -> None:
+        self.plan()
+        applied = self.tool("apply")
+        self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
+        self.complete_semantic_migration()
+        write(self.downstream, ".agents/tools/check-actions.py", "raise SystemExit(7)\n")
+        write(self.downstream, ".agents/tools/check-publication.py", "raise SystemExit(9)\n")
+
+        assessed = self.tool("assess")
+        self.assertNotEqual(assessed.returncode, 0)
+        report = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/assessment.json").read_text()
+        )
+        self.assertFalse(report["authorizes_finalize"])
+        self.assertEqual(len(report["checks"]), 20)
+        self.assertEqual(
+            report["checks"][0]["command"],
+            "python3 -m compileall -q .agents/tools .agents/tests",
+        )
+        failures = {check["command"]: check["returncode"] for check in report["checks"] if not check["success"]}
+        self.assertEqual(failures["python3 .agents/tools/check-actions.py"], 7)
+        self.assertEqual(failures["python3 .agents/tools/check-publication.py"], 9)
+        self.assertTrue(report["checks"][-1]["command"].endswith("VARIANT=arxiv"))
+        self.assertFalse(
+            (self.downstream / ".agents/runtime/template-adoption/verification.json").exists()
+        )
+        refused = self.tool("finalize", "--reviewed")
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("verify --variants", refused.stderr)
 
     def test_custom_plan_is_bound_to_verification_and_finalize(self) -> None:
         relative = ".agents/runtime/template-adoption/custom-plan.json"
@@ -482,10 +786,26 @@ if __name__ == "__main__":
         self.assertNotEqual(refused.returncode, 0)
         self.assertIn("plan changed since verification", refused.stderr)
 
+    def test_finalize_refuses_materially_non_paper_first_repository(self) -> None:
+        (self.downstream / "main.tex").unlink()
+        commit_all(self.downstream, "remove paper entrypoint")
+        self.plan()
+        applied = self.tool("apply")
+        self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
+        verified = self.tool("verify", "--variants")
+        self.assertEqual(verified.returncode, 0, verified.stdout + verified.stderr)
+
+        refused = self.tool("finalize", "--reviewed")
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("materially non-paper-first", refused.stderr)
+        self.assertIn("TeX paper entrypoint", refused.stderr)
+        self.assertIn("Human contracts", refused.stderr)
+
     def test_verify_and_finalize_record_first_template_baseline(self) -> None:
         self.plan()
         applied = self.tool("apply")
         self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
+        self.complete_semantic_migration()
 
         verified = self.tool("verify", "--variants")
         self.assertEqual(verified.returncode, 0, verified.stdout + verified.stderr)
@@ -507,6 +827,7 @@ if __name__ == "__main__":
             (self.downstream / ".agents/template-sync.json").read_text(encoding="utf-8")
         )
         self.assertEqual(config["last_synced_commit"], self.target)
+        self.assertEqual(config["adoption"]["status"], "reviewed")
         self.assertEqual(config["upstream"]["url"], str(self.upstream))
         staged = git(self.downstream, "diff", "--cached", "--name-only").stdout.splitlines()
         self.assertIn(".agents/template-sync.json", staged)

@@ -7,19 +7,23 @@ import re
 import sys
 from pathlib import Path
 
+from _release_approval import valid_human_approval
+
 RELEASE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{2,63}$")
-REQUIRED_FIELDS = (
-    "- Status:",
-    "- Variant:",
-    "- Profile:",
-    "- Release ready:",
-    "- Source fingerprint:",
-    "- Manifest SHA-256:",
-    "- Human approval:",
-    "## Artifacts",
-    "## Notes",
+FIELD_LABELS = (
+    "Status",
+    "Variant",
+    "Profile",
+    "Release ready",
+    "Source fingerprint",
+    "Manifest SHA-256",
+    "Human approval",
 )
+REQUIRED_HEADINGS = ("## Artifacts", "## Notes")
 ALLOWED_STATUSES = {"candidate", "approved", "published", "superseded", "withdrawn"}
+ALLOWED_VARIANTS = {"draft", "anonymous", "camera-ready", "arxiv"}
+ALLOWED_PROFILES = {"draft", "release"}
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 def error(message: str) -> int:
@@ -27,9 +31,24 @@ def error(message: str) -> int:
     return 1
 
 
-def extract_backtick_field(text: str, label: str) -> str | None:
-    match = re.search(rf"^{re.escape(label)}\s*`([^`]*)`\s*$", text, re.M)
-    return match.group(1) if match else None
+def extract_fields(text: str, path: Path) -> tuple[dict[str, str], int]:
+    fields: dict[str, str] = {}
+    code = 0
+    for label in FIELD_LABELS:
+        prefix = f"- {label}:"
+        lines = [line for line in text.splitlines() if line.startswith(prefix)]
+        if not lines:
+            code |= error(f"release record missing field {prefix} {path.name}")
+            continue
+        if len(lines) != 1:
+            code |= error(f"release record has duplicate field {prefix} {path.name}")
+            continue
+        match = re.fullmatch(rf"{re.escape(prefix)}\s*`([^`]*)`\s*", lines[0])
+        if not match or not match.group(1):
+            code |= error(f"release record has invalid {label.lower()} value: {path.name}")
+            continue
+        fields[label] = match.group(1)
+    return fields, code
 
 
 def check(root: Path) -> int:
@@ -56,14 +75,32 @@ def check(root: Path) -> int:
         text = path.read_text(encoding="utf-8")
         if not text.startswith(f"# Release {release_id}\n"):
             code |= error(f"release record title does not match filename: {path.name}")
-        for field in REQUIRED_FIELDS:
-            if field not in text:
-                code |= error(f"release record missing field {field}: {path.name}")
-        status = extract_backtick_field(text, "- Status:")
-        approval = extract_backtick_field(text, "- Human approval:")
-        if status not in ALLOWED_STATUSES:
+        for heading in REQUIRED_HEADINGS:
+            if not re.search(rf"^{re.escape(heading)}\s*$", text, re.M):
+                code |= error(f"release record missing field {heading}: {path.name}")
+
+        fields, field_code = extract_fields(text, path)
+        code |= field_code
+        status = fields.get("Status")
+        if status is not None and status not in ALLOWED_STATUSES:
             code |= error(f"release record has invalid status: {path.name}")
-        if status in {"approved", "published"} and (not approval or approval.lower() in {"pending", "todo"}):
+        variant = fields.get("Variant")
+        if variant is not None and variant not in ALLOWED_VARIANTS:
+            code |= error(f"release record has invalid variant: {path.name}")
+        profile = fields.get("Profile")
+        if profile is not None and profile not in ALLOWED_PROFILES:
+            code |= error(f"release record has invalid profile: {path.name}")
+        release_ready = fields.get("Release ready")
+        if release_ready is not None and release_ready not in {"true", "false"}:
+            code |= error(f"release record has invalid release ready value: {path.name}")
+        for label in ("Source fingerprint", "Manifest SHA-256"):
+            value = fields.get(label)
+            if value is not None and not SHA256_RE.fullmatch(value):
+                code |= error(f"release record has invalid {label.lower()}: {path.name}")
+        approval = fields.get("Human approval")
+        if status in {"approved", "published"} and (
+            approval is None or not valid_human_approval(approval)
+        ):
             code |= error(f"approved/published release record lacks Human approval: {path.name}")
 
     legacy = root / "release"

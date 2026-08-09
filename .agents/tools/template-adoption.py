@@ -10,6 +10,7 @@ for evidence-backed semantic migration.
 from __future__ import annotations
 
 import argparse
+import copy
 import datetime as dt
 import hashlib
 import json
@@ -98,6 +99,38 @@ BUILD_CANDIDATES = (
     "Justfile",
     "Dockerfile",
     "pyproject.toml",
+)
+COMMAND_INTERPRETERS = {
+    "bash",
+    "dash",
+    "perl",
+    "python",
+    "python3",
+    "ruby",
+    "sh",
+    "zsh",
+}
+ASSESSMENT_COMMANDS = (
+    ("python3", "-m", "compileall", "-q", ".agents/tools", ".agents/tests"),
+    ("python3", ".agents/tools/check-structure.py"),
+    ("python3", ".agents/tools/paper-init.py", "status"),
+    ("python3", ".agents/tools/check-actions.py"),
+    ("python3", ".agents/tools/check-skills.py"),
+    ("python3", ".agents/tools/check-documentation.py"),
+    ("python3", ".agents/tools/check-venue-knowledge.py"),
+    ("python3", ".agents/tools/check-paper-contracts.py", "--profile", "draft"),
+    ("python3", ".agents/tools/check-paper-interfaces.py"),
+    ("python3", ".agents/tools/check-reference-integrity.py", "--profile", "draft"),
+    ("python3", ".agents/tools/check-publication.py"),
+    ("python3", ".agents/tools/check-release-records.py"),
+    ("python3", ".agents/tools/template-adoption.py", "validate"),
+    ("python3", ".agents/tools/template-sync.py", "validate"),
+    ("python3", ".agents/tools/overleaf-sync.py", "validate"),
+    ("python3", "-m", "unittest", "discover", "-s", ".agents/tests", "-p", "test_*.py"),
+    ("make", "pdf", "VARIANT=draft"),
+    ("make", "pdf", "VARIANT=anonymous"),
+    ("make", "pdf", "VARIANT=camera-ready"),
+    ("make", "pdf", "VARIANT=arxiv"),
 )
 AGENT_CANDIDATES = (
     "AGENTS.md",
@@ -553,14 +586,19 @@ def relative_posix(root: Path, candidate: Path) -> str | None:
         return None
 
 
-def resolve_tex_reference(root: Path, source: str, reference: str) -> str | None:
+def resolve_tex_reference(
+    root: Path,
+    source: str,
+    reference: str,
+    main_path: str,
+) -> str | None:
     value = reference.strip()
     if not value or any(token in value for token in ("\\", "#", "$")):
         return None
     candidate = Path(value)
     if candidate.suffix == "":
         candidate = candidate.with_suffix(".tex")
-    for base in ((root / source).parent, root):
+    for base in ((root / source).parent, (root / main_path).parent, root):
         resolved = relative_posix(root, base / candidate)
         if resolved and (root / resolved).is_file():
             return resolved
@@ -584,7 +622,7 @@ def discover_tex_graph(root: Path, main_path: str | None) -> tuple[list[str], li
         if text is None:
             continue
         for reference in INPUT_RE.findall(active_tex(text)):
-            resolved = resolve_tex_reference(root, source, reference)
+            resolved = resolve_tex_reference(root, source, reference, main_path)
             edges.append(
                 {
                     "source": source,
@@ -609,8 +647,12 @@ def confidence_for(scores: list[int]) -> str:
     return "low"
 
 
-def main_candidates(root: Path, paths: list[str]) -> list[dict[str, Any]]:
-    hint_paths = [path for path in paths if is_build_candidate(path) or is_workflow_candidate(path)]
+def main_candidates(
+    root: Path,
+    paths: list[str],
+    build_files: list[str],
+) -> list[dict[str, Any]]:
+    hint_paths = build_files + [path for path in paths if is_workflow_candidate(path)]
     hint_text = "\n".join(
         text for path in hint_paths if (text := read_text(root, path)) is not None
     )
@@ -657,6 +699,7 @@ def bibliography_candidates(
     root: Path,
     paths: list[str],
     tex_paths: list[str],
+    main_path: str | None,
 ) -> list[dict[str, Any]]:
     referenced: set[str] = set()
     reference_names: set[str] = set()
@@ -676,7 +719,11 @@ def bibliography_candidates(
             if candidate.suffix == "":
                 candidate = candidate.with_suffix(".bib")
             reference_names.add(candidate.name)
-            for base in ((root / tex_path).parent, root):
+            bases = [(root / tex_path).parent]
+            if main_path:
+                bases.append((root / main_path).parent)
+            bases.append(root)
+            for base in bases:
                 resolved = relative_posix(root, base / candidate)
                 if resolved and (root / resolved).is_file():
                     referenced.add(resolved)
@@ -762,7 +809,11 @@ def discover_table_files(root: Path, tex_paths: list[str], main_path: str | None
     return sorted(set(tables))
 
 
-def discover_graphics(root: Path, tex_paths: list[str]) -> tuple[list[str], list[str]]:
+def discover_graphics(
+    root: Path,
+    tex_paths: list[str],
+    main_path: str | None,
+) -> tuple[list[str], list[str]]:
     resolved: list[str] = []
     unresolved: list[str] = []
     for tex_path in tex_paths:
@@ -778,7 +829,11 @@ def discover_graphics(root: Path, tex_paths: list[str]) -> tuple[list[str], list
             if candidate.suffix == "":
                 variants = [candidate.with_suffix(extension) for extension in sorted(IMAGE_EXTENSIONS)]
             found = False
-            for base in ((root / tex_path).parent, root):
+            bases = [(root / tex_path).parent]
+            if main_path:
+                bases.append((root / main_path).parent)
+            bases.append(root)
+            for base in bases:
                 for variant in variants:
                     relative = relative_posix(root, base / variant)
                     if relative and (root / relative).is_file():
@@ -792,13 +847,106 @@ def discover_graphics(root: Path, tex_paths: list[str]) -> tuple[list[str], list
     return sorted(set(resolved)), sorted(set(unresolved))
 
 
+def command_entrypoint(command: str) -> str | None:
+    try:
+        tokens = shlex.split(command, comments=True, posix=True)
+    except ValueError:
+        return None
+    while tokens and "=" in tokens[0] and not tokens[0].startswith(("/", "./", "../")):
+        tokens.pop(0)
+    while tokens and PurePosixPath(tokens[0]).name in {"command", "env", "sudo"}:
+        tokens.pop(0)
+        while tokens and tokens[0].startswith("-"):
+            tokens.pop(0)
+        while tokens and "=" in tokens[0]:
+            tokens.pop(0)
+    if not tokens:
+        return None
+    executable = PurePosixPath(tokens[0]).name
+    if executable in COMMAND_INTERPRETERS:
+        return next((token for token in tokens[1:] if not token.startswith("-")), None)
+    if executable == "make":
+        for index, token in enumerate(tokens[1:], 1):
+            if token in {"-f", "--file", "--makefile"} and index + 1 < len(tokens):
+                return tokens[index + 1]
+            if token.startswith(("--file=", "--makefile=")):
+                return token.split("=", 1)[1]
+        return None
+    return tokens[0]
+
+
+def readme_commands(text: str) -> list[str]:
+    commands = re.findall(r"`([^`\n]+)`", text)
+    commands.extend(
+        line.strip()
+        for block in re.findall(r"```[^\n]*\n(.*?)```", text, re.S)
+        for line in block.splitlines()
+        if line.strip()
+    )
+    return commands
+
+
+def workflow_commands(text: str) -> list[str]:
+    commands: list[str] = []
+    lines = text.splitlines()
+    index = 0
+    while index < len(lines):
+        match = re.match(r"^(\s*)(?:-\s*)?run:\s*(.*)$", lines[index])
+        if not match:
+            index += 1
+            continue
+        indent, value = len(match.group(1)), match.group(2).strip()
+        if value not in {"|", ">", "|-", ">-"}:
+            commands.append(value.strip("'\""))
+            index += 1
+            continue
+        index += 1
+        while index < len(lines):
+            line = lines[index]
+            if line.strip() and len(line) - len(line.lstrip()) <= indent:
+                break
+            if line.strip():
+                commands.append(line.strip())
+            index += 1
+    return commands
+
+
+def evidenced_command_paths(root: Path, paths: list[str]) -> set[str]:
+    known = set(paths)
+    evidenced: set[str] = set()
+    for path in paths:
+        is_readme = PurePosixPath(path).name.lower().startswith("readme")
+        if not is_readme and not is_workflow_candidate(path):
+            continue
+        text = read_text(root, path)
+        if text is None:
+            continue
+        commands = readme_commands(text) if is_readme else workflow_commands(text)
+        for command in commands:
+            for segment in re.split(r"(?:&&|\|\||;)", command):
+                entrypoint = command_entrypoint(segment.strip())
+                if not entrypoint or any(marker in entrypoint for marker in ("$", "{", "}")):
+                    continue
+                normalized = PurePosixPath(entrypoint.removeprefix("./")).as_posix()
+                if normalized in known and (root / normalized).is_file():
+                    evidenced.add(normalized)
+    return evidenced
+
+
+def discover_build_files(root: Path, paths: list[str]) -> list[str]:
+    build_files = {path for path in paths if is_build_candidate(path)}
+    build_files.update(evidenced_command_paths(root, paths))
+    return sorted(build_files)
+
+
 def inspect_repository(root: Path) -> dict[str, Any]:
     paths = tracked_and_untracked_paths(root)
-    mains = main_candidates(root, paths)
+    build_files = discover_build_files(root, paths)
+    mains = main_candidates(root, paths, build_files)
     selected_main = str(mains[0]["path"]) if mains else None
     graph_paths, graph_edges = discover_tex_graph(root, selected_main)
     bibliography_scope = graph_paths if graph_paths else ([selected_main] if selected_main else [])
-    bibliographies = bibliography_candidates(root, paths, bibliography_scope)
+    bibliographies = bibliography_candidates(root, paths, bibliography_scope, selected_main)
     selected_bib = str(bibliographies[0]["path"]) if bibliographies else None
     table_paths = discover_table_files(root, graph_paths, selected_main)
     table_directories = ranked_directories(table_paths)
@@ -806,7 +954,7 @@ def inspect_repository(root: Path) -> dict[str, Any]:
         path for path in graph_paths if path != selected_main and path not in set(table_paths)
     ]
     section_directories = ranked_directories(section_paths)
-    graphics, unresolved_graphics = discover_graphics(root, graph_paths)
+    graphics, unresolved_graphics = discover_graphics(root, graph_paths, selected_main)
     figure_directories = ranked_directories(graphics)
     style_paths = sorted(path for path in paths if PurePosixPath(path).suffix.lower() in {".sty", ".cls", ".bst"})
     style_directories = ranked_directories(style_paths)
@@ -816,7 +964,6 @@ def inspect_repository(root: Path) -> dict[str, Any]:
         if "EXPERIMENTS.md" in paths
         else (str(experiment_surfaces[0]["path"]) if experiment_surfaces else "")
     )
-    build_files = sorted(path for path in paths if is_build_candidate(path))
     workflows = sorted(path for path in paths if is_workflow_candidate(path))
     agent_files = ranked_agent_files(
         path
@@ -1325,23 +1472,115 @@ def export_bytes(destination: Path, data: bytes | None, *, deleted_message: str)
     destination.write_bytes(data)
 
 
-def pending_sync_config(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
-    existing = read_existing_sync_config(root)
-    if existing is not None and existing.get("last_synced_commit") is not None:
-        raise AdoptionError(
-            "a reviewed template baseline already exists; use template-sync instead of template adoption"
+def sync_provenance(config: dict[str, Any]) -> dict[str, Any]:
+    return copy.deepcopy(config)
+
+
+def reviewed_provenance_is_compatible(root: Path, config: dict[str, Any]) -> bool:
+    adoption = config["adoption"]
+    upstream = config["upstream"]
+    baseline = config.get("last_synced_commit")
+    if not isinstance(baseline, str):
+        return False
+    configured = git(root, "remote", "get-url", upstream["remote"], check=False)
+    if configured.returncode != 0 or configured.stdout.strip() != upstream["url"]:
+        return False
+    branch_tip = git(
+        root,
+        "rev-parse",
+        "--verify",
+        f"{upstream['remote']}/{upstream['branch']}^{{commit}}",
+        check=False,
+    )
+    if branch_tip.returncode != 0:
+        return False
+    target = adoption["target_commit"]
+    for candidate in (target, baseline):
+        reachable = git(
+            root,
+            "merge-base",
+            "--is-ancestor",
+            candidate,
+            branch_tip.stdout.strip(),
+            check=False,
         )
+        if reachable.returncode != 0:
+            return False
+    return git(root, "merge-base", "--is-ancestor", target, baseline, check=False).returncode == 0
+
+
+def consistent_pending_adoption(
+    existing: dict[str, Any],
+    adoption: Any,
+    upstream: dict[str, str],
+    target: str,
+) -> bool:
+    return bool(
+        isinstance(adoption, dict)
+        and adoption.get("status") == "in_progress"
+        and adoption.get("target_commit") == target
+        and existing.get("last_synced_commit") is None
+        and existing.get("last_synced_at") is None
+        and not any(
+            key in adoption
+            for key in ("reviewed_at", "verification_repository_fingerprint")
+        )
+        and all(
+            existing["upstream"][key] == upstream[key]
+            for key in ("url", "remote", "branch")
+        )
+    )
+
+
+def pending_sync_config(
+    root: Path,
+    plan: dict[str, Any],
+    *,
+    recover_reviewed: bool,
+) -> dict[str, Any]:
+    existing = read_existing_sync_config(root)
+    adoption = existing.get("adoption") if existing else None
+    if isinstance(adoption, dict) and adoption.get("status") == "reviewed":
+        if reviewed_provenance_is_compatible(root, existing):
+            raise AdoptionError(
+                "a legitimate reviewed template baseline already exists; "
+                "use template-sync instead of template adoption"
+            )
+        if not recover_reviewed:
+            raise AdoptionError(
+                "existing reviewed adoption provenance is invalid, unreachable, or incompatible; "
+                "review its provenance and rerun apply with --recover-reviewed"
+            )
     upstream = plan["upstream"]
+    recovering = False
     if existing is not None:
         existing_upstream = existing["upstream"]
-        if any(existing_upstream[key] != upstream[key] for key in ("url", "remote", "branch")):
+        same_pending = consistent_pending_adoption(
+            existing, adoption, upstream, str(plan["target_commit"])
+        )
+        recovering = not same_pending and (
+            existing.get("last_synced_commit") is not None
+            or isinstance(adoption, dict)
+            or any(existing_upstream[key] != upstream[key] for key in ("url", "remote", "branch"))
+        )
+        if recovering and not recover_reviewed:
             raise AdoptionError(
-                "existing uninitialized template sync configuration points to a different upstream; "
-                "review it before adoption"
+                "existing baseline or adoption metadata is not trustworthy evidence of completed adoption; "
+                "review its provenance and rerun apply with --recover-reviewed"
             )
     always_manual = list(existing.get("always_manual", [])) if existing else []
     ignored_paths = list(existing.get("ignored_paths", [])) if existing else []
+    prior_sync_history = []
+    if isinstance(adoption, dict):
+        prior_sync_history = list(adoption.get("prior_sync_history", []))
+    if existing is not None and recovering:
+        prior_sync_history.append(sync_provenance(existing))
     return {
+        "adoption": {
+            "prior_sync_history": prior_sync_history,
+            "status": "in_progress",
+            "target_commit": plan["target_commit"],
+        },
         "always_manual": always_manual,
         "ignored_paths": ignored_paths,
         "last_sync_note": (
@@ -1360,15 +1599,20 @@ def pending_sync_config(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def write_pending_sync_config(root: Path, plan: dict[str, Any]) -> None:
-    config = pending_sync_config(root, plan)
+def write_pending_sync_config(
+    root: Path,
+    plan: dict[str, Any],
+    *,
+    recover_reviewed: bool,
+) -> None:
+    config = pending_sync_config(root, plan, recover_reviewed=recover_reviewed)
     path = ensure_directory_path(root, Path(".agents"), create=True) / "template-sync.json"
     ensure_writable_file(path)
     path.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     git(root, "add", "--", SYNC_CONFIG_RELATIVE.as_posix())
 
 
-def apply_plan(root: Path, plan_path: Path) -> None:
+def apply_plan(root: Path, plan_path: Path, *, recover_reviewed: bool) -> None:
     ensure_safe_apply_context(root)
     plan = read_json(plan_path, "paper-template-adoption-plan-v1")
     validate_plan_upstream(root, plan)
@@ -1383,7 +1627,7 @@ def apply_plan(root: Path, plan_path: Path) -> None:
     if target != plan["target_commit"]:
         raise AdoptionError("template target no longer resolves to the planned commit")
     validate_apply_plan_items(root, plan, target)
-    pending_sync_config(root, plan)
+    pending_sync_config(root, plan, recover_reviewed=recover_reviewed)
 
     runtime = runtime_directory(root, create=True)
     bundle = runtime / "merge-bundle"
@@ -1432,7 +1676,7 @@ def apply_plan(root: Path, plan_path: Path) -> None:
         (bundle / "mappings.md").write_text(
             render_inspection(plan["inspection"]), encoding="utf-8"
         )
-    write_pending_sync_config(root, plan)
+    write_pending_sync_config(root, plan, recover_reviewed=recover_reviewed)
     print(
         f"OK template_adoption applied_safe={safe_count} "
         f"review_bundle={review_count} pending_sync_config=1"
@@ -1510,6 +1754,7 @@ def verify_adoption(root: Path, *, plan_path: Path, variants: bool) -> int:
             if result.stderr:
                 print(result.stderr, file=sys.stderr, end="" if result.stderr.endswith("\n") else "\n")
 
+    inspection = inspect_repository(root)
     report = {
         "schema_version": "paper-template-adoption-verification-v1",
         "created_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
@@ -1517,6 +1762,7 @@ def verify_adoption(root: Path, *, plan_path: Path, variants: bool) -> int:
         "downstream_branch": current_branch(root),
         "target_commit": plan["target_commit"],
         "plan_fingerprint": json_fingerprint(plan),
+        "inspection_fingerprint": inspection_fingerprint(inspection),
         "variants_verified": variants,
         "repository_fingerprint": repository_fingerprint(root),
         "success": all(check["success"] for check in checks),
@@ -1541,6 +1787,54 @@ def verify_adoption(root: Path, *, plan_path: Path, variants: bool) -> int:
     return 0 if report["success"] else 1
 
 
+def assess_adoption(root: Path, *, plan_path: Path) -> int:
+    if not plan_path.is_file():
+        raise AdoptionError("missing adoption plan; run plan before assessment")
+    plan = read_json(plan_path, "paper-template-adoption-plan-v1")
+    validate_plan_upstream(root, plan)
+    checks: list[dict[str, Any]] = []
+    for raw_command in ASSESSMENT_COMMANDS:
+        command = list(raw_command)
+        result = run(command, cwd=root, check=False)
+        checks.append(command_record(command, result))
+        print(
+            f"{'OK' if result.returncode == 0 else 'FAILED'} "
+            f"template_adoption assess: {shlex.join(command)}"
+        )
+    report = {
+        "schema_version": "paper-template-adoption-assessment-v1",
+        "created_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
+        "authorizes_finalize": False,
+        "downstream_head": head_commit(root),
+        "downstream_branch": current_branch(root),
+        "target_commit": plan["target_commit"],
+        "plan_fingerprint": json_fingerprint(plan),
+        "repository_fingerprint": repository_fingerprint(root),
+        "success": all(check["success"] for check in checks),
+        "checks": checks,
+    }
+    runtime = runtime_directory(root, create=True)
+    assessment_json = runtime / "assessment.json"
+    assessment_markdown = runtime / "assessment.md"
+    ensure_writable_file(assessment_json)
+    ensure_writable_file(assessment_markdown)
+    assessment_json.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    lines = [
+        "# Template Adoption Assessment",
+        "",
+        "This collect-all diagnostic report cannot authorize finalization.",
+        "",
+    ]
+    lines.extend(
+        f"- {'PASS' if check['success'] else 'FAIL'}: `{check['command']}`" for check in checks
+    )
+    lines.extend(["", f"Overall success: `{str(report['success']).lower()}`"])
+    assessment_markdown.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return 0 if report["success"] else 1
+
+
 def require_current_full_verification(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
     path = runtime_directory(root, create=False) / "verification.json"
     if not path.is_file():
@@ -1556,7 +1850,12 @@ def require_current_full_verification(root: Path, plan: dict[str, Any]) -> dict[
     ]
     if not isinstance(checks, list) or [check.get("command") for check in checks if isinstance(check, dict)] != expected_commands:
         raise AdoptionError("verification report does not contain the complete expected command set")
-    if not all(isinstance(check, dict) and check.get("success") for check in checks):
+    if not all(
+        isinstance(check, dict)
+        and check.get("success") is True
+        and check.get("returncode") == 0
+        for check in checks
+    ):
         raise AdoptionError("verification report contains an unsuccessful or malformed command result")
     if report.get("target_commit") != plan.get("target_commit"):
         raise AdoptionError("verification report targets a different template commit; rerun verify --variants")
@@ -1571,7 +1870,30 @@ def require_current_full_verification(root: Path, plan: dict[str, Any]) -> dict[
     current = repository_fingerprint(root)
     if report.get("repository_fingerprint") != current:
         raise AdoptionError("downstream repository changed since verification; rerun verify --variants")
+    inspection = inspect_repository(root)
+    if report.get("inspection_fingerprint") != inspection_fingerprint(inspection):
+        raise AdoptionError("downstream inspection changed since verification; rerun verify --variants")
     return report
+
+
+def require_paper_ready_inspection(root: Path) -> dict[str, Any]:
+    inspection = inspect_repository(root)
+    missing_contracts = [
+        str(contract["path"])
+        for contract in inspection["contracts"]
+        if contract["status"] != "present"
+    ]
+    missing: list[str] = []
+    if not inspection.get("selected_main"):
+        missing.append("a supported TeX paper entrypoint")
+    if missing_contracts:
+        missing.append("Human contracts: " + ", ".join(missing_contracts))
+    if missing:
+        raise AdoptionError(
+            "adoption cannot finalize a materially non-paper-first repository; missing "
+            + "; ".join(missing)
+        )
+    return inspection
 
 
 def read_existing_sync_config(root: Path) -> dict[str, Any] | None:
@@ -1610,6 +1932,30 @@ def read_existing_sync_config(root: Path) -> dict[str, Any] | None:
         value = upstream.get(key)
         if not isinstance(value, str) or not value.strip():
             raise AdoptionError(f"existing template sync upstream.{key} must be a non-empty string")
+    adoption = data.get("adoption")
+    if adoption is not None:
+        if not isinstance(adoption, dict) or adoption.get("status") not in {
+            "in_progress",
+            "reviewed",
+        }:
+            raise AdoptionError("existing template sync adoption.status is invalid")
+        target = adoption.get("target_commit")
+        if not isinstance(target, str) or len(target) != 40 or any(
+            character not in "0123456789abcdef" for character in target
+        ):
+            raise AdoptionError("existing template sync adoption target must be a lowercase 40-character SHA")
+        history = adoption.get("prior_sync_history", [])
+        if not isinstance(history, list) or not all(isinstance(item, dict) for item in history):
+            raise AdoptionError("existing template sync adoption prior_sync_history must be a list of objects")
+        if adoption["status"] == "reviewed":
+            fingerprint = adoption.get("verification_repository_fingerprint")
+            if (
+                not isinstance(adoption.get("reviewed_at"), str)
+                or not isinstance(fingerprint, str)
+                or len(fingerprint) != 64
+                or any(character not in "0123456789abcdef" for character in fingerprint)
+            ):
+                raise AdoptionError("existing reviewed adoption state is incomplete or inconsistent")
     return data
 
 
@@ -1626,19 +1972,32 @@ def finalize_adoption(
     validate_installation(root)
     plan = read_json(plan_path, "paper-template-adoption-plan-v1")
     validate_plan_upstream(root, plan)
-    require_current_full_verification(root, plan)
     target = resolve_commit(root, str(plan["target_commit"]))
     existing = read_existing_sync_config(root)
-    if existing is not None:
-        baseline = existing.get("last_synced_commit")
-        if baseline not in (None, target):
-            raise AdoptionError(
-                "an existing reviewed template baseline differs from the adoption target; use template-sync instead"
-            )
+    adoption = existing.get("adoption") if existing else None
+    if existing is None or not consistent_pending_adoption(
+        existing, adoption, plan["upstream"], target
+    ):
+        raise AdoptionError(
+            "finalize requires consistent in-progress adoption state for the exact target; "
+            "review contradictory provenance and rerun apply with --recover-reviewed"
+        )
+    require_current_full_verification(root, plan)
+    require_paper_ready_inspection(root)
+    if verify_adoption(root, plan_path=plan_path, variants=True) != 0:
+        raise AdoptionError("mandatory full-variant verification failed during finalize")
+    report = require_current_full_verification(root, plan)
     always_manual = list(existing.get("always_manual", [])) if existing else []
     ignored_paths = list(existing.get("ignored_paths", [])) if existing else []
     upstream = plan["upstream"]
     config = {
+        "adoption": {
+            "prior_sync_history": list(adoption.get("prior_sync_history", [])),
+            "reviewed_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
+            "status": "reviewed",
+            "target_commit": target,
+            "verification_repository_fingerprint": report["repository_fingerprint"],
+        },
         "always_manual": always_manual,
         "ignored_paths": ignored_paths,
         "last_sync_note": note or "Reviewed initial adoption from an existing paper repository.",
@@ -1723,10 +2082,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     apply = subparsers.add_parser("apply")
     apply.add_argument("--plan", type=Path)
+    apply.add_argument(
+        "--recover-reviewed",
+        action="store_true",
+        help="resume an incomplete adoption after reviewing stale baseline provenance",
+    )
 
     verify = subparsers.add_parser("verify")
     verify.add_argument("--plan", type=Path)
     verify.add_argument("--variants", action="store_true")
+
+    assess = subparsers.add_parser("assess")
+    assess.add_argument("--plan", type=Path)
 
     finalize = subparsers.add_parser("finalize")
     finalize.add_argument("--plan", type=Path)
@@ -1784,10 +2151,13 @@ def main() -> int:
             print(f"Plan written to {output.relative_to(root) if output.is_relative_to(root) else output}")
         elif args.command == "apply":
             plan_path = resolve_runtime_path(root, args.plan, "plan.json")
-            apply_plan(root, plan_path)
+            apply_plan(root, plan_path, recover_reviewed=args.recover_reviewed)
         elif args.command == "verify":
             plan_path = resolve_runtime_path(root, args.plan, "plan.json")
             return verify_adoption(root, plan_path=plan_path, variants=args.variants)
+        elif args.command == "assess":
+            plan_path = resolve_runtime_path(root, args.plan, "plan.json")
+            return assess_adoption(root, plan_path=plan_path)
         elif args.command == "finalize":
             plan_path = resolve_runtime_path(root, args.plan, "plan.json")
             finalize_adoption(

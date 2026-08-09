@@ -17,7 +17,9 @@ scientific interpretation.
 
 ## Procedure
 
-1. Run the format, correction-candidate, metadata, and ledger audits.
+<!-- paper-skill-contract: F7-RR-001-v1 -->
+1. Before any edit, run the format, correction-candidate, metadata, and ledger
+   audits; preserve their unmodified output as the initial audit baseline.
 2. Treat updater candidates as retrieval leads, never as source-of-truth edits.
 3. Inspect every manuscript use and existing claim-evidence locator for the key.
 4. Retrieve authoritative records, preferring DOI/publisher/proceedings,

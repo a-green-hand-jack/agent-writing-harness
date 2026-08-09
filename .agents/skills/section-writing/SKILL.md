@@ -36,12 +36,16 @@ knowledge unless the active section actually requires them.
    `.agents/knowledge/scientific-writing.md`.
 4. Separate scientific content from presentation. Preserve locked and bounded
    meaning while handling free wording directly.
-5. Draft from available claims, evidence, results, interfaces, and references.
+<!-- paper-skill-contract: F7-SW-001-v1 -->
+5. If the prompt introduces, fabricates, removes, or materially changes a
+   citation or claim-support request, inspect `REFERENCES.md` and the relevant
+   records in `references/ledger.json` before drafting; do not invent support.
+6. Draft from available claims, evidence, results, interfaces, and references.
    Keep missing material visible rather than filling it plausibly.
-6. Check the active section locally for defined terms, claim strength,
+7. Check the active section locally for defined terms, claim strength,
    citation placement, figure/table references, and continuity with immediate
    neighbors.
-7. Report any unresolved input or proposed wording that would change a claim,
+8. Report any unresolved input or proposed wording that would change a claim,
    experiment interpretation, consequential limitation, or interface meaning.
 
 ## Drafting boundary
