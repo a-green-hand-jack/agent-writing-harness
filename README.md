@@ -84,11 +84,12 @@ The inspection infers candidates for the main TeX entrypoint, bibliography, sect
 After repository-specific semantic migration and validation:
 
 ```bash
+python3 .agents/tools/template-adoption.py assess
 python3 .agents/tools/template-adoption.py verify --variants
 python3 .agents/tools/template-adoption.py finalize --reviewed
 ```
 
-Finalization requires a successful full-variant verification report for the unchanged downstream state, then records the exact reviewed template commit in `.agents/template-sync.json`. Subsequent template updates use `template-sync`, not adoption. See `.agents/skills/template-adoption/SKILL.md`.
+`assess` is a non-authorizing collect-all diagnostic: it runs every standard leaf check and publication variant, records every outcome in `assessment.json`/`assessment.md`, and continues after failures. It is intentionally distinct from reviewed verification and can never authorize finalization. Finalization requires a successful full-variant `verify` report for the unchanged downstream state, then records the exact reviewed template commit in `.agents/template-sync.json`. Subsequent template updates use `template-sync`, not adoption. See `.agents/skills/template-adoption/SKILL.md`.
 
 ## Syncing a downstream paper repository
 
@@ -107,8 +108,11 @@ The plan separates changes into `safe`, `already`, `manual`, `conflict`, and `ig
 After manual merges and successful downstream validation:
 
 ```bash
+python3 .agents/tools/template-sync.py verify --reviewed
 python3 .agents/tools/template-sync.py record --reviewed
 ```
+
+Planning accepts only commits reachable from the configured branch of the configured upstream URL, and synchronization is blocked while adoption is `in_progress`. Template-sync runtime directories and files fail closed on symlinks and wrong filesystem types; plan, merge-bundle, application, verification, cleanup, and custom repository-local plan paths are never followed through a symlink outside the repository. Verification directly checks that every safe addition, modification, and deletion matches the target in both the index and worktree before running the repository checks and all four publication variants. Recording repeats those direct state checks and reruns all mandatory commands; receipts and reports remain evidence, not authority. Reviewed adoption metadata remains compatible with later baseline advancement.
 
 Adoption records the first reviewed baseline during `finalize`. A template-created or older repository without a trustworthy baseline instead uses one reviewed `--bootstrap` synchronization. Future synchronizations use the recorded upstream commit as the three-way baseline and run `plan` without `--bootstrap`. See `.agents/skills/template-sync/SKILL.md`.
 

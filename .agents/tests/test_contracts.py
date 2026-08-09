@@ -8,6 +8,22 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOL = ROOT / ".agents/tools/check-paper-contracts.py"
+F7_REQUIREMENTS = (
+    ("control-review", "F7-CR-001-v1", "independent semantic choices"),
+    ("decision-packet", "F7-DP-001-v1", "neutral recommendation"),
+    (
+        "section-writing",
+        "F7-SW-001-v1",
+        "introduces, fabricates, removes, or materially changes",
+    ),
+    (
+        "manuscript-consistency-review",
+        "F7-MCR-001-v1",
+        "every conflicting or affected surface found",
+    ),
+    ("reference-repair", "F7-RR-001-v1", "initial audit baseline"),
+    ("template-sync", "F7-TS-001-v1", "state the review boundary"),
+)
 
 
 def run(root: Path, profile: str) -> subprocess.CompletedProcess[str]:
@@ -113,12 +129,28 @@ The release instance is approved.
             f"# {skill}\n## Trigger\nRelevant task.\n## Minimum context\nCurrent contract.\n## Procedure\nReview and act.\n",
         )
     write(
+        root / ".agents/skills/control-review/SKILL.md",
+        "# control-review\n## Trigger\nReview meaning.\n## Minimum context\nCurrent contract.\n## Procedure\n<!-- paper-skill-contract: F7-CR-001-v1 -->\nFor independent semantic choices, use a separate Human approval gate for each; approval of one choice does not approve another.\n",
+    )
+    write(
+        root / ".agents/skills/decision-packet/SKILL.md",
+        "# decision-packet\n## Trigger\nRequest a choice.\n## Minimum context\nCurrent contract.\n## Procedure\n<!-- paper-skill-contract: F7-DP-001-v1 -->\nUse a neutral recommendation with stated criteria and tradeoffs. Give each choice a separate focused packet and separate Human approval gate for each.\n",
+    )
+    write(
         root / ".agents/skills/section-writing/SKILL.md",
-        "# section-writing\n## Trigger\nDraft a section.\n## Minimum context\nCurrent contract.\n## Procedure\nDraft.\nDo not invoke a reviewer persona.\n",
+        "# section-writing\n## Trigger\nDraft a section.\n## Minimum context\nCurrent contract.\n## Procedure\n<!-- paper-skill-contract: F7-SW-001-v1 -->\nWhen a prompt introduces, fabricates, removes, or materially changes a citation or claim-support request, inspect `REFERENCES.md` and `references/ledger.json` before drafting.\nDo not invoke a reviewer persona.\n",
     )
     write(
         root / ".agents/skills/manuscript-consistency-review/SKILL.md",
-        "# manuscript-consistency-review\n## Trigger\nUse after the Human identifies a manuscript version as ready.\n## Minimum context\nRead the complete paper.\n## Procedure\nReport findings only. Do not edit files.\n",
+        "# manuscript-consistency-review\n## Trigger\nUse after the Human identifies a manuscript version as ready.\n## Minimum context\nRead the complete paper.\n## Procedure\n<!-- paper-skill-contract: F7-MCR-001-v1 -->\nReport findings only. Do not edit files. Enumerate every conflicting or affected surface found with exact file and line references.\n",
+    )
+    write(
+        root / ".agents/skills/reference-repair/SKILL.md",
+        "# reference-repair\n## Trigger\nRepair a reference.\n## Minimum context\nCurrent entry.\n## Procedure\n<!-- paper-skill-contract: F7-RR-001-v1 -->\nBefore any edit, run and preserve checks as the initial audit baseline.\n",
+    )
+    write(
+        root / ".agents/skills/template-sync/SKILL.md",
+        "# template-sync\n## Trigger\nSync a template.\n## Minimum context\nCurrent plan.\n## Procedure\n<!-- paper-skill-contract: F7-TS-001-v1 -->\nBefore applying any safe change, explain why paths were classified and state the review boundary; no classification authorizes a semantic change.\n",
     )
     write(root / ".agents/runtime/.gitignore", "*\n!.gitignore\n")
     write(
@@ -168,6 +200,76 @@ class ContractChecks(unittest.TestCase):
             result = run(fixture, "draft")
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("missing required boundary: Report findings only", result.stdout)
+
+    def test_f7_valid_contract_declarations_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = Path(directory)
+            completed_fixture(fixture)
+            result = run(fixture, "draft")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_f7_missing_contract_declarations_fail(self) -> None:
+        for skill, requirement_id, _ in F7_REQUIREMENTS:
+            with self.subTest(skill=skill), tempfile.TemporaryDirectory() as directory:
+                fixture = Path(directory)
+                completed_fixture(fixture)
+                path = fixture / f".agents/skills/{skill}/SKILL.md"
+                declaration = f"<!-- paper-skill-contract: {requirement_id} -->"
+                path.write_text(
+                    path.read_text(encoding="utf-8").replace(declaration + "\n", ""),
+                    encoding="utf-8",
+                )
+                result = run(fixture, "draft")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(f"missing exact contract declaration: {declaration}", result.stdout)
+
+    def test_f7_malformed_contract_declarations_fail(self) -> None:
+        for skill, requirement_id, _ in F7_REQUIREMENTS:
+            with self.subTest(skill=skill), tempfile.TemporaryDirectory() as directory:
+                fixture = Path(directory)
+                completed_fixture(fixture)
+                path = fixture / f".agents/skills/{skill}/SKILL.md"
+                declaration = f"<!-- paper-skill-contract: {requirement_id} -->"
+                path.write_text(
+                    path.read_text(encoding="utf-8").replace(
+                        declaration, f"<!-- paper-skill-contract: {requirement_id}-malformed -->"
+                    ),
+                    encoding="utf-8",
+                )
+                result = run(fixture, "draft")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(f"missing exact contract declaration: {declaration}", result.stdout)
+
+    def test_f7_declarations_in_fenced_examples_are_inactive(self) -> None:
+        for skill, requirement_id, _ in F7_REQUIREMENTS:
+            with self.subTest(skill=skill), tempfile.TemporaryDirectory() as directory:
+                fixture = Path(directory)
+                completed_fixture(fixture)
+                path = fixture / f".agents/skills/{skill}/SKILL.md"
+                declaration = f"<!-- paper-skill-contract: {requirement_id} -->"
+                path.write_text(
+                    path.read_text(encoding="utf-8").replace(
+                        declaration, f"```markdown\n{declaration}\n```"
+                    ),
+                    encoding="utf-8",
+                )
+                result = run(fixture, "draft")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(f"missing exact contract declaration: {declaration}", result.stdout)
+
+    def test_f7_negated_old_prose_does_not_replace_contract_declarations(self) -> None:
+        for skill, requirement_id, old_phrase in F7_REQUIREMENTS:
+            with self.subTest(skill=skill), tempfile.TemporaryDirectory() as directory:
+                fixture = Path(directory)
+                completed_fixture(fixture)
+                path = fixture / f".agents/skills/{skill}/SKILL.md"
+                declaration = f"<!-- paper-skill-contract: {requirement_id} -->"
+                text = path.read_text(encoding="utf-8").replace(declaration, "")
+                text += f"\nThis skill must not satisfy {old_phrase}.\n"
+                path.write_text(text, encoding="utf-8")
+                result = run(fixture, "draft")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(f"missing exact contract declaration: {declaration}", result.stdout)
 
 
 if __name__ == "__main__":

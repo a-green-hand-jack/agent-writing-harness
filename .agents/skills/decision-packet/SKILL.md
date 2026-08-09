@@ -27,8 +27,11 @@ Prepare one focused packet:
 - **Current state** — what is presently approved or unresolved.
 - **Options** — genuinely different choices and their consequences.
 - **Affected surfaces** — claims, sections, experiments, interfaces, limitations, release.
-- **Recommendation** — the Agent's preferred choice and tradeoff.
+- **Recommendation** — a neutral recommendation grounded in stated criteria, evidence, and tradeoffs; do not present Agent preference as approval.
 - **Unchanged scope** — what this decision will not alter.
+
+<!-- paper-skill-contract: F7-DP-001-v1 -->
+Do not bundle independent semantic choices into one approval gate. Prepare a separate focused packet and use a separate Human approval gate for each.
 
 After the Human answers, update the current contract and durable rationale; do not leave the decision only in chat or runtime notes.
 

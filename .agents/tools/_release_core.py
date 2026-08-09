@@ -15,6 +15,8 @@ import tempfile
 import zipfile
 from pathlib import Path
 
+from _release_approval import valid_human_approval
+
 VARIANTS = {
     "draft": "draft",
     "anonymous": "anonymous",
@@ -474,9 +476,12 @@ def write_record(args: argparse.Namespace) -> Path:
     if output.exists():
         raise ReleaseError(f"release record already exists and will not be overwritten: {output}")
     if args.status in {"approved", "published"} and (
-        not args.human_approval or args.human_approval.strip().lower() in {"todo", "pending"}
+        not args.human_approval or not valid_human_approval(args.human_approval)
     ):
-        raise ReleaseError(f"status {args.status} requires explicit --human-approval")
+        raise ReleaseError(
+            f"status {args.status} requires --human-approval in the form "
+            "'Approved by <optional display name>[id:@stable-handle] on YYYY-MM-DD'"
+        )
 
     manifest_sha = sha256_file(instance / "manifest.json")
     source = manifest.get("source", {}) if isinstance(manifest.get("source"), dict) else {}
