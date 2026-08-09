@@ -11,6 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CHECKER = ROOT / ".agents/tools/check-reference-integrity.py"
 METADATA = ROOT / ".agents/tools/check-reference-metadata.py"
+FORMAT = ROOT / ".agents/tools/check-bibtex-format.py"
 
 
 def write(path: Path, text: str) -> None:
@@ -272,6 +273,46 @@ class ReferenceIntegrityTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("reference bad is problematic", result.stdout)
 
+    def test_agent_resolved_verified_identity_passes_release(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            record = reference("real")
+            record["human_review"] = {"state": "agent-resolved", "rationale": "Matched exact DOI and publisher record."}
+            fixture(root, "@article{real, title={A}}\n", [record])
+            result = run_checker(root, "release")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_agent_resolved_cannot_mark_unverified_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            record = reference("real", status="unverified")
+            record["human_review"] = {"state": "agent-resolved", "rationale": "Insufficient evidence."}
+            fixture(root, "@article{real, title={A}}\n", [record])
+            result = run_checker(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("cannot be agent-resolved unless verified", result.stdout)
+
+    def test_agent_resolved_identity_does_not_bypass_pending_usage_review(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            record = reference("real")
+            record["human_review"] = {"state": "agent-resolved", "rationale": "Exact DOI and publisher match."}
+            fixture(
+                root,
+                "@article{real, title={A}}\n",
+                [record],
+                usages=[{
+                    "citation_key": "real",
+                    "manuscript_location": "paper/section.tex:1",
+                    "classification": "background",
+                    "human_review_state": "pending",
+                }],
+            )
+            write(root / "paper/section.tex", "\\cite{real}\n")
+            result = run_checker(root, "release")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("lacks Human confirmation for release", result.stdout)
+
     def test_claim_evidence_required_fields(self) -> None:
         for field in (
             "citation_key",
@@ -313,6 +354,7 @@ class ReferenceMetadataTests(unittest.TestCase):
     def add_lock(self, root: Path) -> None:
         write(root / ".agents/dependencies/reference-integrity/uv.lock", "fixture lock\n")
         write(root / ".agents/tools/check-reference-integrity.py", CHECKER.read_text(encoding="utf-8"))
+        write(root / ".agents/tools/_reference_env.py", (ROOT / ".agents/tools/_reference_env.py").read_text(encoding="utf-8"))
 
     def test_policy_absent_skips_without_uv(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -344,6 +386,9 @@ class ReferenceMetadataTests(unittest.TestCase):
                 runner,
                 """#!/usr/bin/env python3
 import json, pathlib, sys
+assert sys.argv[sys.argv.index('--rate-limit') + 1] == '30'
+assert sys.argv[sys.argv.index('--workers') + 1] == '1'
+assert '--no-google-books' in sys.argv
 target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text(json.dumps({
@@ -409,6 +454,313 @@ target.write_text(json.dumps({
             summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
             self.assertEqual(summary["outcome"], "infrastructure_error")
 
+    def test_rate_limit_is_advisory_not_a_reference_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'strict_warn_cnv', 'abstained': False,
+    'coverage_incomplete': False, 'errors': []
+}) + '\\n')
+print("Service 'dblp' is rate-limited/unavailable", file=sys.stderr)
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("CI not blocked", result.stdout)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "rate_limited")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_rate_limit_does_not_hide_positive_metadata_problem(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{bad, title={A}}\n", [reference("bad")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'bad', 'status': 'author_mismatch', 'abstained': False,
+    'coverage_incomplete': False, 'errors': []
+}) + '\\n')
+print("Service 'semanticscholar' is rate-limited/unavailable", file=sys.stderr)
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "reference_problem")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_authenticated_rate_limit_banner_is_not_throttling(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'strict_warn_cnv', 'abstained': False,
+    'coverage_incomplete': False, 'errors': []
+}) + '\\n')
+print('Using Semantic Scholar API key (authenticated rate limits)')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "unverified")
+            self.assertFalse(summary["rate_limit_degraded"])
+
+    def test_cached_rate_limit_circuit_is_advisory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'api_error', 'abstained': True,
+    'coverage_incomplete': True,
+    'errors': ['circuit open for service semanticscholar']
+}) + '\\n')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "rate_limited")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_rate_limit_does_not_hide_unrelated_infrastructure_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(
+                root,
+                "@article{limited, title={A}}\n@article{broken, title={B}}\n",
+                [reference("limited", status="unverified"), reference("broken", status="unverified")],
+            )
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+records = [
+    {'key': 'limited', 'status': 'api_error', 'abstained': True,
+     'coverage_incomplete': True, 'errors': ['circuit open for service dblp']},
+    {'key': 'broken', 'status': 'api_error', 'abstained': True,
+     'coverage_incomplete': True, 'errors': ['unexpected parser failure']},
+]
+target.write_text(''.join(json.dumps(record) + '\\n' for record in records))
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "infrastructure_error")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_active_rate_limit_circuit_with_network_retry_error_is_advisory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'api_error', 'abstained': True,
+    'coverage_incomplete': True,
+    'errors': ['Network failure after retries for Semantic Scholar']
+}) + '\\n')
+print("Service 'semanticscholar' is rate-limited/unavailable", file=sys.stderr)
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "rate_limited")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_rate_limit_status_does_not_hide_parser_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{broken, title={A}}\n", [reference("broken", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'broken', 'status': 'rate_limit', 'abstained': True,
+    'coverage_incomplete': True, 'errors': ['unexpected parser failure']
+}) + '\\n')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "infrastructure_error")
+            self.assertTrue(summary["rate_limit_degraded"])
+
+    def test_parser_timeout_text_is_not_a_provider_outage(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{broken, title={A}}\n", [reference("broken", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'broken', 'status': 'api_error', 'abstained': True,
+    'coverage_incomplete': True, 'errors': ['Exception: bibliography parser timed out']
+}) + '\\n')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "infrastructure_error")
+
+    def test_upstream_request_timeout_is_advisory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'api_error', 'abstained': True,
+    'coverage_incomplete': True, 'errors': ['Request timed out']
+}) + '\\n')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "provider_unavailable")
+
+    def test_provider_network_failures_are_advisory_without_claiming_rate_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(
+                root,
+                "@article{dblp, title={A}}\n@article{openalex, title={B}}\n",
+                [reference("dblp", status="unverified"), reference("openalex", status="unverified")],
+            )
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+records = [
+    {'key': 'dblp', 'status': 'api_error', 'abstained': True,
+     'coverage_incomplete': True, 'errors': ['Network failure after retries for DBLP']},
+    {'key': 'openalex', 'status': 'api_error', 'abstained': True,
+     'coverage_incomplete': True, 'errors': ['Network failure after retries for OpenAlex']},
+]
+target.write_text(''.join(json.dumps(record) + '\\n' for record in records))
+print("Service 'dblp' is rate-limited/unavailable", file=sys.stderr)
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "provider_unavailable")
+            self.assertEqual(summary["rate_limited_services"], ["dblp"])
+
+    def test_pre_circuit_provider_network_failure_is_advisory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_lock(root)
+            fixture(root, "@article{unknown, title={A}}\n", [reference("unknown", status="unverified")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                """#!/usr/bin/env python3
+import json, pathlib, sys
+target = pathlib.Path(sys.argv[sys.argv.index('--jsonl') + 1])
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps({
+    'key': 'unknown', 'status': 'api_error', 'abstained': True,
+    'coverage_incomplete': True,
+    'errors': ['Network failure after retries for https://api.semanticscholar.org']
+}) + '\\n')
+raise SystemExit(4)
+""",
+            )
+            runner.chmod(0o755)
+            result = self.run_metadata(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
+            self.assertEqual(summary["outcome"], "provider_unavailable")
+            self.assertFalse(summary["rate_limit_degraded"])
+
     def test_malformed_or_wrong_key_report_is_infrastructure_error(self) -> None:
         cases = (
             {"key": "real", "status": "verified"},
@@ -435,6 +787,117 @@ target.write_text(json.dumps({
                 self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
                 summary = json.loads((root / "dist/reference-integrity/run.json").read_text())
                 self.assertEqual(summary["outcome"], "infrastructure_error")
+
+
+class BibtexFormatTests(unittest.TestCase):
+    def run_format(self, root: Path, uv: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(FORMAT), "--root", str(root), "--uv", uv, "--timeout", "5"],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def add_tools(self, root: Path) -> None:
+        write(root / ".agents/dependencies/reference-integrity/uv.lock", "fixture lock\n")
+        write(root / ".agents/tools/check-reference-integrity.py", CHECKER.read_text(encoding="utf-8"))
+        write(root / ".agents/tools/_validate-bibtex-with-pybtex.py", "# fixture helper\n")
+
+    def test_empty_bibliography_skips_without_uv(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_tools(root)
+            fixture(root, "", [])
+            result = self.run_format(root, "definitely-missing-uv")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/format-run.json").read_text())
+            self.assertEqual(summary["outcome"], "skipped")
+            self.assertFalse(summary["rewrites_bibliography"])
+
+    def test_valid_complete_pybtex_report_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_tools(root)
+            fixture(root, "@article{real, author={A}, title={T}, journal={J}, year={2026}}\n", [reference("real")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                "#!/usr/bin/env python3\nimport json, pathlib, sys\n"
+                "target = pathlib.Path(sys.argv[-1])\n"
+                "target.parent.mkdir(parents=True, exist_ok=True)\n"
+                "target.write_text(json.dumps({'schema_version': 'paper-bibtex-format-report-v1', "
+                "'checker': 'pybtex', 'passed': True, 'keys': ['real'], 'errors': []}) + '\\n')\n",
+            )
+            runner.chmod(0o755)
+            result = self.run_format(root, str(runner))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/format-run.json").read_text())
+            self.assertEqual(summary["outcome"], "passed")
+
+    def test_pybtex_format_problem_is_not_infrastructure_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_tools(root)
+            fixture(root, "@article{bad, title={T}}\n", [reference("bad")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                "#!/usr/bin/env python3\nimport json, pathlib, sys\n"
+                "target = pathlib.Path(sys.argv[-1])\n"
+                "target.parent.mkdir(parents=True, exist_ok=True)\n"
+                "target.write_text(json.dumps({'schema_version': 'paper-bibtex-format-report-v1', "
+                "'checker': 'pybtex', 'passed': False, 'keys': ['bad'], "
+                "'errors': [{'key': 'bad', 'message': 'missing required field: author'}]}) + '\\n')\n"
+                "raise SystemExit(1)\n",
+            )
+            runner.chmod(0o755)
+            result = self.run_format(root, str(runner))
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            summary = json.loads((root / "dist/reference-integrity/format-run.json").read_text())
+            self.assertEqual(summary["outcome"], "format_problem")
+
+    def test_contradictory_pybtex_report_is_infrastructure_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_tools(root)
+            fixture(root, "@article{real, title={T}}\n", [reference("real")])
+            runner = root / "fake-uv"
+            write(
+                runner,
+                "#!/usr/bin/env python3\nimport json, pathlib, sys\n"
+                "target = pathlib.Path(sys.argv[-1])\n"
+                "target.parent.mkdir(parents=True, exist_ok=True)\n"
+                "target.write_text(json.dumps({'schema_version': 'paper-bibtex-format-report-v1', "
+                "'checker': 'pybtex', 'passed': True, 'keys': ['real'], "
+                "'errors': [{'key': 'real', 'message': 'contradiction'}]}) + '\\n')\n",
+            )
+            runner.chmod(0o755)
+            result = self.run_format(root, str(runner))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("contradicts", result.stdout)
+
+    def test_stale_report_cannot_mask_helper_crash(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.add_tools(root)
+            fixture(root, "@article{real, title={T}}\n", [reference("real")])
+            stale = root / "dist/reference-integrity/format.json"
+            write(
+                stale,
+                json.dumps({
+                    "schema_version": "paper-bibtex-format-report-v1",
+                    "checker": "pybtex",
+                    "passed": False,
+                    "keys": ["real"],
+                    "errors": [{"key": "real", "message": "old finding"}],
+                }) + "\n",
+            )
+            runner = root / "fake-uv"
+            write(runner, "#!/usr/bin/env python3\nraise SystemExit(2)\n")
+            runner.chmod(0o755)
+            result = self.run_format(root, str(runner))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("invalid or missing Pybtex report", result.stdout)
 
 
 if __name__ == "__main__":

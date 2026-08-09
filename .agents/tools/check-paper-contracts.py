@@ -48,7 +48,9 @@ CONTROL_WORDS = ("locked", "bounded", "free", "unresolved")
 FOCUSED_SKILLS = (
     "control-review",
     "decision-packet",
+    "section-writing",
     "style-alignment",
+    "manuscript-consistency-review",
     "paper-interface-maintenance",
     "publication-planning",
     "release-review",
@@ -131,6 +133,24 @@ def check_draft(root: Path) -> int:
         for heading in ("## Trigger", "## Minimum context", "## Procedure"):
             if heading not in text:
                 code |= fail(f"{relative} missing heading: {heading}")
+
+    section_writing = read_text(root, ".agents/skills/section-writing/SKILL.md") or ""
+    if "Do not invoke a reviewer persona" not in section_writing:
+        code |= fail("section-writing must prohibit reviewer passes during drafting")
+
+    consistency_review = read_text(
+        root, ".agents/skills/manuscript-consistency-review/SKILL.md"
+    ) or ""
+    for marker in (
+        "Human identifies a manuscript version as ready",
+        "Report findings only",
+        "Do not edit",
+    ):
+        if marker.lower() not in consistency_review.lower():
+            code |= fail(
+                "manuscript-consistency-review is missing required boundary: "
+                f"{marker}"
+            )
 
     runtime_ignore = read_text(root, ".agents/runtime/.gitignore")
     if runtime_ignore is None:

@@ -1,9 +1,9 @@
 {
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Reconcile the previously reviewed case sync at 626ca34.",
-  "last_synced_at": "2026-08-09T08:10:47+00:00",
-  "last_synced_commit": "626ca3459e450ac1117a314857087de92d9b7fdc",
+  "last_sync_note": "Sync from 626ca34 to 7093603; preserve downstream contracts and reference non-adoption, integrate downstream anatomy and ignores, and update protected Overleaf Actions refs after Human approval.",
+  "last_synced_at": "2026-08-09T09:25:58+00:00",
+  "last_synced_commit": "7093603dc1bb8243832b3da0f31874197bc7fc37",
   "reference_integrity": {
     "adopted": false
   },

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import tempfile
@@ -61,6 +62,30 @@ class ActionsChecks(unittest.TestCase):
             result = run(root)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("must use a major ref", result.stdout)
+
+    def test_reference_workflow_keeps_api_secrets_out_of_pull_requests(self) -> None:
+        workflow_path = ROOT / ".github/workflows/reference-validation.yml"
+        if not workflow_path.is_file():
+            sync = json.loads((ROOT / ".agents/template-sync.json").read_text(encoding="utf-8"))
+            self.assertFalse(sync["reference_integrity"]["adopted"])
+            return
+        workflow = workflow_path.read_text(encoding="utf-8")
+        keyless = workflow.split("- name: Run keyless correction audit", 1)[1].split(
+            "- name: Run trusted correction audit", 1
+        )[0]
+        trusted = workflow.split("- name: Run trusted correction audit", 1)[1].split(
+            "- name: Upload reference audit evidence", 1
+        )[0]
+        self.assertNotIn("secrets.", keyless)
+        self.assertIn("github.event_name == 'pull_request'", keyless)
+        self.assertIn("github.event_name != 'pull_request'", trusted)
+        self.assertIn("secrets.OPENALEX_API_KEY", trusted)
+        self.assertIn("secrets.S2_API_KEY", trusted)
+        self.assertIn("'refs/heads/main'", workflow)
+        self.assertNotIn("pull_request_target", workflow)
+        self.assertNotIn("path: dist/reference-integrity/\n", workflow)
+        self.assertNotIn("metadata-cache.db", workflow)
+        self.assertNotIn("http-cache.db", workflow)
 
 
 if __name__ == "__main__":
