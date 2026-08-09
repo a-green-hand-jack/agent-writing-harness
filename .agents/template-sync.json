@@ -1,9 +1,9 @@
 {
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Template adoption is in progress against 626ca3459e450ac1117a314857087de92d9b7fdc; finalize only after semantic review and validation.",
-  "last_synced_at": null,
-  "last_synced_commit": null,
+  "last_sync_note": "Reconcile the previously reviewed case sync at 626ca34.",
+  "last_synced_at": "2026-08-09T08:10:47+00:00",
+  "last_synced_commit": "626ca3459e450ac1117a314857087de92d9b7fdc",
   "reference_integrity": {
     "adopted": false
   },
