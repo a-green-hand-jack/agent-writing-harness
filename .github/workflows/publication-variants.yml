@@ -1,0 +1,71 @@
+name: Publication variants
+
+on:
+  pull_request:
+  push:
+    branches:
+      - case/arxiv-2605-03042
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publication-variants-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  latex:
+    name: latex (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [draft, anonymous, camera-ready, arxiv]
+    steps:
+      - name: Checkout the validated head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install TeX and PDF text tools
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            latexmk \
+            poppler-utils \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-bibtex-extra
+
+      - name: Build publication variant
+        run: make pdf VARIANT="${{ matrix.variant }}"
+
+      - name: Check publication surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          variant="${{ matrix.variant }}"
+          if [[ "$variant" == draft ]]; then
+            pdf="paper/main.pdf"
+          else
+            pdf="paper/main-$variant.pdf"
+          fi
+          test -s "$pdf"
+          pdftotext "$pdf" "$RUNNER_TEMP/$variant.txt"
+          grep -Fq "Skill Inventory" "$RUNNER_TEMP/$variant.txt"
+          if [[ "$variant" == anonymous ]]; then
+            grep -Fq "Anonymous authors" "$RUNNER_TEMP/$variant.txt"
+            grep -Fq "Paper under double-blind review" "$RUNNER_TEMP/$variant.txt"
+            ! grep -Fq "Ruofeng Yang" "$RUNNER_TEMP/$variant.txt"
+            ! grep -Fq "Shanghai Jiao Tong University" "$RUNNER_TEMP/$variant.txt"
+            ! grep -Fq "Project page" "$RUNNER_TEMP/$variant.txt"
+            ! grep -Fq "wanshuiyin" "$RUNNER_TEMP/$variant.txt"
+          else
+            grep -Fq "Ruofeng Yang" "$RUNNER_TEMP/$variant.txt"
+            grep -Fq "wanshuiyin" "$RUNNER_TEMP/$variant.txt"
+            ! grep -Fq "Paper under double-blind review" "$RUNNER_TEMP/$variant.txt"
+          fi

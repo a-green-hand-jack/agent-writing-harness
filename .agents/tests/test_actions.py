@@ -85,6 +85,19 @@ class ActionsChecks(unittest.TestCase):
         self.assertNotIn("metadata-cache.db", workflow)
         self.assertNotIn("http-cache.db", workflow)
 
+    def test_publication_workflow_builds_every_variant(self) -> None:
+        workflow = (ROOT / ".github/workflows/publication-variants.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("variant: [draft, anonymous, camera-ready, arxiv]", workflow)
+        self.assertIn('make pdf VARIANT="${{ matrix.variant }}"', workflow)
+        self.assertIn('pdftotext "$pdf"', workflow)
+        self.assertIn('grep -Fq "Anonymous authors"', workflow)
+        self.assertIn('grep -Fq "Paper under double-blind review"', workflow)
+        self.assertIn('grep -Fq "Ruofeng Yang"', workflow)
+        self.assertIn('grep -Fq "Skill Inventory"', workflow)
+        self.assertIn('! grep -Fq "wanshuiyin"', workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

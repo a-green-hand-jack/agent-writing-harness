@@ -3,7 +3,9 @@
 % paper/supplementary/source-attribution.md for the migration mapping.
 % Venue package/bibstyle resolve under paper/style/ (see main.tex \bibliographystyle{style/iclr2026_conference}).
 \usepackage{style/iclr2026_conference}
-\iclrfinalcopy
+\ifPaperAnonymous\else
+  \iclrfinalcopy
+\fi
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{hyperref}
