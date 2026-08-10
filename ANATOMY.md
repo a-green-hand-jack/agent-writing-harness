@@ -8,6 +8,7 @@ This repo is an evidence-first writing harness.
 - `state/`: live writing control plane.
 - `paper/`: LaTeX source. Not the source of truth for facts.
 - `lab/`: claim, evidence, result, citation, and lightweight generation ledgers.
+- `references/`: canonical reference-integrity ledger, complementary to the evidence-first ledgers in `lab/research/`.
 - `release/`: tex-only export surfaces.
 - `exemplars/`: rhetorical move maps only.
 - `human/`: human-agent briefs, reviews, decisions, and inbox.

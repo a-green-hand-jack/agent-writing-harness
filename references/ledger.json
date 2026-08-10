@@ -1,0 +1,905 @@
+{
+  "schema_version": "paper-reference-ledger-v1",
+  "references": [
+    {
+      "citation_key": "lu2024aiscientist",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "yamada2025aiscientistv2",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "gottweis2025coscientist",
+      "status": "verified",
+      "identifiers": {
+        "arxiv": "2502.18864",
+        "doi": "10.1038/s41586-026-10644-y"
+      },
+      "verification": {
+        "sources": [
+          "publisher"
+        ],
+        "checked_at": "2026-08-09"
+      },
+      "human_review": {
+        "state": "agent-resolved",
+        "rationale": "The existing arXiv identifier links the preprint to the 2026 Nature article; metadata was aligned to that published version after checking the cited general system description."
+      }
+    },
+    {
+      "citation_key": "schmidgall2025agentrxiv",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "ifargan2024data2paper",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "du2024multiagentdebate",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "liang2024divergent",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "hong2024metagpt",
+      "status": "verified",
+      "identifiers": {
+        "openreview": "NpE2IzLxHF"
+      },
+      "verification": {
+        "sources": [
+          "openreview"
+        ],
+        "checked_at": "2026-08-09"
+      },
+      "human_review": {
+        "state": "agent-resolved",
+        "rationale": "The ICLR 2024 OpenReview record matches the existing title and authors; the publication year was corrected from the preprint year."
+      }
+    },
+    {
+      "citation_key": "qian2024chatdev",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "madaan2023selfrefine",
+      "status": "verified",
+      "identifiers": {
+        "arxiv": "2303.17651"
+      },
+      "verification": {
+        "sources": [
+          "publisher"
+        ],
+        "checked_at": "2026-08-09"
+      },
+      "human_review": {
+        "state": "agent-resolved",
+        "rationale": "The arXiv record confirms the same work; an erroneous year suffix was removed from the title and the venue form was normalized."
+      }
+    },
+    {
+      "citation_key": "shinn2023reflexion",
+      "status": "verified",
+      "identifiers": {
+        "arxiv": "2303.11366",
+        "doi": "10.52202/075280-0377"
+      },
+      "verification": {
+        "sources": [
+          "publisher",
+          "openalex"
+        ],
+        "checked_at": "2026-08-09"
+      },
+      "human_review": {
+        "state": "agent-resolved",
+        "rationale": "The NeurIPS proceedings and linked arXiv record identify the same work; metadata was aligned to the published 2023 proceedings version."
+      }
+    },
+    {
+      "citation_key": "liu2023reviewergpt",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "liang2024llmfeedback",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "luo2025aiscientistpitfalls",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "bai2022constitutional",
+      "status": "verified",
+      "identifiers": {
+        "arxiv": "2212.08073"
+      },
+      "verification": {
+        "sources": [
+          "publisher"
+        ],
+        "checked_at": "2026-08-09"
+      },
+      "human_review": {
+        "state": "agent-resolved",
+        "rationale": "The arXiv record confirms the same work; an erroneous year suffix was removed from the title and the arXiv metadata was normalized."
+      }
+    },
+    {
+      "citation_key": "lee2024rlaif",
+      "status": "verified",
+      "identifiers": {
+        "url": "https://proceedings.mlr.press/v235/lee24t.html"
+      },
+      "verification": {
+        "sources": [
+          "publisher"
+        ],
+        "checked_at": "2026-08-09"
+      },
+      "human_review": {
+        "state": "agent-resolved",
+        "rationale": "The PMLR and arXiv records identify the same work; metadata was updated to the ICML 2024 proceedings version and complete author list."
+      }
+    },
+    {
+      "citation_key": "yuan2024selfrewarding",
+      "status": "verified",
+      "identifiers": {
+        "url": "https://proceedings.mlr.press/v235/yuan24d.html"
+      },
+      "verification": {
+        "sources": [
+          "publisher",
+          "dblp"
+        ],
+        "checked_at": "2026-08-09"
+      },
+      "human_review": {
+        "state": "agent-resolved",
+        "rationale": "The PMLR proceedings record matches the preprint title and authors; metadata was updated to the ICML 2024 published version."
+      }
+    },
+    {
+      "citation_key": "yu2025rlaifv",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "zheng2023judging",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "shumailov2024curse",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "sainani2019writing",
+      "status": "verified",
+      "identifiers": {
+        "url": "https://www.coursera.org/learn/sciwrite"
+      },
+      "verification": {
+        "sources": [
+          "publisher"
+        ],
+        "checked_at": "2026-08-09"
+      },
+      "human_review": {
+        "state": "agent-resolved",
+        "rationale": "The live Stanford Coursera page confirms the course title and instructor; the entry was corrected from article to online-course metadata."
+      }
+    },
+    {
+      "citation_key": "kang2025researcharena",
+      "status": "verified",
+      "identifiers": {
+        "doi": "10.18653/v1/2025.findings-emnlp.303"
+      },
+      "verification": {
+        "sources": [
+          "publisher",
+          "dblp"
+        ],
+        "checked_at": "2026-08-09"
+      },
+      "human_review": {
+        "state": "agent-resolved",
+        "rationale": "The ACL Anthology and DBLP records match the same work; metadata was updated to the Findings of EMNLP 2025 published version."
+      }
+    },
+    {
+      "citation_key": "lee2026metaharness",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "karpathy2026wiki",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "ultraworkers2025",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "wu2023autogen",
+      "status": "verified",
+      "identifiers": {
+        "arxiv": "2308.08155",
+        "openreview": "uAjxFFing2"
+      },
+      "verification": {
+        "sources": [
+          "openreview",
+          "publisher"
+        ],
+        "checked_at": "2026-08-09"
+      },
+      "human_review": {
+        "state": "agent-resolved",
+        "rationale": "The arXiv and OpenReview records match the same title and authors; the entry now represents the non-archival 2024 ICLR workshop presentation without claiming formal proceedings."
+      }
+    },
+    {
+      "citation_key": "li2023camel",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "yang2024sweagent",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "wang2025openhands",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "openhands_skills",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "tong2026aitaste",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "li2026autosota",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "liu2026autoresearchclaw",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    },
+    {
+      "citation_key": "evoscientist2026",
+      "status": "unverified",
+      "identifiers": {},
+      "verification": {
+        "sources": [
+          "manual"
+        ],
+        "checked_at": null
+      },
+      "human_review": {
+        "state": "pending",
+        "rationale": "Imported from the arXiv case bibliography; authoritative identity and version review remain pending."
+      }
+    }
+  ],
+  "citation_usages": [
+    {
+      "citation_key": "bai2022constitutional",
+      "manuscript_location": "paper/sections/07_conclusion.tex:15",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "du2024multiagentdebate",
+      "manuscript_location": "paper/sections/02_intro.tex:15",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "du2024multiagentdebate",
+      "manuscript_location": "paper/sections/02_intro.tex:33",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "du2024multiagentdebate",
+      "manuscript_location": "paper/sections/06_related.tex:15",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "du2024multiagentdebate",
+      "manuscript_location": "paper/sections/03_method.tex:51",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "evoscientist2026",
+      "manuscript_location": "paper/sections/06_related.tex:11",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "gottweis2025coscientist",
+      "manuscript_location": "paper/sections/06_related.tex:8",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "hong2024metagpt",
+      "manuscript_location": "paper/sections/06_related.tex:26",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "hong2024metagpt",
+      "manuscript_location": "paper/sections/06_related.tex:55",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "ifargan2024data2paper",
+      "manuscript_location": "paper/sections/06_related.tex:8",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "ifargan2024data2paper",
+      "manuscript_location": "paper/sections/06_related.tex:53",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "karpathy2026wiki",
+      "manuscript_location": "paper/sections/03_method.tex:68",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "lee2024rlaif",
+      "manuscript_location": "paper/sections/07_conclusion.tex:15",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "lee2026metaharness",
+      "manuscript_location": "paper/sections/02_intro.tex:6",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "lee2026metaharness",
+      "manuscript_location": "paper/sections/06_related.tex:25",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "lee2026metaharness",
+      "manuscript_location": "paper/sections/03_method.tex:6",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "lee2026metaharness",
+      "manuscript_location": "paper/sections/03_method.tex:293",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "li2023camel",
+      "manuscript_location": "paper/sections/06_related.tex:26",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "li2026autosota",
+      "manuscript_location": "paper/sections/03_method.tex:239",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "liang2024divergent",
+      "manuscript_location": "paper/sections/02_intro.tex:15",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "liang2024divergent",
+      "manuscript_location": "paper/sections/02_intro.tex:33",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "liang2024divergent",
+      "manuscript_location": "paper/sections/06_related.tex:15",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "liang2024divergent",
+      "manuscript_location": "paper/sections/03_method.tex:51",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "liang2024llmfeedback",
+      "manuscript_location": "paper/sections/06_related.tex:21",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "liu2023reviewergpt",
+      "manuscript_location": "paper/sections/06_related.tex:21",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "liu2026autoresearchclaw",
+      "manuscript_location": "paper/sections/06_related.tex:11",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "lu2024aiscientist",
+      "manuscript_location": "paper/sections/02_intro.tex:8",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "lu2024aiscientist",
+      "manuscript_location": "paper/sections/02_intro.tex:11",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "lu2024aiscientist",
+      "manuscript_location": "paper/sections/06_related.tex:8",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "lu2024aiscientist",
+      "manuscript_location": "paper/sections/06_related.tex:50",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "luo2025aiscientistpitfalls",
+      "manuscript_location": "paper/sections/06_related.tex:11",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "madaan2023selfrefine",
+      "manuscript_location": "paper/sections/02_intro.tex:15",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "madaan2023selfrefine",
+      "manuscript_location": "paper/sections/06_related.tex:14",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "madaan2023selfrefine",
+      "manuscript_location": "paper/sections/03_method.tex:51",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "openhands_skills",
+      "manuscript_location": "paper/sections/06_related.tex:56",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "qian2024chatdev",
+      "manuscript_location": "paper/sections/06_related.tex:26",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "sainani2019writing",
+      "manuscript_location": "paper/sections/03_method.tex:148",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "schmidgall2025agentrxiv",
+      "manuscript_location": "paper/sections/02_intro.tex:8",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "schmidgall2025agentrxiv",
+      "manuscript_location": "paper/sections/02_intro.tex:12",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "schmidgall2025agentrxiv",
+      "manuscript_location": "paper/sections/06_related.tex:8",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "schmidgall2025agentrxiv",
+      "manuscript_location": "paper/sections/06_related.tex:9",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "schmidgall2025agentrxiv",
+      "manuscript_location": "paper/sections/06_related.tex:52",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "shinn2023reflexion",
+      "manuscript_location": "paper/sections/02_intro.tex:15",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "shinn2023reflexion",
+      "manuscript_location": "paper/sections/06_related.tex:14",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "shinn2023reflexion",
+      "manuscript_location": "paper/sections/03_method.tex:51",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "shumailov2024curse",
+      "manuscript_location": "paper/sections/07_conclusion.tex:16",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "tong2026aitaste",
+      "manuscript_location": "paper/sections/03_method.tex:239",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "ultraworkers2025",
+      "manuscript_location": "paper/sections/03_method.tex:286",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "ultraworkers2025",
+      "manuscript_location": "paper/sections/10_appendix.tex:119",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "wang2025openhands",
+      "manuscript_location": "paper/sections/06_related.tex:26",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "wang2025openhands",
+      "manuscript_location": "paper/sections/06_related.tex:56",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "wu2023autogen",
+      "manuscript_location": "paper/sections/06_related.tex:26",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "wu2023autogen",
+      "manuscript_location": "paper/sections/06_related.tex:54",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "yamada2025aiscientistv2",
+      "manuscript_location": "paper/sections/02_intro.tex:11",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "yamada2025aiscientistv2",
+      "manuscript_location": "paper/sections/06_related.tex:8",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "yamada2025aiscientistv2",
+      "manuscript_location": "paper/sections/06_related.tex:51",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "yang2024sweagent",
+      "manuscript_location": "paper/sections/06_related.tex:26",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "yu2025rlaifv",
+      "manuscript_location": "paper/sections/07_conclusion.tex:15",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "yuan2024selfrewarding",
+      "manuscript_location": "paper/sections/07_conclusion.tex:15",
+      "classification": "other",
+      "human_review_state": "pending"
+    },
+    {
+      "citation_key": "zheng2023judging",
+      "manuscript_location": "paper/sections/07_conclusion.tex:16",
+      "classification": "other",
+      "human_review_state": "pending"
+    }
+  ],
+  "claim_evidence": []
+}
