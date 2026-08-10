@@ -14,15 +14,16 @@ surfaces.
 
 | Variant | Purpose | Authors | Acknowledgements | Full appendix | Current status |
 |---|---|---:|---:|---:|---|
-| `draft` | Daily writing and review | visible | hidden | included | staged, not integrated |
-| `anonymous` | Anonymous venue submission | hidden | hidden | included | staged, not integrated |
-| `camera-ready` | Accepted venue version | visible | included | included | staged, not integrated |
-| `arxiv` | Public archival version | visible | included | included | current canonical layout |
+| `draft` | Daily writing and review | visible | hidden | included | active |
+| `anonymous` | Anonymous venue submission | hidden | hidden | included | active |
+| `camera-ready` | Accepted venue version | visible | enabled but empty | included | active |
+| `arxiv` | Public archival version | visible | enabled but empty | included | active |
 
 ## Allowed differences
 
-Variants may change only author visibility, acknowledgements, appendix
-inclusion, variant labels, and publication-facing presentation hooks.
+Variants may change only author and identity-bearing project-link visibility,
+acknowledgements, appendix inclusion, variant labels, and publication-facing
+presentation hooks.
 
 ## Must not diverge silently
 
@@ -40,14 +41,15 @@ release instance.
 ## Build interface
 
 ```bash
-bash scripts/check-latex.sh --compile
+make pdf
+make pdf VARIANT=anonymous
+make pdf VARIANT=camera-ready
+make pdf VARIANT=arxiv
 ```
 
-The synchronized variant overlays are present, but this case's canonical
-`paper/main.tex` does not yet apply their switches. Direct local and Overleaf
-builds therefore compile the canonical arXiv layout. Variant integration is a
-separate publication-planning change and is not implied by reference-integrity
-adoption.
+`make pdf` defaults to `draft` for daily writing. The root `paper/main.tex` defaults to `anonymous` for direct Overleaf and source imports. The ARIS source
+contains no acknowledgement text, so enabling that slot in `camera-ready` and
+`arxiv` intentionally emits no additional prose.
 
 ## Reference integrity
 
