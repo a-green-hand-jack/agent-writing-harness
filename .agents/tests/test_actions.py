@@ -90,6 +90,7 @@ class ActionsChecks(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("variant: [draft, anonymous, camera-ready, arxiv]", workflow)
+        self.assertIn("cm-super", workflow)
         self.assertIn('make pdf VARIANT="${{ matrix.variant }}"', workflow)
         self.assertIn('pdftotext "$pdf"', workflow)
         self.assertIn('grep -Fq "Anonymous authors"', workflow)
