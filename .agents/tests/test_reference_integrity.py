@@ -97,11 +97,13 @@ def run_checker(root: Path, profile: str = "draft") -> subprocess.CompletedProce
 
 
 class ReferenceIntegrityTests(unittest.TestCase):
-    def test_factory_template_passes_draft_and_release(self) -> None:
-        for profile in ("draft", "release"):
-            with self.subTest(profile=profile):
-                result = run_checker(ROOT, profile)
-                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    def test_current_repository_passes_draft_and_fails_release_closed(self) -> None:
+        draft = run_checker(ROOT, "draft")
+        self.assertEqual(draft.returncode, 0, draft.stdout + draft.stderr)
+
+        release = run_checker(ROOT, "release")
+        self.assertNotEqual(release.returncode, 0, release.stdout + release.stderr)
+        self.assertIn("lacks Human confirmation for release", release.stdout)
 
     def test_missing_policy_skips_for_legacy_downstream(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

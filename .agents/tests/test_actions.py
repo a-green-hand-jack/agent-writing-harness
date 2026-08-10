@@ -63,24 +63,22 @@ class ActionsChecks(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("must use a major ref", result.stdout)
 
-    def test_reference_workflow_keeps_api_secrets_out_of_pull_requests(self) -> None:
+    def test_reference_workflow_keeps_online_audits_manual(self) -> None:
         workflow_path = ROOT / ".github/workflows/reference-validation.yml"
         if not workflow_path.is_file():
             sync = json.loads((ROOT / ".agents/template-sync.json").read_text(encoding="utf-8"))
             self.assertFalse(sync["reference_integrity"]["adopted"])
             return
         workflow = workflow_path.read_text(encoding="utf-8")
-        keyless = workflow.split("- name: Run keyless correction audit", 1)[1].split(
-            "- name: Run trusted correction audit", 1
-        )[0]
-        trusted = workflow.split("- name: Run trusted correction audit", 1)[1].split(
+        manual = workflow.split("- name: Run manual online correction audit", 1)[1].split(
             "- name: Upload reference audit evidence", 1
         )[0]
-        self.assertNotIn("secrets.", keyless)
-        self.assertIn("github.event_name == 'pull_request'", keyless)
-        self.assertIn("github.event_name != 'pull_request'", trusted)
-        self.assertIn("secrets.OPENALEX_API_KEY", trusted)
-        self.assertIn("secrets.S2_API_KEY", trusted)
+        self.assertIn("- name: Run manual online metadata audit", manual)
+        self.assertEqual(manual.count("github.event_name == 'workflow_dispatch'"), 2)
+        self.assertNotIn("github.event_name == 'pull_request'", manual)
+        self.assertNotIn("github.event_name != 'pull_request'", manual)
+        self.assertIn("secrets.OPENALEX_API_KEY", manual)
+        self.assertIn("secrets.S2_API_KEY", manual)
         self.assertIn("'refs/heads/main'", workflow)
         self.assertNotIn("pull_request_target", workflow)
         self.assertNotIn("path: dist/reference-integrity/\n", workflow)
