@@ -240,9 +240,14 @@ class ProviderClient:
             return outcome, None
         if "<entry>" not in text:
             return "paper-not-indexed", None
-        title = re.search(r"<title>(.*?)</title>", text, re.DOTALL)
-        authors = re.findall(r"<name>(.*?)</name>", text)
-        published = re.search(r"<published>(.*?)</published>", text)
+        # Extract within the first <entry> so the feed-level wrapper title is
+        # never mistaken for the paper title.
+        entry_text = text[text.index("<entry>"):]
+        if "</entry>" in entry_text:
+            entry_text = entry_text[: entry_text.index("</entry>")]
+        title = re.search(r"<title>(.*?)</title>", entry_text, re.DOTALL)
+        authors = re.findall(r"<name>(.*?)</name>", entry_text)
+        published = re.search(r"<published>(.*?)</published>", entry_text)
         return "ok", {
             "title": strip_html(title.group(1)) if title else "",
             "authors": [strip_html(a) for a in authors],
