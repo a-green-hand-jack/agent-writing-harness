@@ -40,12 +40,18 @@ knowledge unless the active section actually requires them.
 5. If the prompt introduces, fabricates, removes, or materially changes a
    citation or claim-support request, inspect `REFERENCES.md` and the relevant
    records in `references/ledger.json` before drafting; do not invent support.
-6. Draft from available claims, evidence, results, interfaces, and references.
+6. When the draft adds or checks a citation, run the Draft profile of
+   `.agents/skills/citation-support-review/SKILL.md`: inventory the active
+   occurrence, resolve or discover the source, retrieve a bounded passage set,
+   compare once in the current writing context, and record a passing result as
+   `provisional`. Never insert a citation from title relevance or metadata
+   existence alone, and never upgrade provisional support to `human-confirmed`.
+7. Draft from available claims, evidence, results, interfaces, and references.
    Keep missing material visible rather than filling it plausibly.
-7. Check the active section locally for defined terms, claim strength,
+8. Check the active section locally for defined terms, claim strength,
    citation placement, figure/table references, and continuity with immediate
    neighbors.
-8. Report any unresolved input or proposed wording that would change a claim,
+9. Report any unresolved input or proposed wording that would change a claim,
    experiment interpretation, consequential limitation, or interface meaning.
 
 ## Drafting boundary
@@ -53,7 +59,9 @@ knowledge unless the active section actually requires them.
 Do not invoke a reviewer persona, launch parallel reviewer passes, audit the
 complete manuscript, or emit a manuscript review report while drafting. A
 local coherence check is part of writing; a version-level consistency review
-is a separate Human-requested task.
+is a separate Human-requested task. The Draft citation-support flow stays
+bounded to the active claim, uses at most three passages and one semantic
+comparison, and never launches a reviewer subagent or persona.
 
 ## Human decision
 

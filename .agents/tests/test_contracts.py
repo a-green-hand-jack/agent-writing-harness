@@ -22,6 +22,11 @@ F7_REQUIREMENTS = (
         "every conflicting or affected surface found",
     ),
     ("reference-repair", "F7-RR-001-v1", "initial audit baseline"),
+    (
+        "citation-support-review",
+        "F7-CSR-001-v1",
+        "the three questions",
+    ),
     ("template-sync", "F7-TS-001-v1", "state the review boundary"),
 )
 
@@ -122,6 +127,8 @@ The release instance is approved.
         "manuscript-consistency-review",
         "paper-interface-maintenance",
         "publication-planning",
+        "reference-repair",
+        "citation-support-review",
         "release-review",
     ):
         write(
@@ -147,6 +154,10 @@ The release instance is approved.
     write(
         root / ".agents/skills/reference-repair/SKILL.md",
         "# reference-repair\n## Trigger\nRepair a reference.\n## Minimum context\nCurrent entry.\n## Procedure\n<!-- paper-skill-contract: F7-RR-001-v1 -->\nBefore any edit, run and preserve checks as the initial audit baseline.\n",
+    )
+    write(
+        root / ".agents/skills/citation-support-review/SKILL.md",
+        "# citation-support-review\n## Trigger\nCheck citation support.\n## Minimum context\nCurrent occurrence.\n## Procedure\n<!-- paper-skill-contract: F7-CSR-001-v1 -->\nAnswer the three questions: what the manuscript claims, what the source says, and whether the source supports the claim.\n",
     )
     write(
         root / ".agents/skills/template-sync/SKILL.md",

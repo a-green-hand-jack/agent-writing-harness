@@ -10,9 +10,30 @@ meaning.
 - `paper/refs.bib` is the canonical bibliography used by LaTeX.
 - `references/ledger.json` is the Human-reviewable integrity ledger.
 - `dist/reference-integrity/` contains ignored online-check reports and caches.
+- `dist/reference-support/` contains ignored evidence-retrieval runs, support
+  packets, provider outcomes, and caches.
 
-The ledger uses `paper-reference-ledger-v1` and stores `references` as an array
-so duplicate citation keys cannot be hidden by JSON object semantics.
+The ledger uses `paper-reference-ledger-v2` and stores `references`,
+`citation_usages`, `citation_occurrences`, and `claim_evidence` as arrays so
+duplicate keys, duplicate occurrences, and multiple claims per key cannot be
+hidden by JSON object semantics.
+
+## Migration from v1
+
+`paper-reference-ledger-v1` was key-level only. Upgrade explicitly with:
+
+```bash
+python3 .agents/tools/reference-evidence.py migrate
+```
+
+The migration scans every TeX citation occurrence, records the occurrence with
+its claim text and fingerprint, and carries existing claim-evidence excerpts
+over as `source-unavailable` evidence that still requires re-review. It never
+silently rewrites a populated downstream ledger; run it deliberately and
+review the result before Release. The offline checker keeps accepting v1 for
+Draft but warns at Release until the migration runs.
+
+## Reference identity
 
 Each bibliography record has one of three states:
 
@@ -36,20 +57,64 @@ release.
 
 Every cited key must have a `citation_usages` record classifying its use as
 `claim-support`, `background`, `method`, `dataset`, or `other`, with a manuscript
-location and Human review state. When a citation supports a substantive
-manuscript claim, add a
-`claim_evidence` record containing:
+location and Human review state.
 
-- the citation key;
-- the manuscript claim and location;
-- the source locator, such as page, section, figure, or theorem;
-- a short evidence excerpt or rationale; and
-- the Human review state.
+For `paper-reference-ledger-v2`, claim evidence is bound to exact citation
+occurrences. The CLI inventories every TeX occurrence with file, line, command,
+citation keys, surrounding claim text, and a stable claim fingerprint:
+
+```bash
+python3 .agents/tools/reference-evidence.py inventory
+```
+
+Two different claims citing the same key require independently linked support
+records. A multi-citation claim records per-key evidence and joint support only
+when no individual work supports the complete claim. Each `claim_evidence`
+record contains the occurrence id, citation key, claim fingerprint, protocol
+version, source identity and version, verbatim passage text with locator and
+hash, the support assessment (verdict, supported/unsupported parts,
+contradictions, missing qualifiers, recommended action), and the review state.
 
 Automated entailment or similarity checks may prioritize review, but only a
 Human can mark claim evidence `human-confirmed`. Central claims, causal wording,
 limitations, and contested interpretations remain subject to the paper control
 contracts.
+
+## Citation support
+
+For every substantive citation occurrence the Agent answers three questions:
+
+1. What does the manuscript sentence claim?
+2. What does the cited work actually say (verbatim passage and locator)?
+3. Does that evidence support the manuscript claim?
+
+Verdicts are `supported`, `partially-supported`, `unsupported`,
+`contradicted`, or `source-unavailable`. Provider failures (`rate-limited`,
+`provider-unavailable`, `paper-not-indexed`, `identity-ambiguous`,
+`no-relevant-passage`, `full-text-unavailable`) are infrastructure or
+source-availability outcomes, never scientific verdicts; a real DOI or correct
+metadata does not prove claim support.
+
+### Staleness
+
+Evidence is stale when the claim text fingerprint, the citation set, the source
+identity or version, the passage hash, or the support protocol version changes.
+`record` rejects stale packets (claim fingerprint or citation set drift) and
+`check-reference-integrity.py` warns at Draft and fails at Release. Formatting-
+only movement preserves evidence when the claim fingerprint and cited source
+set remain unchanged.
+
+### Profiles
+
+- **Draft** — active claim only, bounded passages, one comparison, provisional
+  result. Never a manuscript reviewer pass.
+- **Review** — new, changed, provisional, stale, disagreement, and unresolved
+  occurrences; independent supportive and adversarial passes; exact excerpts
+  mechanically validated; Human decision packet on disagreement.
+- **Release** — complete inventory; reuse Human-confirmed evidence only when
+  fingerprint, citation set, source version, passage hash, and protocol version
+  are unchanged; recheck stale or unresolved records; fail closed on
+  substantive claim support that is not Human-confirmed.
 
 ## Offline gate
 
@@ -61,9 +126,11 @@ python3 .agents/tools/check-reference-integrity.py --profile release
 ```
 
 Draft blocks malformed ledgers, duplicate or uncovered keys, and
-`problematic` references. It keeps `unverified` and pending Human review visible
-as warnings. Release fails closed on every unresolved reference or claim-evidence
-review.
+`problematic` references. It keeps `unverified`, pending Human review, stale
+occurrence drift, and missing occurrence coverage visible as warnings. Release
+fails closed on every unresolved reference or claim-evidence review, every
+missing or stale occurrence, and every substantive claim without
+Human-confirmed support.
 
 ## BibTeX format gate
 

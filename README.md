@@ -12,9 +12,10 @@ A paper-first repository for Human–Agent collaborative scientific writing.
 3. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
 4. Record publication variants and allowed differences in `PUBLICATION.md`.
 5. Have the Agent construct and repair BibTeX from retrieved authoritative evidence, maintain `references/ledger.json` in the same change, and follow `REFERENCES.md`; never invent free-form metadata.
-6. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
-7. Edit the one canonical LaTeX source under `paper/`.
-8. Build:
+6. For every substantive citation, have the Agent run the Draft citation-support check (`citation-support-review`): inventory the active occurrence, resolve or discover the source, retrieve exact passages, and record a passing result as provisional. Never insert a citation from title relevance or metadata existence alone.
+7. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
+8. Edit the one canonical LaTeX source under `paper/`.
+9. Build:
 
 ```bash
 make pdf
@@ -31,7 +32,7 @@ Clean generated LaTeX files with `make clean`.
 - `EXPERIMENTS.md` — paper-facing experiment questions and interpretation boundaries.
 - `PAPER_INTERFACES.md` — stable semantic names shared by canonical and variant surfaces.
 - `PUBLICATION.md` — variants, delivery targets, release-instance boundaries, and Human review triggers.
-- `REFERENCES.md` and `references/ledger.json` — bibliographic identity states and Human-reviewed claim evidence.
+- `REFERENCES.md` and `references/ledger.json` — bibliographic identity states and Human-reviewed claim evidence, bound to exact citation occurrences with claim fingerprints.
 - `DECISIONS.md` — durable rationale for important Human decisions.
 - `paper/` — the canonical authored project and small publication overlays.
 
@@ -64,7 +65,7 @@ The factory template is intentionally unresolved, so strict release builds fail 
 bash .agents/tools/verify.sh
 ```
 
-`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, the offline reference ledger, publication variants, release-record boundaries, template-adoption and template-sync configuration, and regressions. The separate `Reference validation` workflow installs hash-locked Pybtex format validation and the open-source metadata checker only after the protected publication policy enables them.
+`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, the offline reference ledger (including occurrence coverage and claim-support state), publication variants, release-record boundaries, template-adoption and template-sync configuration, and regressions. The separate `Reference validation` workflow installs hash-locked Pybtex format validation and the open-source metadata checker only after the protected publication policy enables them.
 
 ## Adopting the template in an existing repository
 

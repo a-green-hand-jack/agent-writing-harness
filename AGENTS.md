@@ -32,6 +32,7 @@ This removes template-specific governance IDs, resets downstream-local metadata,
 - Human-requested consistency review after a manuscript version is ready → `.agents/skills/manuscript-consistency-review/SKILL.md`
 - recurring semantic interface → `.agents/skills/paper-interface-maintenance/SKILL.md`
 - bibliography identity, metadata, duplicate, or version repair → `.agents/skills/reference-repair/SKILL.md`
+- citation discovery, claim-support assessment, or evidence-passage retrieval → `.agents/skills/citation-support-review/SKILL.md`
 - publication variant or allowed difference → `.agents/skills/publication-planning/SKILL.md`
 - venue planning, deadlines, page budget, or official submission rules → `.agents/skills/publication-planning/SKILL.md` and `.agents/knowledge/venues/README.md`
 - immutable release candidate → `.agents/skills/release-review/SKILL.md`
