@@ -35,6 +35,28 @@ reviews `corrections/candidate.bib`, `corrections/report.jsonl`, and
 repairs. Ask the Human only when an identity/version choice can change meaning,
 claim support, or source locators.
 
+## Citation support workflow
+
+Every substantive citation occurrence goes through the three-question
+claim-to-citation review: what the manuscript claims, what the cited work says
+with a verbatim passage and locator, and whether the evidence supports the
+claim. The Agent runs `reference-evidence.py` (`inventory`, `resolve`, `search`,
+`passages`, `packet`, `record`, `status`, `migrate`) and follows
+`.agents/skills/citation-support-review/SKILL.md`.
+
+Draft records provisional results only and never upgrades to
+`human-confirmed`. Review performs independent supportive and adversarial
+passes and produces a Human decision packet on disagreement. Release reuses
+unchanged Human-confirmed evidence, rechecks stale, provisional, disagreement,
+unavailable, and unresolved records, and fails closed on any substantive claim
+without Human-confirmed support. Provider failures are classified outcomes
+(`rate-limited`, `provider-unavailable`, `paper-not-indexed`, ...), never
+scientific verdicts. A real DOI or metadata match never proves claim support.
+
+`references/ledger.json` uses `paper-reference-ledger-v2`. Legacy v1 ledgers
+are migrated explicitly with `reference-evidence.py migrate`; never copy a
+template ledger over a populated downstream ledger.
+
 ## Scope and evidence
 
 Keep each PR focused on one issue or tightly related design change. The PR body should state:

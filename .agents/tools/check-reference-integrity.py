@@ -10,13 +10,22 @@ import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from _citation_occurrences import (
+    claim_fingerprint,
+    scan_occurrences,
+)
+
 POLICY_START = "<!-- REFERENCE-INTEGRITY:START -->"
 POLICY_END = "<!-- REFERENCE-INTEGRITY:END -->"
 POLICY_SCHEMA = "paper-reference-integrity-policy-v1"
-LEDGER_SCHEMA = "paper-reference-ledger-v1"
+LEDGER_SCHEMAS = {"paper-reference-ledger-v1", "paper-reference-ledger-v2"}
+LEDGER_SCHEMA = "paper-reference-ledger-v2"
+SUPPORT_PROTOCOL_VERSION = "citation-support-protocol-v1"
 REFERENCE_STATUSES = {"verified", "problematic", "unverified"}
 HUMAN_REVIEW_STATES = {"pending", "human-confirmed", "human-rejected"}
 REFERENCE_REVIEW_STATES = HUMAN_REVIEW_STATES | {"agent-resolved"}
+SUPPORT_REVIEW_STATES = HUMAN_REVIEW_STATES | {"provisional", "disagreement"}
+SUPPORT_VERDICTS = {"supported", "partially-supported", "unsupported", "contradicted", "source-unavailable"}
 VERIFICATION_SOURCES = {"crossref", "openalex", "dblp", "openreview", "semantic-scholar", "publisher", "manual"}
 STABLE_IDENTIFIERS = {"doi", "arxiv", "openalex", "dblp", "openreview", "semantic_scholar", "isbn", "url"}
 USAGE_CLASSES = {"claim-support", "background", "method", "dataset", "other"}
@@ -247,7 +256,7 @@ def load_ledger(path: Path) -> dict[str, Any]:
         raise IntegrityError(f"invalid reference ledger JSON: {exc}") from exc
     if not isinstance(data, dict):
         raise IntegrityError("reference ledger must be a JSON object")
-    if data.get("schema_version") != LEDGER_SCHEMA:
+    if data.get("schema_version") not in LEDGER_SCHEMAS:
         raise IntegrityError("unsupported reference ledger schema_version")
     if not isinstance(data.get("references"), list):
         raise IntegrityError("reference ledger references must be an array")
@@ -255,6 +264,9 @@ def load_ledger(path: Path) -> dict[str, Any]:
         raise IntegrityError("reference ledger claim_evidence must be an array")
     if not isinstance(data.get("citation_usages"), list):
         raise IntegrityError("reference ledger citation_usages must be an array")
+    if data.get("schema_version") == LEDGER_SCHEMA:
+        if not isinstance(data.get("citation_occurrences"), list):
+            raise IntegrityError("reference ledger citation_occurrences must be an array")
     return data
 
 
@@ -362,7 +374,12 @@ def validate_claim_record(record: Any, profile: str, index: int, reference_keys:
 
 
 def validate_usage_records(
-    records: list[Any], profile: str, cited: set[str], reference_keys: set[str], claims: list[Any]
+    records: list[Any],
+    profile: str,
+    cited: set[str],
+    reference_keys: set[str],
+    claims: list[Any],
+    check_claim_evidence_cross: bool = True,
 ) -> int:
     code = 0
     covered: set[str] = set()
@@ -398,10 +415,282 @@ def validate_usage_records(
             code |= error(f"{label} lacks Human confirmation for release")
         elif state == "pending":
             warning(f"{label} awaits Human review")
-        if usage == "claim-support" and key not in claim_keys:
+        if usage == "claim-support" and check_claim_evidence_cross and key not in claim_keys:
             code |= error(f"{label} classifies {key} as claim-support without claim_evidence")
     for key in sorted(cited - covered):
         code |= error(f"cited reference lacks a reviewed citation_usages record: {key}")
+    return code
+
+
+def usage_class_by_key(records: list[Any]) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        key = record.get("citation_key")
+        usage = record.get("classification")
+        if nonempty(key) and usage in USAGE_CLASSES:
+            result[key] = usage
+    return result
+
+
+def validate_occurrence_records(
+    records: list[Any], profile: str, current: list[dict[str, Any]], reference_keys: set[str]
+) -> int:
+    """Validate v2 citation-occurrence records and manuscript coverage."""
+    code = 0
+    seen: set[str] = set()
+    by_id: dict[str, dict[str, Any]] = {}
+    for index, record in enumerate(records):
+        label = f"ledger citation_occurrences[{index}]"
+        if not isinstance(record, dict):
+            code |= error(f"{label} must be an object")
+            continue
+        occurrence_id = record.get("occurrence_id")
+        if not nonempty(occurrence_id):
+            code |= error(f"{label}.occurrence_id must be non-empty")
+        elif occurrence_id in seen:
+            code |= error(f"{label} duplicates occurrence_id: {occurrence_id}")
+        else:
+            seen.add(occurrence_id)
+        if not nonempty(record.get("manuscript_location")):
+            code |= error(f"{label}.manuscript_location must be non-empty")
+        if not nonempty(record.get("command")):
+            code |= error(f"{label}.command must be non-empty")
+        keys = record.get("citation_keys")
+        if not isinstance(keys, list) or not keys or not all(nonempty(key) for key in keys):
+            code |= error(f"{label}.citation_keys must be a non-empty array of non-empty strings")
+            keys = []
+        for key in keys:
+            if key not in reference_keys:
+                code |= error(f"{label} cites unknown citation key: {key}")
+        if not nonempty(record.get("claim_text")):
+            code |= error(f"{label}.claim_text must be non-empty")
+        fingerprint = record.get("claim_fingerprint")
+        if not nonempty(fingerprint):
+            code |= error(f"{label}.claim_fingerprint must be non-empty")
+        state = record.get("review_state")
+        if state not in SUPPORT_REVIEW_STATES:
+            code |= error(f"{label}.review_state has an unsupported value")
+        elif state == "human-rejected":
+            code |= error(f"{label} was rejected by Human review")
+        by_id[occurrence_id] = record
+
+    current_by_id: dict[str, dict[str, Any]] = {item["occurrence_id"]: item for item in current}
+    for occurrence in current:
+        current_id = occurrence["occurrence_id"]
+        if current_id not in by_id:
+            code |= error(
+                f"cited occurrence lacks a citation_occurrences record: "
+                f"{occurrence['manuscript_location']} {occurrence['citation_keys']}"
+            )
+            continue
+        record = by_id[current_id]
+        if profile == "release":
+            if record.get("review_state") == "pending":
+                code |= error(f"occurrence {current_id} remains pending for release")
+            if set(record.get("citation_keys") or []) != set(occurrence["citation_keys"]):
+                code |= error(f"occurrence {current_id} citation set changed since record")
+            if record.get("claim_fingerprint") != occurrence["claim_fingerprint"]:
+                code |= error(f"occurrence {current_id} claim fingerprint changed since record")
+        elif (
+            set(record.get("citation_keys") or []) != set(occurrence["citation_keys"])
+            or record.get("claim_fingerprint") != occurrence["claim_fingerprint"]
+        ):
+            warning(f"occurrence {current_id} drifted since record; re-inventory before review")
+
+    for occurrence_id, record in sorted(by_id.items()):
+        if occurrence_id in current_by_id:
+            continue
+        moved = any(
+            record.get("claim_fingerprint") == item["claim_fingerprint"]
+            and set(record.get("citation_keys") or []) == set(item["citation_keys"])
+            for item in current
+        )
+        if moved:
+            warning(f"occurrence {occurrence_id} moved; evidence preserved by fingerprint")
+        else:
+            code |= error(f"occurrence {occurrence_id} is stale or removed from the manuscript")
+    return code
+
+
+def validate_evidence_record(
+    record: Any,
+    profile: str,
+    index: int,
+    occurrences: list[dict[str, Any]],
+    reference_keys: set[str],
+    usage_by_key: dict[str, str],
+) -> int:
+    label = f"ledger claim_evidence[{index}]"
+    if not isinstance(record, dict):
+        return error(f"{label} must be an object")
+    code = 0
+    evidence_id = record.get("evidence_id")
+    if not nonempty(evidence_id):
+        code |= error(f"{label}.evidence_id must be non-empty")
+    occurrence_id = record.get("occurrence_id")
+    if not nonempty(occurrence_id):
+        code |= error(f"{label}.occurrence_id must be non-empty")
+        occurrence_id = None
+    key = record.get("citation_key")
+    if not nonempty(key):
+        code |= error(f"{label}.citation_key must be non-empty")
+        key = None
+    elif key not in reference_keys:
+        code |= error(f"{label} points to unknown citation key: {key}")
+
+    matched_occurrence: dict[str, Any] | None = None
+    for occurrence in occurrences:
+        if occurrence.get("occurrence_id") == occurrence_id:
+            matched_occurrence = occurrence
+            break
+    if occurrence_id is not None and matched_occurrence is None:
+        code |= error(f"{label} points to unknown occurrence: {occurrence_id}")
+    elif matched_occurrence is not None and key is not None:
+        if key not in (matched_occurrence.get("citation_keys") or []):
+            code |= error(f"{label} cites {key} outside occurrence {occurrence_id}")
+        recorded_fingerprint = record.get("claim_fingerprint")
+        if not nonempty(recorded_fingerprint):
+            code |= error(f"{label}.claim_fingerprint must be non-empty")
+        elif recorded_fingerprint != matched_occurrence.get("claim_fingerprint"):
+            if profile == "release":
+                code |= error(f"{label} is stale: claim fingerprint changed since evidence")
+            else:
+                warning(f"{label} is stale: claim fingerprint changed since evidence")
+
+    protocol = record.get("protocol_version")
+    if protocol != SUPPORT_PROTOCOL_VERSION:
+        if profile == "release":
+            code |= error(f"{label} is stale: unsupported protocol_version: {protocol}")
+        else:
+            warning(f"{label} uses unsupported protocol_version: {protocol}")
+
+    source_identity = record.get("source_identity")
+    if not isinstance(source_identity, dict):
+        code |= error(f"{label}.source_identity must be an object")
+        source_identity = {}
+    if not any(nonempty(source_identity.get(name)) for name in STABLE_IDENTIFIERS) and not nonempty(
+        source_identity.get("source_hash")
+    ):
+        code |= error(f"{label}.source_identity lacks a stable identifier or source_hash")
+
+    passage = record.get("passage")
+    if not isinstance(passage, dict):
+        code |= error(f"{label}.passage must be an object")
+        passage = {}
+    if not nonempty(passage.get("text")):
+        code |= error(f"{label}.passage.text must be non-empty")
+    if not nonempty(passage.get("locator")):
+        code |= error(f"{label}.passage.locator must be non-empty")
+    if not nonempty(passage.get("hash")):
+        code |= error(f"{label}.passage.hash must be non-empty")
+    if not nonempty(passage.get("origin")):
+        code |= error(f"{label}.passage.origin must be non-empty")
+
+    assessment = record.get("assessment")
+    if not isinstance(assessment, dict):
+        code |= error(f"{label}.assessment must be an object")
+        assessment = {}
+    verdict = assessment.get("verdict")
+    if verdict not in SUPPORT_VERDICTS:
+        code |= error(f"{label}.assessment.verdict has an unsupported value")
+    for field in ("supported_parts", "unsupported_parts", "contradictions", "missing_qualifiers"):
+        value = assessment.get(field)
+        if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            code |= error(f"{label}.assessment.{field} must be an array of strings")
+    if not nonempty(assessment.get("recommended_action")):
+        code |= error(f"{label}.assessment.recommended_action must be non-empty")
+
+    state = record.get("review_state")
+    if state not in SUPPORT_REVIEW_STATES:
+        code |= error(f"{label}.review_state has an unsupported value")
+    elif state == "human-rejected":
+        code |= error(f"{label} was rejected by Human review")
+    elif state == "disagreement" and profile == "release":
+        code |= error(f"{label} has unresolved disagreement for release")
+
+    updated_at = record.get("updated_at")
+    if updated_at is not None and not nonempty(updated_at):
+        code |= error(f"{label}.updated_at must be null or a non-empty string")
+    elif nonempty(updated_at):
+        try:
+            dt.date.fromisoformat(updated_at)
+        except ValueError:
+            code |= error(f"{label}.updated_at must be an ISO date")
+
+    is_claim_support = key is not None and usage_by_key.get(key) == "claim-support"
+    if verdict == "source-unavailable":
+        if profile == "release" and is_claim_support:
+            code |= error(f"{label} is unresolved: source unavailable for substantive claim")
+        else:
+            warning(f"{label} has no retrievable source evidence")
+    if is_claim_support and profile == "release" and state != "human-confirmed":
+        code |= error(f"{label} lacks Human confirmation for release")
+    elif is_claim_support and state == "pending":
+        warning(f"{label} awaits review")
+    elif is_claim_support and state == "provisional":
+        warning(f"{label} is provisional and awaits Human confirmation")
+    elif state == "disagreement":
+        warning(f"{label} awaits a Human decision")
+    return code
+
+
+def validate_v2_claim_evidence_coverage(
+    occurrences: list[dict[str, Any]],
+    evidence: list[dict[str, Any]],
+    usage_by_key: dict[str, str],
+    profile: str,
+) -> int:
+    """Release rejects substantive occurrences without confirmed support."""
+    code = 0
+    covered: set[tuple[str, str]] = set()
+    for record in evidence:
+        if not isinstance(record, dict):
+            continue
+        occurrence_id = record.get("occurrence_id")
+        key = record.get("citation_key")
+        if nonempty(occurrence_id) and nonempty(key):
+            covered.add((occurrence_id, key))
+    for occurrence in occurrences:
+        claim_keys = occurrence.get("citation_keys") or []
+        substantive = [key for key in claim_keys if usage_by_key.get(key) == "claim-support"]
+        if not substantive:
+            continue
+        for key in substantive:
+            if (occurrence.get("occurrence_id"), key) not in covered:
+                if profile == "release":
+                    code |= error(
+                        f"substantive occurrence {occurrence.get('occurrence_id')} ({key}) "
+                        "lacks support evidence"
+                    )
+                else:
+                    warning(
+                        f"substantive occurrence {occurrence.get('occurrence_id')} ({key}) "
+                        "lacks support evidence"
+                    )
+    return code
+
+
+def check_v2_support(
+    root: Path,
+    ledger: dict[str, Any],
+    profile: str,
+    reference_keys: set[str],
+    usage_records: list[Any],
+) -> int:
+    code = 0
+    current = scan_occurrences(root)
+    occurrences = ledger.get("citation_occurrences") or []
+    code |= validate_occurrence_records(occurrences, profile, current, reference_keys)
+    usage_by_key = usage_class_by_key(usage_records)
+    for index, record in enumerate(ledger.get("claim_evidence") or []):
+        code |= validate_evidence_record(
+            record, profile, index, occurrences, reference_keys, usage_by_key
+        )
+    code |= validate_v2_claim_evidence_coverage(occurrences, ledger.get("claim_evidence") or [], usage_by_key, profile)
+    if code == 0 and profile == "release":
+        print(f"OK reference_integrity support occurrences={len(current)} evidence={len(ledger.get('claim_evidence') or [])}")
     return code
 
 
@@ -447,11 +736,29 @@ def check(root: Path, profile: str) -> int:
     for key in sorted(cited - bib_set):
         code |= error(f"paper cites a key missing from BibTeX: {key}")
 
-    for index, record in enumerate(ledger["claim_evidence"]):
-        code |= validate_claim_record(record, profile, index, ledger_set)
-    code |= validate_usage_records(
-        ledger["citation_usages"], profile, cited & bib_set, ledger_set, ledger["claim_evidence"]
-    )
+    ledger_version = ledger.get("schema_version")
+    if ledger_version == LEDGER_SCHEMA:
+        # v2: claim_evidence records use the occurrence-aware support schema.
+        code |= validate_usage_records(
+            ledger["citation_usages"],
+            profile,
+            cited & bib_set,
+            ledger_set,
+            ledger["claim_evidence"],
+            check_claim_evidence_cross=False,
+        )
+        code |= check_v2_support(root, ledger, profile, ledger_set, ledger["citation_usages"])
+    else:
+        for index, record in enumerate(ledger["claim_evidence"]):
+            code |= validate_claim_record(record, profile, index, ledger_set)
+        code |= validate_usage_records(
+            ledger["citation_usages"], profile, cited & bib_set, ledger_set, ledger["claim_evidence"]
+        )
+        if profile == "release":
+            warning(
+                "ledger v1 lacks occurrence-level claim support; "
+                "run reference-evidence.py migrate before releasing"
+            )
 
     if code == 0:
         print(

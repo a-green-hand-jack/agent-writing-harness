@@ -1,6 +1,7 @@
 {
-  "schema_version": "paper-reference-ledger-v1",
-  "references": [],
+  "citation_occurrences": [],
   "citation_usages": [],
-  "claim_evidence": []
+  "claim_evidence": [],
+  "references": [],
+  "schema_version": "paper-reference-ledger-v2"
 }

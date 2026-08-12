@@ -53,6 +53,7 @@ FOCUSED_SKILLS = (
     "manuscript-consistency-review",
     "paper-interface-maintenance",
     "publication-planning",
+    "citation-support-review",
     "release-review",
 )
 SKILL_CONTRACT_REQUIREMENTS = {
@@ -61,6 +62,7 @@ SKILL_CONTRACT_REQUIREMENTS = {
     "F7-SW-001-v1": "section-writing",
     "F7-MCR-001-v1": "manuscript-consistency-review",
     "F7-RR-001-v1": "reference-repair",
+    "F7-CSR-001-v1": "citation-support-review",
     "F7-TS-001-v1": "template-sync",
 }
 PLACEHOLDER_RE = re.compile(r"\b(?:TODO|TBD|PLACEHOLDER)\b|\\PaperTODO\b", re.I)
