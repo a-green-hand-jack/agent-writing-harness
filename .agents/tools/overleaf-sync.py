@@ -12,6 +12,7 @@ from typing import Any
 
 CONFIG_RELATIVE = Path(".agents/overleaf-sync.json")
 DEFAULT_BRANCHES = {"main", "master", "trunk"}
+CANONICAL_CASE_PREFIX = "case/"
 MARKER = "ccfa-Overleaf-Sync: export"
 CREDENTIAL_RE = re.compile(r"://[^/@]+:[^/@]+@", re.I)
 REMOTE_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
@@ -195,9 +196,22 @@ def make_export_commit(root: Path, remote_commit: str, split_commit: str) -> str
     return result.stdout.strip()
 
 
+def is_canonical_branch(name: str) -> bool:
+    if name in DEFAULT_BRANCHES:
+        return True
+    if not name.startswith(CANONICAL_CASE_PREFIX):
+        return False
+    stem = name[len(CANONICAL_CASE_PREFIX) :]
+    return bool(stem) and "/" not in stem and stem not in {".", ".."}
+
+
 def push(root: Path, config: dict[str, Any], bootstrap: bool) -> None:
-    if branch(root) != "main":
-        raise SyncError("Overleaf export must run from the canonical main branch")
+    current = branch(root)
+    if not is_canonical_branch(current):
+        raise SyncError(
+            "Overleaf export must run from a canonical branch "
+            "(main, master, trunk, or case/<name>)"
+        )
     if not worktree_clean(root):
         raise SyncError("Overleaf export requires a clean worktree")
     remote_commit = fetch(root, config)

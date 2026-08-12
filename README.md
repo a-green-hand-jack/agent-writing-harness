@@ -128,7 +128,7 @@ python3 .agents/tools/overleaf-sync.py validate
 python3 .agents/tools/overleaf-sync.py fetch
 ```
 
-Export an approved clean `main`:
+Export an approved clean canonical branch (`main`, `master`, `trunk`, or a protected `case/<name>` branch):
 
 ```bash
 python3 .agents/tools/overleaf-sync.py push
