@@ -96,8 +96,9 @@ jobs:
               grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
               grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/$variant.txt"
             else
+              # Real papers must never carry literal TODO placeholders.
+              # Acknowledgements presence is not asserted: some papers have none.
               ! grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
-              grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/$variant.txt"
             fi
           fi
 
