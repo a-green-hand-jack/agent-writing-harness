@@ -13,3 +13,4 @@ paper/main*.pdf
 /dist/
 /.orca/
 /.env
+*.ptc
