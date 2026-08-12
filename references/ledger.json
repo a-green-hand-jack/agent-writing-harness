@@ -1,0 +1,1443 @@
+{
+  "citation_occurrences": [
+    {
+      "citation_keys": [
+        "schmidhuber2007godel"
+      ],
+      "claim_fingerprint": "sha256:adaccf6b598d2c9b6ab1853a2f54bcd148a43712a0426cdbeb2ac590040e68c3",
+      "claim_text": "machine~\\citep{schmidhuber2007godel} proposed a theoretical alternative: a self-improving AI that repeatedly modifies itself in a provably beneficial manner.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/01_abstract.tex:2",
+      "occurrence_id": "occ_09df50440896d5bb",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "vaswani2017attention"
+      ],
+      "claim_fingerprint": "sha256:b40b1cfd48b3df4f03631f6d84541a29192cea9582398496d6d8b5ea20b91565",
+      "claim_text": "transformers~\\citep{vaswani2017attention}, the backbone of current large language models (LLMs)~\\citep{brown2020language}, did not emerge in isolation but were built upon years of past innovations, such as recurrent neural networks~\\citep{linnainmaa1970representation, amari1972learning, hopfield1982neural, rumelhart1985learning} and attention mechanisms~\\citep{schmidhuber1990learning, bahdanau2015neural, kim2017structured, parikh2016decomposable}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:4",
+      "occurrence_id": "occ_9cc2f0371cccf4c7",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "brown2020language"
+      ],
+      "claim_fingerprint": "sha256:e03dd292049d4144ef4f740623cb193c2a0e8599971630256ff84f8486f29b60",
+      "claim_text": "(LLMs)~\\citep{brown2020language}, did not emerge in isolation but were built upon years of past innovations, such as recurrent neural networks~\\citep{linnainmaa1970representation, amari1972learning, hopfield1982neural, rumelhart1985learning} and attention mechanisms~\\citep{schmidhuber1990learning, bahdanau2015neural, kim2017structured, parikh2016decomposable}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:4",
+      "occurrence_id": "occ_67cd213e76658098",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "linnainmaa1970representation",
+        "amari1972learning",
+        "hopfield1982neural",
+        "rumelhart1985learning"
+      ],
+      "claim_fingerprint": "sha256:f17bb327df9ce0075c70d7502f3fd4cab4888242a14bd223c9d357fcb4cc6847",
+      "claim_text": "networks~\\citep{linnainmaa1970representation, amari1972learning, hopfield1982neural, rumelhart1985learning} and attention mechanisms~\\citep{schmidhuber1990learning, bahdanau2015neural, kim2017structured, parikh2016decomposable}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:4",
+      "occurrence_id": "occ_38e2c446cf4bd67b",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "schmidhuber1990learning",
+        "bahdanau2015neural",
+        "kim2017structured",
+        "parikh2016decomposable"
+      ],
+      "claim_fingerprint": "sha256:fe8c595565d8935c0f838caca64fe5c29dc86dbb1eb76dd4903c978547fed600",
+      "claim_text": "mechanisms~\\citep{schmidhuber1990learning, bahdanau2015neural, kim2017structured, parikh2016decomposable}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:4",
+      "occurrence_id": "occ_545c7c7e05a5f97f",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "schmidhuber2007godel"
+      ],
+      "claim_fingerprint": "sha256:a80098bb851c3b0ef18097d81afb30cf85ab356e2ebae546c97d1f0f94e990a8",
+      "claim_text": "\\citet{schmidhuber2007godel} presented a class of mathematically rigorous, self-referential, self-improving problem solvers.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/02_intro.tex:8",
+      "occurrence_id": "occ_86c941469727da8e",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "darwin2023origin"
+      ],
+      "claim_fingerprint": "sha256:70604fedf42b438da8a3dd902b1aaf9762fe17f40ec40ced1180ecb52591ae84",
+      "claim_text": "evolution~\\citep{darwin2023origin} and investigate the effectiveness of maintaining a library of previously discovered agents to serve as stepping stones for future generations.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:8",
+      "occurrence_id": "occ_86c2cfe2cd142751",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "wang2019paired",
+        "fernandopromptbreeder",
+        "faldor2025omni"
+      ],
+      "claim_fingerprint": "sha256:a7ae77ab53e1ec3b9fa474a9e785a5895dbdf489e3f243354212d8784a69ff88",
+      "claim_text": "research~\\citep{wang2019paired, fernandopromptbreeder, faldor2025omni}, accumulating diverse stepping stones (i.e., interesting yet suboptimal solutions or features that may enable future breakthroughs).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:10",
+      "occurrence_id": "occ_cd9acd362dd4ecfa",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "jimenez2024swebench"
+      ],
+      "claim_fingerprint": "sha256:4c84141451a4f4122f649143e8cb44819ae484c7eb33a80644658bec7e5a1ac9",
+      "claim_text": "SWE-bench~\\citep{jimenez2024swebench} and Polyglot~\\citep{gauthier2024polyglot}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:12",
+      "occurrence_id": "occ_3c21438ab82966ed",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "gauthier2024polyglot"
+      ],
+      "claim_fingerprint": "sha256:5e79ffbf263834831795bdcfa547400461fec155f8ffe4873b365936f2ebe5b5",
+      "claim_text": "Polyglot~\\citep{gauthier2024polyglot}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:12",
+      "occurrence_id": "occ_640c9762953692a1",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "stanley2017open"
+      ],
+      "claim_fingerprint": "sha256:4f6f1eec9c95788953bb2aad8a8fd6a8134df8b9365ee8cbb02da5b58dc93f26",
+      "claim_text": "artifacts~\\citep{stanley2017open}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:5",
+      "occurrence_id": "occ_853b2467b1294960",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "hughes2024open"
+      ],
+      "claim_fingerprint": "sha256:43d0b340491c424528dade5942102e2984dffd51719b7b09d7cee0d9593e8d68",
+      "claim_text": "\\citet{hughes2024open} characterized open-endedness as a system's capacity to generate sequences of artifacts that are both novel and learnable from an observer's perspective.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/03_related.tex:5",
+      "occurrence_id": "occ_8e2b51960f79ad70",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "clune2019ai",
+        "jiang2023general"
+      ],
+      "claim_fingerprint": "sha256:ae022b498adbd785288f19a25c89841312e8e9d174da6390bff8237c579b6d17",
+      "claim_text": "humans~\\citep{clune2019ai, jiang2023general}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:5",
+      "occurrence_id": "occ_f48f87168825e6a3",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "pugh2016quality",
+        "ecoffet2019go",
+        "lehman2011novelty",
+        "oudeyer2007intrinsic"
+      ],
+      "claim_fingerprint": "sha256:d13235414428da6535efd26b193d190c04f28987d723f623c8f0d81484da80d6",
+      "claim_text": "frameworks~\\citep{pugh2016quality, ecoffet2019go, lehman2011novelty, oudeyer2007intrinsic}, while recent advances leverage large-scale foundation models (FMs) as proxies for human interestingness and versatile engines for generating and evaluating novel behaviors across diverse domains~\\citep{brown2020language, hu2025automated, zhang2024omni}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:5",
+      "occurrence_id": "occ_85547a8e418df10e",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "brown2020language",
+        "hu2025automated",
+        "zhang2024omni"
+      ],
+      "claim_fingerprint": "sha256:8663cd41f24608105b237bcea02530d4167f3a07a9554a4f652fef62cdb0f499",
+      "claim_text": "domains~\\citep{brown2020language, hu2025automated, zhang2024omni}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:5",
+      "occurrence_id": "occ_589f89a66e72eb08",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "dawkins2019evolution",
+        "gerhart2007theory",
+        "hendrikse2007evolvability"
+      ],
+      "claim_fingerprint": "sha256:ecb47ea00760d63a43998f5ee8f90e70af65754e01afd3d91e7faa5791fa9a93",
+      "claim_text": "evolve~\\citep{dawkins2019evolution, gerhart2007theory, hendrikse2007evolvability}?",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:5",
+      "occurrence_id": "occ_dfc6d4abaf852c7e",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "chen2023unleashing",
+        "schulhoff2024prompt"
+      ],
+      "claim_fingerprint": "sha256:7d6d86f1230cf80889c124270d1587f6473719e082c1ac593de82f38ebd65995",
+      "claim_text": "engineering~\\citep{chen2023unleashing, schulhoff2024prompt}, chain-of-thought~\\citep{wei2022chain, yao2023react, hu2023ThoughtCloning, guo2025deepseek, lightman2023let, muennighoff2025s1, zelikman2024quiet}, self-reflection \\citep{shinn2023reflexion, yao2023react, madaan2303self}, multi-agent debate \\citep{zhuge2023mindstorms, liang2023encouraging, khan2024debating}, memory~\\citep{liu2023think, zhong2024memorybank, modarressi2023ret}, temperature sampling \\citep{zhu2024hot}, and retrieval augmented generation~\\citep{lewis2020retrieval}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:8",
+      "occurrence_id": "occ_880699d4ddac2856",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "wei2022chain",
+        "yao2023react",
+        "hu2023ThoughtCloning",
+        "guo2025deepseek",
+        "lightman2023let",
+        "muennighoff2025s1",
+        "zelikman2024quiet"
+      ],
+      "claim_fingerprint": "sha256:8077dc301060fc5e40c9aed1ed738f505961c73c89b2baa6023b18ce031da1b4",
+      "claim_text": "chain-of-thought~\\citep{wei2022chain, yao2023react, hu2023ThoughtCloning, guo2025deepseek, lightman2023let, muennighoff2025s1, zelikman2024quiet}, self-reflection \\citep{shinn2023reflexion, yao2023react, madaan2303self}, multi-agent debate \\citep{zhuge2023mindstorms, liang2023encouraging, khan2024debating}, memory~\\citep{liu2023think, zhong2024memorybank, modarressi2023ret}, temperature sampling \\citep{zhu2024hot}, and retrieval augmented generation~\\citep{lewis2020retrieval}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:8",
+      "occurrence_id": "occ_0a3aa67a072cdac9",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "shinn2023reflexion",
+        "yao2023react",
+        "madaan2303self"
+      ],
+      "claim_fingerprint": "sha256:84c05efb6e4f577b81484088de56aac250bfd46daa1ba86e59fc88b88751d882",
+      "claim_text": "\\citep{shinn2023reflexion, yao2023react, madaan2303self}, multi-agent debate \\citep{zhuge2023mindstorms, liang2023encouraging, khan2024debating}, memory~\\citep{liu2023think, zhong2024memorybank, modarressi2023ret}, temperature sampling \\citep{zhu2024hot}, and retrieval augmented generation~\\citep{lewis2020retrieval}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:8",
+      "occurrence_id": "occ_95e106b521c33994",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "zhuge2023mindstorms",
+        "liang2023encouraging",
+        "khan2024debating"
+      ],
+      "claim_fingerprint": "sha256:6e616b07042598e88a50f91f935a968ffb5c0606d27cb2383a93ec0ad2b7fc5b",
+      "claim_text": "\\citep{zhuge2023mindstorms, liang2023encouraging, khan2024debating}, memory~\\citep{liu2023think, zhong2024memorybank, modarressi2023ret}, temperature sampling \\citep{zhu2024hot}, and retrieval augmented generation~\\citep{lewis2020retrieval}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:8",
+      "occurrence_id": "occ_d598d4d997f89c93",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "liu2023think",
+        "zhong2024memorybank",
+        "modarressi2023ret"
+      ],
+      "claim_fingerprint": "sha256:ccf79d14e410999a26cf96c19fcf00f34d082436b6fca82b4aca91f473cccfd3",
+      "claim_text": "memory~\\citep{liu2023think, zhong2024memorybank, modarressi2023ret}, temperature sampling \\citep{zhu2024hot}, and retrieval augmented generation~\\citep{lewis2020retrieval}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:8",
+      "occurrence_id": "occ_4393075e95e750df",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "zhu2024hot"
+      ],
+      "claim_fingerprint": "sha256:172d67ec592cb365d09276aae122d74b3983d79914f4519f559e3db694ddf6fd",
+      "claim_text": "\\citep{zhu2024hot}, and retrieval augmented generation~\\citep{lewis2020retrieval}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:8",
+      "occurrence_id": "occ_d46c951f772e8b0f",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "lewis2020retrieval"
+      ],
+      "claim_fingerprint": "sha256:f05194440595612f3c5af495d82266cbf0d8d65c1dd63b659b5058a21f292b56",
+      "claim_text": "generation~\\citep{lewis2020retrieval}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:8",
+      "occurrence_id": "occ_f7f07db12a9bf994",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "fernandopromptbreeder",
+        "meta2022human",
+        "khattab2023dspy",
+        "cheng2025trace",
+        "yuksekgonul2024textgrad",
+        "yuan2024evoagent"
+      ],
+      "claim_fingerprint": "sha256:9d83c5464f7bc0c67902f3f742395efb5040286803eb45dad02a6af2f78b9a5d",
+      "claim_text": "prompts~\\citep{fernandopromptbreeder, meta2022human, khattab2023dspy,cheng2025trace,yuksekgonul2024textgrad,yuan2024evoagent} and design agentic modules~\\citep{zhang2024aflow, zhou2024symbolic, yin2024g, zhugegptswarm, rosser2025agentbreeder, zhang2025multi, ye2025mas, gao2025flowreasoner, nie2025weak, su2025debflow, zhang2025gnns,niu2025flow}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:8",
+      "occurrence_id": "occ_d8f3245fc4b81359",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "zhang2024aflow",
+        "zhou2024symbolic",
+        "yin2024g",
+        "zhugegptswarm",
+        "rosser2025agentbreeder",
+        "zhang2025multi",
+        "ye2025mas",
+        "gao2025flowreasoner",
+        "nie2025weak",
+        "su2025debflow",
+        "zhang2025gnns",
+        "niu2025flow"
+      ],
+      "claim_fingerprint": "sha256:49ceb0e26849826f44bd8a79cfff6224b315989d27dc309c283a99356fbcd721",
+      "claim_text": "modules~\\citep{zhang2024aflow, zhou2024symbolic, yin2024g, zhugegptswarm, rosser2025agentbreeder, zhang2025multi, ye2025mas, gao2025flowreasoner, nie2025weak, su2025debflow, zhang2025gnns,niu2025flow}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:8",
+      "occurrence_id": "occ_7dc09553b26745c5",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "hu2025automated"
+      ],
+      "claim_fingerprint": "sha256:024b2c2b0b571cc86c1eadfa90ff0811b50b7e4f30e15215462662b7986396cf",
+      "claim_text": "\\citep[ADAS,][]{hu2025automated} iteratively generates downstream agents with a fixed meta-agent, evaluates them against a target benchmark, and incorporates feedback to refine subsequent generations.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:8",
+      "occurrence_id": "occ_d5d9e929ffa99557",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "good1966speculations",
+        "schmidhuber1987evolutionary",
+        "schmidhuber2007godel"
+      ],
+      "claim_fingerprint": "sha256:48e7b999b04b4746853a3e4070b03a210a4145fa39d167845354945248c3b089",
+      "claim_text": "\\citep{good1966speculations, schmidhuber1987evolutionary, schmidhuber2007godel}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_bd3faa2c677a88db",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "schmidhuber1993self",
+        "hall2007self",
+        "hobbhahn2025swebenchmini",
+        "kirsch2022self",
+        "irie2022modern",
+        "irie2025metalearning",
+        "lu2023arbitrary",
+        "havrilla2024glore"
+      ],
+      "claim_fingerprint": "sha256:4b8690c0e193d059ef58f93e00b1bdee088ffb68e20aa695a3bb027e3e527f16",
+      "claim_text": "parameterizations~\\citep{schmidhuber1993self, hall2007self, hobbhahn2025swebenchmini, kirsch2022self, irie2022modern, irie2025metalearning, lu2023arbitrary, havrilla2024glore}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_4afa37f688d5ad1c",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "metz2021training"
+      ],
+      "claim_fingerprint": "sha256:e16917d5f18082e20b7577a599bbb4e0e3bb6a2f16c109a6c765b5aa9a7927bc",
+      "claim_text": "\\citet{metz2021training} developed a gradient-based optimizer that is self-referentially meta-trained using a variant of population-based training~\\citep{jaderberg2017population}.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_b5b5c9c68ec40061",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "jaderberg2017population"
+      ],
+      "claim_fingerprint": "sha256:11babff9595ba097625471680c4b1bfef1f314433f818f5355ed217ce1faf440",
+      "claim_text": "training~\\citep{jaderberg2017population}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_4d46b125322a0f35",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "lange2023discovering"
+      ],
+      "claim_fingerprint": "sha256:1b3185d2358b561a6f1501eaec8fceb0e438373f3bdc8382bf4632eed7faf2cb",
+      "claim_text": "\\citet{lange2023discovering} extended this approach to gradient-free learning.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_aa803f64b852c96d",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "silver2017mastering"
+      ],
+      "claim_fingerprint": "sha256:773205b0b1c9b29eef6d40ab6b54c6250c6751967d41574498b858b2cffd0de1",
+      "claim_text": "\\citet{silver2017mastering} used self-play to continuously evolve agents, achieving superhuman performance in challenging domains such as chess and Go.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_dbc1fcb94df21d62",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "yin2024g",
+        "robeyns2025self",
+        "hu2024self",
+        "zelikman2024self",
+        "huang2022large",
+        "singh2023beyond"
+      ],
+      "claim_fingerprint": "sha256:5b7643e5db543a71fe7ef54c980aeb50407d9ace15165ae9d57187e3c78e163c",
+      "claim_text": "self-improvement~\\citep{yin2024g, robeyns2025self, hu2024self, zelikman2024self, huang2022large, singh2023beyond}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_10aec360e455f18f",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "zelikman2024self"
+      ],
+      "claim_fingerprint": "sha256:10f47a275b8cf539bbf3730f0313e8ebfa06cd177eea0fc8fc39b64eb03e0db9",
+      "claim_text": "\\citet{zelikman2024self} use a meta-agent to generate downstream agents, updating the meta-agent based on the meta-utility derived from the generated solutions.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_239a60a1b6499694",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "yin2024g"
+      ],
+      "claim_fingerprint": "sha256:0bbfcace6111e80c5ea2a3ebd2e122cda8492905cef83d585b6584935f39957c",
+      "claim_text": "\\citet{yin2024g} use a single system to both solve downstream tasks and recursively modify itself.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_a44f8b14649ea870",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "robeyns2025self"
+      ],
+      "claim_fingerprint": "sha256:2d1233de1832083bd5fec3e251a720a02468bd1110f3d16d8c385b65318e9045",
+      "claim_text": "\\citet{robeyns2025self}, which also has a single agent recursively solving coding problems and modifying its own codebase.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_c08732ed9b474512",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "robeyns2025self"
+      ],
+      "claim_fingerprint": "sha256:26632e804830757628c51d3128c1b882ff4434ee9dd46da27edeaf9c2e64d20a",
+      "claim_text": "\\citet{robeyns2025self} (and also \\citet{zelikman2024self, yin2024g}) is that the DGM has an open-ended exploration loop, encouraging self-modifications beyond immediate performance gains and thus avoiding stagnation in suboptimal states.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_f159fcfc3d90e688",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "zelikman2024self",
+        "yin2024g"
+      ],
+      "claim_fingerprint": "sha256:6d057c38859f679dd36eaaa108f9120babf4f7efa9381d54497c909b1a2da9a6",
+      "claim_text": "\\citet{zelikman2024self, yin2024g}) is that the DGM has an open-ended exploration loop, encouraging self-modifications beyond immediate performance gains and thus avoiding stagnation in suboptimal states.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/03_related.tex:11",
+      "occurrence_id": "occ_6357a72218520125",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "schmidhuber2007godel"
+      ],
+      "claim_fingerprint": "sha256:6fb30b4a2225aac4289dbe39948c5e1c265e5309f6c621c8b39b7e5e3b92aeaf",
+      "claim_text": "itself~\\citep{schmidhuber2007godel}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/04_method.tex:4",
+      "occurrence_id": "occ_0da1307c4378249d",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "darwin2023origin"
+      ],
+      "claim_fingerprint": "sha256:6ba80cc7905fe61009a3f3fbfabe3bb8115e81584ff565f15e322981de717015",
+      "claim_text": "evolution~\\citep{darwin2023origin} (\\Cref{app:related}), where new innovations emerge by selecting an entity from an archive of previously discovered solutions, modifying it, and keeping it if it is interestingly new~\\citep{zhang2024omni, faldor2025omni, stanley2015greatness}, we call our algorithm a Darwin G\\\"odel Machine (\\Cref{fig:conceptual}).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/04_method.tex:4",
+      "occurrence_id": "occ_70bb92ea7ebbfd21",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "zhang2024omni",
+        "faldor2025omni",
+        "stanley2015greatness"
+      ],
+      "claim_fingerprint": "sha256:dd9912b948089b340ce19f1e5685271a13d982476e5bf75ee8e72b0cb7704c0f",
+      "claim_text": "new~\\citep{zhang2024omni, faldor2025omni, stanley2015greatness}, we call our algorithm a Darwin G\\\"odel Machine (\\Cref{fig:conceptual}).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/04_method.tex:4",
+      "occurrence_id": "occ_e4fb61e410ca641d",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "hu2025automated",
+        "zhang2024aflow"
+      ],
+      "claim_fingerprint": "sha256:0742ade204165102154c80e726841d04d3003949f04f9a402a8c4d625c157733",
+      "claim_text": "works~\\citep{hu2025automated, zhang2024aflow} demonstrate that such agents can be improved through meta-learning of their designs (e.g., prompts, workflows, and tools), which are implemented in their code repository.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/04_method.tex:7",
+      "occurrence_id": "occ_23e9d4d37f5a651a",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "robeyns2025self"
+      ],
+      "claim_fingerprint": "sha256:48e7b999b04b4746853a3e4070b03a210a4145fa39d167845354945248c3b089",
+      "claim_text": "\\citep{robeyns2025self}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/04_method.tex:11",
+      "occurrence_id": "occ_248caaaa5fc4172c",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "jimenez2024swebench"
+      ],
+      "claim_fingerprint": "sha256:74bb72b594afe272462fe83076fa5390e115a8f7d58066d49b42dd6c7b5cf243",
+      "claim_text": "SWE-bench~\\citep{jimenez2024swebench} and Polyglot~\\citep{gauthier2024polyglot} (\\Cref{sec:benchmarks}).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:4",
+      "occurrence_id": "occ_d5cf3d0e8cafde42",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "gauthier2024polyglot"
+      ],
+      "claim_fingerprint": "sha256:28ffc3b3815fd530473ed674c15732d5494c2be3af206204fc151b7dbb4bdb28",
+      "claim_text": "Polyglot~\\citep{gauthier2024polyglot} (\\Cref{sec:benchmarks}).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:4",
+      "occurrence_id": "occ_b4eed927f010f2f2",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "schick2023toolformer",
+        "anthropic_tool_use_2024"
+      ],
+      "claim_fingerprint": "sha256:818e0e6ea59ccbc0b476b24385ff3568834485cff259d05eb7379c1f5bb7ad5b",
+      "claim_text": "capabilities~\\citep{schick2023toolformer, anthropic_tool_use_2024}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:9",
+      "occurrence_id": "occ_1823d4a87cabd760",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "anthropic2024claude35sonnet"
+      ],
+      "claim_fingerprint": "sha256:6841c06d405bf8240c40ffc14929f83b8a613e3a9ab6d86b5bda872c01750cb1",
+      "claim_text": "(New)~\\citep{anthropic2024claude35sonnet} in both SWE-bench and Polyglot experiments.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:9",
+      "occurrence_id": "occ_19ceede0029a3def",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "openai2025o3mini"
+      ],
+      "claim_fingerprint": "sha256:5fd9eb7fe3f5e97496d234ff0000e7597864f1dc10581000c6ed974f8bfd8bea",
+      "claim_text": "o3-mini~\\citep{openai2025o3mini} for Polyglot (\\Cref{app:fm-hyperparam}).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:9",
+      "occurrence_id": "occ_2c09691d46639d6e",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "zhang2024autocoderover",
+        "zhang2024rest",
+        "xia2024agentless",
+        "cao2024spider2",
+        "GoogleDeepMind2025GeminiThinking",
+        "aider2024"
+      ],
+      "claim_fingerprint": "sha256:dc9fe1dec4836076bfe58bd16adec34f87bfdde66096ee80bc1125169df4a129",
+      "claim_text": "benchmarks~\\citep{zhang2024autocoderover, zhang2024rest, xia2024agentless, cao2024spider2, GoogleDeepMind2025GeminiThinking,aider2024} that require the AI agent to navigate a code repository, understand the interplay between functions in different files, and spot small errors in convoluted code.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:14",
+      "occurrence_id": "occ_07d0a3bd357090ca",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "openai2024sweverified"
+      ],
+      "claim_fingerprint": "sha256:ba689150bde880c758503a396e088b6e233422b92b862950cc9fb1bdb8abaf08",
+      "claim_text": "Verified~\\citep{openai2024sweverified}, a human-filtered subset of SWE-bench~\\citep{jimenez2024swebench} where all tasks are solvable.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:16",
+      "occurrence_id": "occ_c872ed74f779f8cb",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "jimenez2024swebench"
+      ],
+      "claim_fingerprint": "sha256:05423d299ad3cdf8edd68563e374a27c0cbdf8f4dd34f83d82b591b23a79a0bd",
+      "claim_text": "SWE-bench~\\citep{jimenez2024swebench} where all tasks are solvable.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:16",
+      "occurrence_id": "occ_f2c1d8a4909f2adf",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "gauthier2024polyglot"
+      ],
+      "claim_fingerprint": "sha256:db2b8bfb94a19a67af54926957047bc1b223decb97b547ae6e46335771656ab8",
+      "claim_text": "etc.)~\\citep{gauthier2024polyglot}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:18",
+      "occurrence_id": "occ_b903621e98310074",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "aider2024"
+      ],
+      "claim_fingerprint": "sha256:654bbee3ebf703471cbe67e8cbd217c44e5ecf521f1953fa98367e5a21f9cd6d",
+      "claim_text": "Aider~\\citep{aider2024}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:18",
+      "occurrence_id": "occ_188f9cd695ff5ebe",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "gauthier2024polyglot"
+      ],
+      "claim_fingerprint": "sha256:dcf60cbe02e27f3a9312badc744a1d129dd8bfef7ecebfa5e333c072404694f6",
+      "claim_text": "setup~\\citep{gauthier2024polyglot}, with one key difference: the leaderboard reports pass@2, where the agent can view feedback from ground-truth tests once, whereas we report pass@1, where the agent never sees ground-truth test results.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:18",
+      "occurrence_id": "occ_e1ab0980c2cdc235",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "hobbhahn2025swebenchmini"
+      ],
+      "claim_fingerprint": "sha256:effeede0e25b7f742110c65fa2f3b49c3070e6d524137b05e16d86d98633920b",
+      "claim_text": "SWE-bench-verified-mini~\\citep{hobbhahn2025swebenchmini}, which is designed to be a representative sample of the full benchmark (\\Cref{app:swebench-tasks}).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:20",
+      "occurrence_id": "occ_c96ea11908777846",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "hu2025automated"
+      ],
+      "claim_fingerprint": "sha256:84f4573b1eb70c1ccf858d3cb70bca02276f8c1d6be04fea38fe1ed89ef585be",
+      "claim_text": "ADAS~\\citep{hu2025automated} in this setting, wherein the meta agent responsible for modifying the coding agents remains fixed as the base agent throughout the experiment (\\Cref{alg:dgm-wo-selfimprove}).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:25",
+      "occurrence_id": "occ_e39b6e621030d296",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "clune2019ai",
+        "stanley2015greatness",
+        "zhang2024omni",
+        "fernandopromptbreeder",
+        "lee2020learning",
+        "samvelyan2024rainbow",
+        "colas2022autotelic"
+      ],
+      "claim_fingerprint": "sha256:6f83d7a766e007e067210b418b128f7fdd594eb15e65584c8912ffcb59ff6998",
+      "claim_text": "exploration~\\citep{clune2019ai, stanley2015greatness, zhang2024omni, fernandopromptbreeder, lee2020learning, samvelyan2024rainbow, colas2022autotelic} in guiding the agent's evolution.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:25",
+      "occurrence_id": "occ_255df8eff8fe3775",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "aider2024"
+      ],
+      "claim_fingerprint": "sha256:72611b697d579359fbc3cb78cf5884db42d625995849220dbb35d9a27dc71e8e",
+      "claim_text": "(Aider)~\\citep{aider2024}, which is open-sourced and designed to support multiple programming languages and large codebase editing (\\Cref{app:polyglot-sota}).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:27",
+      "occurrence_id": "occ_2f4cdc6dbd71335b",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "anthropic2025claude37"
+      ],
+      "claim_fingerprint": "sha256:930adcc4e01b2f115baf12c966084e03f46ddb2f47250e6dec7fecf2b0ecc4ff",
+      "claim_text": "Sonnet~\\citep{anthropic2025claude37} or o3-mini, and evaluated on 200 tasks (\\Cref{fig:transfer-overview}, Left).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:50",
+      "occurrence_id": "occ_7349878fa87cf554",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "schmidhuber1987evolutionary",
+        "clune2019ai",
+        "markoff2016machines",
+        "lehman2023machine"
+      ],
+      "claim_fingerprint": "sha256:92823bdb5ab156bc8eeb9df0b2478312a663c5347c8dbd2e837575977e75aaa8",
+      "claim_text": "humanity~\\citep{schmidhuber1987evolutionary, clune2019ai, markoff2016machines, lehman2023machine}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:57",
+      "occurrence_id": "occ_6cf8b21d5b74419d",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "bostrom2020ethical"
+      ],
+      "claim_fingerprint": "sha256:ee4c9199ca410c1dec54e698e313e3bbc0042510130478eea8c2a2fcd0a59214",
+      "claim_text": "metric~\\citep{bostrom2020ethical}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:57",
+      "occurrence_id": "occ_a55890302d4c892b",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "sheth2025safety",
+        "anwar2024foundational",
+        "greenblatt2024alignment",
+        "ganguli2022red"
+      ],
+      "claim_fingerprint": "sha256:ea71614dff8c9bdbc2bd977b359ccb963e8a766b73e3eebbf2e63cf6c89c3450",
+      "claim_text": "control~\\citep{sheth2025safety, anwar2024foundational, greenblatt2024alignment, ganguli2022red}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:57",
+      "occurrence_id": "occ_6d8b6486d656c160",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "bai2022constitutional"
+      ],
+      "claim_fingerprint": "sha256:48542b0e2ade0ab0a26ace2d57be5566b103ac62d4547e0e679f3396b909216a",
+      "claim_text": "AI~\\citep{bai2022constitutional}), if such properties were included in its evaluation criteria~\\citep{rosser2025agentbreeder}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:61",
+      "occurrence_id": "occ_d30898f57f3c826a",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "rosser2025agentbreeder"
+      ],
+      "claim_fingerprint": "sha256:396e6487aa6a7817418d56132ea1654a72a3a10a559a9440c9d515887be71aee",
+      "claim_text": "criteria~\\citep{rosser2025agentbreeder}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:61",
+      "occurrence_id": "occ_f5420481e7fd3560",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "yudkowsky2008artificial",
+        "bostrom2002a",
+        "ecoffet2020open",
+        "bengio2024managing",
+        "clune2019ai"
+      ],
+      "claim_fingerprint": "sha256:d0ac0b0aae0f605d825bceca4a70ad814c495e4a03beb84955fa0a78180491a0",
+      "claim_text": "capable~\\citep{yudkowsky2008artificial, bostrom2002a,ecoffet2020open, bengio2024managing,clune2019ai}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:63",
+      "occurrence_id": "occ_aedd994c8315d71b",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "clune2019ai"
+      ],
+      "claim_fingerprint": "sha256:255fcd7b9452d592dcb2f0e0473f920005e678a927a42fba9a2f9e0a1261c59f",
+      "claim_text": "Algorithms~\\citep{clune2019ai}",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/06_conclusion.tex:12",
+      "occurrence_id": "occ_e4ca383f21055db0",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "faldor2025omni",
+        "wang2023robogen"
+      ],
+      "claim_fingerprint": "sha256:6a333e9fd18a42adf1092f793eeb7a6b9cf9e8b7dd24e261f0dbf6b181612be4",
+      "claim_text": "distribution~\\citep{faldor2025omni, wang2023robogen}, thereby removing the constraint of self-improvement being tied to a single objective, as in true open-ended processes.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/07_limitations.tex:12",
+      "occurrence_id": "occ_521e05a48ad98994",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "robeyns2025self"
+      ],
+      "claim_fingerprint": "sha256:365caac8fb72836b5948ed834991adf890cf9d47305819529196de783d656a25",
+      "claim_text": "\\citet{robeyns2025self} in this setting.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/10_appendix.tex:30",
+      "occurrence_id": "occ_9dec2535baef5d05",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "pugh2016quality",
+        "chatzilygeroudis2021quality",
+        "mouret2015illuminating",
+        "nguyen2015innovation"
+      ],
+      "claim_fingerprint": "sha256:22e797952d88930ecff1b421207cc9d1dba8eb203ad883bf6c5586ea38347c56",
+      "claim_text": "behaviors~\\citep{pugh2016quality, chatzilygeroudis2021quality, mouret2015illuminating, nguyen2015innovation}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_aa569db73c557f8d",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "ecoffet2019go",
+        "ecoffet2021first",
+        "schaul2015universal",
+        "andrychowicz2017hindsight",
+        "eysenbach2018diversity"
+      ],
+      "claim_fingerprint": "sha256:842be7cde36ca99a90ba6593ced07059d3f648065fc4c4cc3046ec239c5ad2cf",
+      "claim_text": "exploration~\\citep{ecoffet2019go, ecoffet2021first, schaul2015universal, andrychowicz2017hindsight, eysenbach2018diversity}, intrinsic motivation~\\citep{lehman2011novelty, oudeyer2007intrinsic, li2014encouraging, pathak2017curiosity}, or learning progress frameworks~\\citep{kanitscheider2021multi, gaven2025magellan, baranes2013active, colas2019curious, colas2022autotelic, jiang2021prioritized, dennis2020emergent, schmidhuber2008driven, schmidhuber2013powerplay, kompella2017continual}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_74cad0e884a1daf5",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "lehman2011novelty",
+        "oudeyer2007intrinsic",
+        "li2014encouraging",
+        "pathak2017curiosity"
+      ],
+      "claim_fingerprint": "sha256:ac55cf2a641f713206237ccbd7fcda159fb2383fff00e459036110a38d473341",
+      "claim_text": "motivation~\\citep{lehman2011novelty, oudeyer2007intrinsic, li2014encouraging, pathak2017curiosity}, or learning progress frameworks~\\citep{kanitscheider2021multi, gaven2025magellan, baranes2013active, colas2019curious, colas2022autotelic, jiang2021prioritized, dennis2020emergent, schmidhuber2008driven, schmidhuber2013powerplay, kompella2017continual}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_72a36eb0d43db8cf",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "kanitscheider2021multi",
+        "gaven2025magellan",
+        "baranes2013active",
+        "colas2019curious",
+        "colas2022autotelic",
+        "jiang2021prioritized",
+        "dennis2020emergent",
+        "schmidhuber2008driven",
+        "schmidhuber2013powerplay",
+        "kompella2017continual"
+      ],
+      "claim_fingerprint": "sha256:1f49fd65acf43ab8477743d4bcf5f1f02cbb473fc708c47fb40ea79f82911571",
+      "claim_text": "frameworks~\\citep{kanitscheider2021multi, gaven2025magellan, baranes2013active, colas2019curious, colas2022autotelic, jiang2021prioritized, dennis2020emergent, schmidhuber2008driven, schmidhuber2013powerplay, kompella2017continual}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_04f3b3d6c08ea4f6",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "brown2020language",
+        "radford2019language"
+      ],
+      "claim_fingerprint": "sha256:8caf2bfff3d794a7f88ff726023b8ddb44e1f4f38dfa43a2528ac2cda90813fe",
+      "claim_text": "(FMs)~\\citep{brown2020language, radford2019language} have emerged as powerful proxies for human notions of interestingness~\\citep{zhang2024omni,faldor2025omni,sancaktar2025sensei} and effective mutation operators to propose novel solutions in code~\\citep{romera2024mathematical,Novikov2025AlphaEvolve,lehman2023evolution,faldor2025omni,hu2025automated}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_97cf13c58fdd8487",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "zhang2024omni",
+        "faldor2025omni",
+        "sancaktar2025sensei"
+      ],
+      "claim_fingerprint": "sha256:8c16e77aa4aeb1e3838d11d02757ff2d948c079645eb783c3f01968faabedcb2",
+      "claim_text": "interestingness~\\citep{zhang2024omni,faldor2025omni,sancaktar2025sensei} and effective mutation operators to propose novel solutions in code~\\citep{romera2024mathematical,Novikov2025AlphaEvolve,lehman2023evolution,faldor2025omni,hu2025automated}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_d855ec5a48341a6c",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "romera2024mathematical",
+        "Novikov2025AlphaEvolve",
+        "lehman2023evolution",
+        "faldor2025omni",
+        "hu2025automated"
+      ],
+      "claim_fingerprint": "sha256:8c6b693c915d44bbc10e2603b1b4f64390ccdc8332a78d767769115b2ff37dfd",
+      "claim_text": "code~\\citep{romera2024mathematical,Novikov2025AlphaEvolve,lehman2023evolution,faldor2025omni,hu2025automated}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_b92d4712495cb0ce",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "colas2022autotelic",
+        "colas2023augmenting",
+        "colas2022language"
+      ],
+      "claim_fingerprint": "sha256:5f6a0533eb9472c711eabb10d686ee25e03c27f59be60b4e7fee8837c6d6b726",
+      "claim_text": "agents~\\citep{colas2022autotelic, colas2023augmenting, colas2022language}, model human preferences for quality and diversity~\\citep{bradley2023quality, ding2023quality, wang2023diversity, klissarov2023motif, klissarov2024maestromotif, samvelyan2024rainbow, lim2024large, havrilla2024surveying}, design reward functions~\\citep{wiering1997hq, wang2023voyager, ma2023eureka, faldor2025omni}, create simulated environments~\\citep{sudhakaran2023mariogpt, nasir2023practical, aki2024llm, nasir2024word2world, bruce2024genie, parkerholder2024genie2, schmidhuber2013powerplay}, drive ever-evolving multi-agent dynamics~\\citep{dharna2024quality, zhou2025autoredteamer}, search d",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_5b17658e8e0ba586",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "bradley2023quality",
+        "ding2023quality",
+        "wang2023diversity",
+        "klissarov2023motif",
+        "klissarov2024maestromotif",
+        "samvelyan2024rainbow",
+        "lim2024large",
+        "havrilla2024surveying"
+      ],
+      "claim_fingerprint": "sha256:b66eaa0cbb5931817a562d3b2ae2c74d88cb0a14d777a32e9c39492b52a6c46a",
+      "claim_text": "diversity~\\citep{bradley2023quality, ding2023quality, wang2023diversity, klissarov2023motif, klissarov2024maestromotif, samvelyan2024rainbow, lim2024large, havrilla2024surveying}, design reward functions~\\citep{wiering1997hq, wang2023voyager, ma2023eureka, faldor2025omni}, create simulated environments~\\citep{sudhakaran2023mariogpt, nasir2023practical, aki2024llm, nasir2024word2world, bruce2024genie, parkerholder2024genie2, schmidhuber2013powerplay}, drive ever-evolving multi-agent dynamics~\\citep{dharna2024quality, zhou2025autoredteamer}, search diverse ambulating robot morphologies~\\citep{lehman2023evolution}, and search expansive solution spaces for benchmark or objective optimization~\\citep{lange2024large, zhang2024omni, faldor2025omni, hu2025automated, lu2024in",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_edb9611c97eba0b0",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "wiering1997hq",
+        "wang2023voyager",
+        "ma2023eureka",
+        "faldor2025omni"
+      ],
+      "claim_fingerprint": "sha256:d842ce6a58c22185c22479ce7597394b279ae7059a6252d2b32eed6ea7bd9578",
+      "claim_text": "functions~\\citep{wiering1997hq, wang2023voyager, ma2023eureka, faldor2025omni}, create simulated environments~\\citep{sudhakaran2023mariogpt, nasir2023practical, aki2024llm, nasir2024word2world, bruce2024genie, parkerholder2024genie2, schmidhuber2013powerplay}, drive ever-evolving multi-agent dynamics~\\citep{dharna2024quality, zhou2025autoredteamer}, search diverse ambulating robot morphologies~\\citep{lehman2023evolution}, and search expansive solution spaces for benchmark or objective optimization~\\citep{lange2024large, zhang2024omni, faldor2025omni, hu2025automated, lu2024intelligent, romera2024mathematical, fernandopromptbreeder, lu2024ai, khan2024debating, lu2025aut",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_3d0a36eb38d9b420",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "sudhakaran2023mariogpt",
+        "nasir2023practical",
+        "aki2024llm",
+        "nasir2024word2world",
+        "bruce2024genie",
+        "parkerholder2024genie2",
+        "schmidhuber2013powerplay"
+      ],
+      "claim_fingerprint": "sha256:1090a346f1b944d04d2a2879907295fe857157d3cc04f2d9e307f6539ea8fe01",
+      "claim_text": "environments~\\citep{sudhakaran2023mariogpt, nasir2023practical, aki2024llm, nasir2024word2world, bruce2024genie, parkerholder2024genie2, schmidhuber2013powerplay}, drive ever-evolving multi-agent dynamics~\\citep{dharna2024quality, zhou2025autoredteamer}, search diverse ambulating robot morphologies~\\citep{lehman2023evolution}, and search expansive solution spaces for benchmark or objective optimization~\\citep{lange2024large, zhang2024omni, faldor2025omni, hu2025automated, lu2024intelligent, romera2024mathematical, fernandopromptbreeder, lu2024ai, khan2024debating, lu2025automated, liu2024evolution, Novikov2025AlphaEvolve}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_6fc3e7edc3455a1b",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "dharna2024quality",
+        "zhou2025autoredteamer"
+      ],
+      "claim_fingerprint": "sha256:a75ad85158a1442a9df3af62b9394749c7a48b09102b19446f2d775d241f2b1d",
+      "claim_text": "dynamics~\\citep{dharna2024quality, zhou2025autoredteamer}, search diverse ambulating robot morphologies~\\citep{lehman2023evolution}, and search expansive solution spaces for benchmark or objective optimization~\\citep{lange2024large, zhang2024omni, faldor2025omni, hu2025automated, lu2024intelligent, romera2024mathematical, fernandopromptbreeder, lu2024ai, khan2024debating, lu2025automated, liu2024evolution, Novikov2025AlphaEvolve}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_97eaa4d3736aa37d",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "lehman2023evolution"
+      ],
+      "claim_fingerprint": "sha256:99a82991b411fb6d31ce5f34f4e26115b543cd700961e6b97d3dc5ba999546fc",
+      "claim_text": "morphologies~\\citep{lehman2023evolution}, and search expansive solution spaces for benchmark or objective optimization~\\citep{lange2024large, zhang2024omni, faldor2025omni, hu2025automated, lu2024intelligent, romera2024mathematical, fernandopromptbreeder, lu2024ai, khan2024debating, lu2025automated, liu2024evolution, Novikov2025AlphaEvolve}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_e3c5442342d349a0",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "lange2024large",
+        "zhang2024omni",
+        "faldor2025omni",
+        "hu2025automated",
+        "lu2024intelligent",
+        "romera2024mathematical",
+        "fernandopromptbreeder",
+        "lu2024ai",
+        "khan2024debating",
+        "lu2025automated",
+        "liu2024evolution",
+        "Novikov2025AlphaEvolve"
+      ],
+      "claim_fingerprint": "sha256:fa3bb145137f2d71a205218808b173e3ea4e3150b45c6f7709a4f7155261ef18",
+      "claim_text": "optimization~\\citep{lange2024large, zhang2024omni, faldor2025omni, hu2025automated, lu2024intelligent, romera2024mathematical, fernandopromptbreeder, lu2024ai, khan2024debating, lu2025automated, liu2024evolution, Novikov2025AlphaEvolve}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:79",
+      "occurrence_id": "occ_4b107bf6ec597d1d",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "alur2018search",
+        "polozov2015flashmeta",
+        "buchi1990solving",
+        "gulwani2011automating",
+        "ellis2021dreamcoder"
+      ],
+      "claim_fingerprint": "sha256:2e2e34491430ed73693c67d7d0964d0fe462bd7bc4df77f0d0a48f757128e178",
+      "claim_text": "synthesis~\\citep{alur2018search, polozov2015flashmeta, buchi1990solving, gulwani2011automating, ellis2021dreamcoder} seeks to generate code meeting external specifications such as input-output examples or logical formulas.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:82",
+      "occurrence_id": "occ_eaeec401e99d95b3",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "li2024guiding"
+      ],
+      "claim_fingerprint": "sha256:b8531b7d85a808dd9147d0ee8540bc89f7497d1dcf2c78d94d48d3c1f3f6b1b8",
+      "claim_text": "\\citet{li2024guiding} uses LLM suggestions to steer symbolic search in SyGuS settings, improving over pure enumeration.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/10_appendix.tex:82",
+      "occurrence_id": "occ_7f967c750b191871",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "barke2024hysynth"
+      ],
+      "claim_fingerprint": "sha256:23c0b3c41d8a0be5fb6aee47111daeb27a780059a42f678b43e1e1fe61ce04a7",
+      "claim_text": "\\citet{barke2024hysynth} blends LLM completions with a learned surrogate model to guide synthesis in DSLs.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/10_appendix.tex:82",
+      "occurrence_id": "occ_fb17d9eb7ebdd6ae",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "shi2023lambdabeam"
+      ],
+      "claim_fingerprint": "sha256:739771f2a452424e16bf211a0280af3a5321054d8a904ad925bd61b4da68ee8d",
+      "claim_text": "\\citet{shi2023lambdabeam} uses neural policies to build higher-order and lambda abstractions during search, outperforming both LLM-only and symbolic baselines on list manipulation tasks.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/10_appendix.tex:82",
+      "occurrence_id": "occ_b279c0080ea1a3e8",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "darwin2023origin"
+      ],
+      "claim_fingerprint": "sha256:c63669acd27fe9bd062f18b0abc8bae7b1f1ec1e109e66fe1ec795cd373c094c",
+      "claim_text": "evolution~\\citep{darwin2023origin}, notably variation (mutation), selection, and the preservation of lineages (stepping stones), and brings them into the realm of self-modifying coding agents.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:85",
+      "occurrence_id": "occ_3c34d0c88b0fc155",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "edwards2000genetical",
+        "wright1932roles"
+      ],
+      "claim_fingerprint": "sha256:2d3eabae072e3e97023c34b063a40d128e3cb945f3c60da74db62c922251e867",
+      "claim_text": "evolution~\\citep{edwards2000genetical, wright1932roles} preserves genetic diversity~\\citep{mayr1982growth}, leverages variation~\\citep{kimura1979neutral}, and uses natural selection to retain beneficial mutations~\\citep{dobzhansky1970genetics}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:85",
+      "occurrence_id": "occ_a5cbda18ae5d35d7",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "mayr1982growth"
+      ],
+      "claim_fingerprint": "sha256:53eacbe08d16d021850cb478da644bfe1f407c8c46edc0f689cfcbfc1e6eb5ce",
+      "claim_text": "diversity~\\citep{mayr1982growth}, leverages variation~\\citep{kimura1979neutral}, and uses natural selection to retain beneficial mutations~\\citep{dobzhansky1970genetics}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:85",
+      "occurrence_id": "occ_39a465bec4816505",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "kimura1979neutral"
+      ],
+      "claim_fingerprint": "sha256:489a265f481b35b9f7cd59634509bf2dbd9d74f5ca22045db0c036f46ba6fa5b",
+      "claim_text": "variation~\\citep{kimura1979neutral}, and uses natural selection to retain beneficial mutations~\\citep{dobzhansky1970genetics}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:85",
+      "occurrence_id": "occ_cf2800dcbeddd61b",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "dobzhansky1970genetics"
+      ],
+      "claim_fingerprint": "sha256:22d09cb118569c3b6b27ec6f3931f0566e81b751e44e51c19ccfffd9643c7f38",
+      "claim_text": "mutations~\\citep{dobzhansky1970genetics}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:85",
+      "occurrence_id": "occ_b9145966992354c9",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "ecoffet2019go"
+      ],
+      "claim_fingerprint": "sha256:17abf2f0332b4e8bd5f9e935d29190a8de8e7632f7dce45211cf714ff66e5c2f",
+      "claim_text": "\\citet{ecoffet2019go}, are outlined below.",
+      "claim_text_truncated": false,
+      "command": "citet",
+      "manuscript_location": "paper/sections/10_appendix.tex:106",
+      "occurrence_id": "occ_f712e9d8919de20d",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "coulom2006efficient",
+        "silver2016mastering",
+        "herr2025llm"
+      ],
+      "claim_fingerprint": "sha256:48e7b999b04b4746853a3e4070b03a210a4145fa39d167845354945248c3b089",
+      "claim_text": "\\citep{coulom2006efficient, silver2016mastering, herr2025llm}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:106",
+      "occurrence_id": "occ_a526874d0da1eef6",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "openai2024o1"
+      ],
+      "claim_fingerprint": "sha256:3d4cf20406917a5efb37ffb3164d28bba8028bcc11f92d2e01da10e8271d0244",
+      "claim_text": "model~\\citep{openai2024o1} for this purpose, as we found it had better reasoning capabilities than other FMs available at the time of our experiments.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:144",
+      "occurrence_id": "occ_42251b030bfbeedd",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "wang2024openhands"
+      ],
+      "claim_fingerprint": "sha256:eaa9830be020960d5e7e75a8a44bd20d5253eaf85f3e96d67e74f9e031dc0ced",
+      "claim_text": "(claude-3-5-sonnet-20241022)~\\citep{wang2024openhands}, achieving 53.0\\%.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:325",
+      "occurrence_id": "occ_e9e201f775e49b45",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "aider2024"
+      ],
+      "claim_fingerprint": "sha256:3865c6febba6da888c92daf851c369a98cc7de127bf079aeec37b2dc19deaf47",
+      "claim_text": "Aider~\\citep{aider2024}, a popular coding agent in the community, was published in Spring 2024.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:330",
+      "occurrence_id": "occ_88f0b2582ead87e5",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "skalse2022defining"
+      ],
+      "claim_fingerprint": "sha256:2620fddaabf4f7fd8dc5fd2b0aa5d2db2a83e7d1b8b7b338735222a189d859d6",
+      "claim_text": "learning~\\citep{skalse2022defining}, objective hacking occurs when a system optimizes for a predefined, quantifiable objective rather than fulfilling the spirit of the task or solving the intended problem.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:394",
+      "occurrence_id": "occ_4dc7007acef45d44",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "zhang2024omni",
+        "faldor2025omni"
+      ],
+      "claim_fingerprint": "sha256:2a2e2042123d69cb7ec2321aca5303bd9b27eae8a60ce710e496b9b424c83b6f",
+      "claim_text": "works~\\citep{zhang2024omni, faldor2025omni}, which suggest that optimizing quantitative measures often leads to undesirable or pathological outcomes, and aligns with Goodhart's law~\\citep{strathern1997improving} -- \"When a measure becomes a target, it ceases to be a good measure.\"",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:394",
+      "occurrence_id": "occ_cb97b7ccd1f508b9",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "strathern1997improving"
+      ],
+      "claim_fingerprint": "sha256:7be3b3fc97ee53e3f3a4ab547f4a13380dcbe5d0e7a4cbbed2324cb9ab514f25",
+      "claim_text": "law~\\citep{strathern1997improving} -- \"When a measure becomes a target, it ceases to be a good measure.\"",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:394",
+      "occurrence_id": "occ_3b03265bd525a985",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "bengio2024managing"
+      ],
+      "claim_fingerprint": "sha256:c402974ca01583f9778125fd129a9c870b5182dc253608ad9ca68c487bff04ce",
+      "claim_text": "considerations~\\citep{bengio2024managing}, especially for systems that improve in an open-ended way~\\citep{ecoffet2020open, clune2019ai}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:399",
+      "occurrence_id": "occ_7561291a6edfada1",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "ecoffet2020open",
+        "clune2019ai"
+      ],
+      "claim_fingerprint": "sha256:ddfbe6fcd7a44b0c8dd378e679efb0db64485c8d6db3ff098b790c2b0d33044b",
+      "claim_text": "way~\\citep{ecoffet2020open, clune2019ai}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:399",
+      "occurrence_id": "occ_654625d455c213f7",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "herr2025llm"
+      ],
+      "claim_fingerprint": "sha256:3817afb2051b16e63834c7efa096db6a3cab887fc8551da7d535dd306c280b3b",
+      "claim_text": "exploitation~\\citep{herr2025llm}, keeping only the most interesting agents in the archive~\\citep{faldor2025omni}, or leveraging the generated agent population as an ensemble~\\citep{samvelyan2024rainbow}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:407",
+      "occurrence_id": "occ_d5ca9ffb96e3ed09",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "faldor2025omni"
+      ],
+      "claim_fingerprint": "sha256:8f911d4f028efc576d66b18a6289c3b11b9bb09367d26613ba9ba5d346d7858b",
+      "claim_text": "archive~\\citep{faldor2025omni}, or leveraging the generated agent population as an ensemble~\\citep{samvelyan2024rainbow}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:407",
+      "occurrence_id": "occ_bcabd2037faf4989",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "samvelyan2024rainbow"
+      ],
+      "claim_fingerprint": "sha256:5c10740d3309806b3fecb4872dd69d9670ffce08cd0aa94eee14c82aad1c88f1",
+      "claim_text": "ensemble~\\citep{samvelyan2024rainbow}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:407",
+      "occurrence_id": "occ_41aef7dd5eefc40e",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "ouyang2022training"
+      ],
+      "claim_fingerprint": "sha256:c3e274257f3b97d909b7c9b0de7d8a9fc5c41c42116848e110a1f3dc280062c5",
+      "claim_text": "feedback~\\citep{ouyang2022training}, or distilled into FMs that act as preference judges~\\citep{bai2022constitutional}?",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:410",
+      "occurrence_id": "occ_9f8a6d3d5a88fdcd",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "bai2022constitutional"
+      ],
+      "claim_fingerprint": "sha256:43b6bbe1945a62a6e082427dbdec75e757044ebb4559280fd5b70941b28393c0",
+      "claim_text": "judges~\\citep{bai2022constitutional}?",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:410",
+      "occurrence_id": "occ_d4c2f9550eb0774a",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "yang2024sweagent"
+      ],
+      "claim_fingerprint": "sha256:48e7b999b04b4746853a3e4070b03a210a4145fa39d167845354945248c3b089",
+      "claim_text": "\\citep{yang2024sweagent}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:413",
+      "occurrence_id": "occ_152963ee56ab944e",
+      "review_state": "pending"
+    }
+  ],
+  "citation_usages": [],
+  "claim_evidence": [],
+  "references": [],
+  "schema_version": "paper-reference-ledger-v2"
+}

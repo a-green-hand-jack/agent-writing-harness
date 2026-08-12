@@ -75,3 +75,30 @@ migration debt / template-convention gap (see
 No claim, number, or citation facts were invented during this migration. All
 prose, numbers, and citations in `paper/sections/*.tex` and
 `paper/supplementary/` are copied verbatim from the arXiv source.
+
+## Round 2 (template adoption) corrections and fidelity evidence
+
+- **Bundled package loading fixed**: the arXiv source bundles `fancyhdr.sty` and
+  `natbib.sty`. Round 1 placed them under `paper/style/`, where
+  `\RequirePackage` cannot find them, so local builds silently used the system
+  TeX Live versions and lost the ICLR venue header. `paper/venue_preamble.tex`
+  now loads `style/fancyhdr` and `style/natbib` before
+  `style/iclr2026_conference`, restoring the header. Rebuilds are otherwise
+  byte-identical to the Round-1 committed PDF (per-page ordered-text comparison
+  differs only by the restored header).
+- **Known un-reproducible difference**: the official arXiv PDF page 1 carries
+  the platform-injected line `arXiv:2505.22954v3 [cs.AI] 12 Mar 2026`; arXiv
+  injects this stamp at upload time, it is not in the source, and it is not
+  reproduced locally.
+- **A/B/C/D fidelity (paper-fidelity.py evidence under
+  `.agents/runtime/fidelity/`, ignored)**:
+  - A (committed original arXiv PDF, 72 pages) vs B (original source rebuilt
+    with local TeX Live 2026, 72 pages): page 1 differs only by the arXiv
+    stamp; 38/72 pages match exactly; remaining drift is TeX Live 2025
+    (arXiv) vs 2026 (local) layout drift.
+  - A vs D (adopted-tree `arxiv` variant, 73 pages): pages 2-6 match exactly;
+    the rest differs by the recorded Round-1 structural migration debts
+    (Conclusion/Limitations split into `06`/`07`, statements reordered after
+    Acknowledgements, composite figures flattened) plus TeX-version drift.
+  - C (Round-1 committed `paper/main.pdf`) vs D: identical except the restored
+    venue header on every page.
