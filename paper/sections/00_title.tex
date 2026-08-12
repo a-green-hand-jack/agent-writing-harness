@@ -13,4 +13,12 @@
 
 \maketitle
 
+% Round-2 compatibility fix: the venue style sets \lhead inside the
+% \maketitle group, which modern fancyhdr does not persist. Re-apply the
+% sty's own preprint header at top level so the rebuilt PDF matches the
+% arXiv v2 build (see source-attribution.md).
+\ifcolmpreprint
+  \lhead{Preprint. Under review.}
+\fi
+
 \input{figures/00_teaser}

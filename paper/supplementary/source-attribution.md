@@ -2,12 +2,12 @@
 
 ## arXiv Case
 
-- arXiv id: `2604.01658` (v1)
+- arXiv id: `2604.01658v2` (latest; the earlier record said v1 but the recorded archive SHA matches v2)
 - Title: CORAL: Towards Autonomous Multi-Agent Evolution for Open-Ended Discovery
 - Authors: Ao Qu, Han Zheng, Zijian Zhou, Yihao Yan, Yihong Tang, Shao Yong Ong, Fenglu Hong, Kaichen Zhou, Chonghe Jiang, Minwei Kong, Jiacheng Zhu, Xuan Jiang, Sirui Li, Cathy Wu, Bryan Kian Hsiang Low, Jinhua Zhao, Paul Pu Liang
 - Venue kit: COLM 2026 (`colm2026_conference`), `[preprint]` option
-- Abstract URL: https://arxiv.org/abs/2604.01658v1
-- Source archive URL: https://arxiv.org/e-print/2604.01658
+- Abstract URL: https://arxiv.org/abs/2604.01658v2
+- Source archive URL: https://arxiv.org/e-print/2604.01658v2
 - Downloaded to: `/tmp/arxiv-2604.01658.geiM2g/source` (disposable tmp dir, not committed)
 - Archive sha256: `dd23352e4e550faf8fcd160312aace325d9f86674c3580657c690a250dd714ac`
 - Archive format: gzip-compressed tar (per `file`), extracted at `/tmp/arxiv-2604.01658.geiM2g/unpacked`
@@ -89,3 +89,37 @@ year) and `4.6` (Claude Opus 4.6 model version) are covered by literal exception
 No claim, number, or citation facts were invented during this migration. All prose,
 numbers, and citations in `paper/sections/*.tex`, `paper/figures/*.tex`, and
 `paper/refs.bib` are copied verbatim from the arXiv source.
+
+
+## Round 2 (template adoption) corrections and fidelity evidence
+
+- **Version identity corrected**: the Round-1 record said `v1`, but the recorded
+  archive SHA-256 (`dd23352e4e550faf8fcd160312aace325d9f86674c3580657c690a250dd714ac`)
+  and the committed original PDF SHA-256
+  (`6baf82f122d884380dea1ce2a20a92fd4e75216f430f652819d56bb2b893085c`) match the
+  arXiv v2 files, not v1. The attribution above now says v2; the v1 wording is
+  preserved in Git history and in DECISIONS.md.
+- **Title/author moved to interfaces**: `\title`/`\author` were moved from
+  `paper/venue_preamble.tex` into `\PaperTitle`/`\PaperAuthors` in
+  `paper/macros.tex`; rendered output is unchanged.
+- **Venue header restored**: the venue style sets `\lhead{Preprint. Under
+  review.}` inside the `\maketitle` group; modern fancyhdr does not persist it.
+  `paper/sections/00_title.tex` re-applies the sty's own preprint header at top
+  level after `\maketitle`, so the rebuild matches the arXiv v2 page header.
+- **Known un-reproducible difference**: the official arXiv PDF page 1 carries the
+  platform-injected line `arXiv:2604.01658v2 [cs.AI] 17 May 2026`; arXiv injects
+  this stamp at upload time and it is not reproduced locally.
+- **A/B/C/D fidelity (paper-fidelity.py evidence under
+  `.agents/runtime/fidelity/`, ignored)**:
+  - A (official arXiv v2 PDF, 27 pages) vs D (adopted-tree `arxiv` variant,
+    27 pages): 19/27 pages match exactly after the header fix. Page 1 differs by
+    the arXiv stamp and author-block line wrapping (TeX Live 2025 font metrics
+    vs 2026); pages 13-19 differ by figure/table float drift from the Round-1
+    structural changes plus TeX-version drift. All content is present in both.
+  - C (Round-1 committed `paper/main.pdf`) vs D: identical except the restored
+    header on every page.
+
+- **CI portability fix**: `\squishlisttwo[\arabic*.]` relies on newer
+  enumitem behavior; the label now spells the counter explicitly as
+  `\arabic{squishlisttwoitem}.`, rendering identical labels on older TeX
+  Live distributions.

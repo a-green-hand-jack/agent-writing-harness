@@ -1,0 +1,569 @@
+{
+  "citation_occurrences": [
+    {
+      "citation_keys": [
+        "mang2025frontiercs"
+      ],
+      "claim_fingerprint": "sha256:37366ad9265e6e34f7e5d0c7672808933bf274078cd44376e521b9d74c375ec9",
+      "claim_text": "answers~\\citep{mang2025frontiercs}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:12",
+      "occurrence_id": "occ_c3ec51f44de8c064",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "chen2025heurigym",
+        "zheng2026learning"
+      ],
+      "claim_fingerprint": "sha256:1c08aa23e2f74c1aedaa355c2475dfde06ae3e45f1128af2a086efb5ee701b14",
+      "claim_text": "problem~\\citep{chen2025heurigym, zheng2026learning}?",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:12",
+      "occurrence_id": "occ_d310249e56a4d4e1",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "ouyangkernelbench"
+      ],
+      "claim_fingerprint": "sha256:0e5e788e57072a4ca0b775c98cf95ac099d1880b7ca01c9d83b8148a5a90c07e",
+      "claim_text": "kernel~\\citep{ouyangkernelbench}?",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:12",
+      "occurrence_id": "occ_73f00deebdfe256a",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "romera2024funsearch"
+      ],
+      "claim_fingerprint": "sha256:357d1318009314d2b2dc67d2579d8e18f215991b80a3b3c6acb5a340d6ea0935",
+      "claim_text": "FunSearch~\\citep{romera2024funsearch}, AlphaEvolve~\\citep{novikov2025alphaevolve}, and more~\\citep{lange2025shinkaevolve,agrawal2025gepa,cemri2026adaevolve} show that LLMs can be embedded in evaluator-guided evolutionary search loops for open-ended discovery.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:14",
+      "occurrence_id": "occ_2bee4eae07248569",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "novikov2025alphaevolve"
+      ],
+      "claim_fingerprint": "sha256:6c4d4473a9923c983cf2a60ee6f193529a611fda91f56d5389474e3402a1dd27",
+      "claim_text": "AlphaEvolve~\\citep{novikov2025alphaevolve}, and more~\\citep{lange2025shinkaevolve,agrawal2025gepa,cemri2026adaevolve} show that LLMs can be embedded in evaluator-guided evolutionary search loops for open-ended discovery.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:14",
+      "occurrence_id": "occ_e42359db4a9b1b5c",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "lange2025shinkaevolve",
+        "agrawal2025gepa",
+        "cemri2026adaevolve"
+      ],
+      "claim_fingerprint": "sha256:3a4a90068264251f23d3f5ee55346ef348b5f93707d55825f7f56e63e0139f0a",
+      "claim_text": "more~\\citep{lange2025shinkaevolve,agrawal2025gepa,cemri2026adaevolve} show that LLMs can be embedded in evaluator-guided evolutionary search loops for open-ended discovery.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:14",
+      "occurrence_id": "occ_9acffed33c153df3",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "hong2024metagpt",
+        "li2023camel",
+        "wu2024autogen"
+      ],
+      "claim_fingerprint": "sha256:19682823b0e325b162006307f92a4b0e2e207e789d27da6ee7543dba1fefecf8",
+      "claim_text": "structure~\\citep{hong2024metagpt,li2023camel,wu2024autogen}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:22",
+      "occurrence_id": "occ_e13e53acffbf5755",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "lu2024aiscientist"
+      ],
+      "claim_fingerprint": "sha256:bf1fe96da3d0d9f2d43f0b0db2592b8d989813b375a673c20af1f7a5cdb90a6e",
+      "claim_text": "Scientist~\\citep{lu2024aiscientist} and Google's AI Co-Scientist~\\citep{gottweis2025towards}, it assumes that the optimal decomposition and interaction topology are known in advance.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:22",
+      "occurrence_id": "occ_3df89411e88c0119",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "gottweis2025towards"
+      ],
+      "claim_fingerprint": "sha256:070e43981be71986ccc6dc7e986fa6ef412f7aeaaf398a3f18fe25bc7ea7462c",
+      "claim_text": "Co-Scientist~\\citep{gottweis2025towards}, it assumes that the optimal decomposition and interaction topology are known in advance.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/02_intro.tex:22",
+      "occurrence_id": "occ_d621a1a28f669f2c",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "romera2024funsearch"
+      ],
+      "claim_fingerprint": "sha256:bb1a2ef4f88a703a35445be849b8f174ac15ae118ccc95c83e89837d0f2271d6",
+      "claim_text": "FunSearch~\\citep{romera2024funsearch} introduced this paradigm, and AlphaEvolve~\\citep{novikov2025alphaevolve} extended it to full codebases with MAP-Elites.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:6",
+      "occurrence_id": "occ_84fd5d0a31abbb94",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "novikov2025alphaevolve"
+      ],
+      "claim_fingerprint": "sha256:c0082d0d1cdc892917cc904ee9c2ccead3f8086c345ee7604445a4531892fc55",
+      "claim_text": "AlphaEvolve~\\citep{novikov2025alphaevolve} extended it to full codebases with MAP-Elites.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:6",
+      "occurrence_id": "occ_d1871a52b4321b48",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "sharma2025openevolve",
+        "lange2025shinkaevolve",
+        "khrulkov2025gigaevo",
+        "assumpcao2026codeevolve",
+        "yan2026pacevolve",
+        "agrawal2025gepa"
+      ],
+      "claim_fingerprint": "sha256:3692832a75c5c175f9217007405e2b0053c637678a5039a3e4193b9899372326",
+      "claim_text": "selection~\\citep{sharma2025openevolve,lange2025shinkaevolve,khrulkov2025gigaevo,assumpcao2026codeevolve,yan2026pacevolve,agrawal2025gepa}, while AdaEvolve~\\citep{cemri2026adaevolve} and EvoX~\\citep{liu2026evox} make the search strategy itself adaptive.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:6",
+      "occurrence_id": "occ_7e8a9a26b8a5bb9e",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "cemri2026adaevolve"
+      ],
+      "claim_fingerprint": "sha256:15395037c815576144737613f7c2587b2ebfe0dacbcc7752d17207c5851f37d3",
+      "claim_text": "AdaEvolve~\\citep{cemri2026adaevolve} and EvoX~\\citep{liu2026evox} make the search strategy itself adaptive.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:6",
+      "occurrence_id": "occ_88302257b9246f63",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "liu2026evox"
+      ],
+      "claim_fingerprint": "sha256:09a4e48d13ef004ae6c28bb63bf89c2f1ac837bdf2a035c389989e599c287f56",
+      "claim_text": "EvoX~\\citep{liu2026evox} make the search strategy itself adaptive.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:6",
+      "occurrence_id": "occ_f7e1b4ca92527d9c",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "wang2025thetaevolve",
+        "yuksekgonul2026tttdiscover"
+      ],
+      "claim_fingerprint": "sha256:b63042bf924f732a68a1c8f08e490eafa4e16bc6047937d57ee27431c5766da0",
+      "claim_text": "time~\\citep{wang2025thetaevolve,yuksekgonul2026tttdiscover} or builds experience libraries from solver feedback~\\citep{ouyang2025reasoningbank,kong2025alphaopt}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:6",
+      "occurrence_id": "occ_c04b460e93fd4e47",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "ouyang2025reasoningbank",
+        "kong2025alphaopt"
+      ],
+      "claim_fingerprint": "sha256:5bc5265104d0923cf6bcc79f762129956007c6d012f34d334a2758a8077ba285",
+      "claim_text": "feedback~\\citep{ouyang2025reasoningbank,kong2025alphaopt}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:6",
+      "occurrence_id": "occ_78f5f6f9f57f540b",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "yang2024sweagent",
+        "wang2024openhands"
+      ],
+      "claim_fingerprint": "sha256:a4ab81e727e6795da1c32b1efea62c5bbb1312ff942c456e8022c6414f0b688b",
+      "claim_text": "agents~\\citep{yang2024sweagent,wang2024openhands} navigate codebases, execute code, and iteratively debug within sandboxed environments, while the AI Scientist~\\citep{lu2024aiscientist} automates the full research cycle.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:10",
+      "occurrence_id": "occ_f45b22f0eb42607e",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "lu2024aiscientist"
+      ],
+      "claim_fingerprint": "sha256:5c25e32e434023804cae34e1468c15f69893b373d472b7a54e191a273a10ce9b",
+      "claim_text": "Scientist~\\citep{lu2024aiscientist} automates the full research cycle.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:10",
+      "occurrence_id": "occ_6acb84ef5eaa612a",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "shinn2023reflexion",
+        "madaan2023selfrefine"
+      ],
+      "claim_fingerprint": "sha256:733ed2f7643f532f1d79aa6562ffafd1abdac28c340796bff765bb883ac0a410",
+      "claim_text": "self-feedback~\\citep{shinn2023reflexion,madaan2023selfrefine}, interleaved reasoning and tool use~\\citep{yao2023react}, and learned memory consolidation~\\citep{zhou2026mem,yu2026memagent} further extend agent capabilities over long horizons.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:10",
+      "occurrence_id": "occ_f89df92ad779b08a",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "yao2023react"
+      ],
+      "claim_fingerprint": "sha256:acd6052ccdd8e12b629fc80a561166ebb937fb21f6fa6475cbf0e11f06329365",
+      "claim_text": "use~\\citep{yao2023react}, and learned memory consolidation~\\citep{zhou2026mem,yu2026memagent} further extend agent capabilities over long horizons.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:10",
+      "occurrence_id": "occ_c4b9b540499b8584",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "zhou2026mem",
+        "yu2026memagent"
+      ],
+      "claim_fingerprint": "sha256:00a26b967c86e06ca03cbad07a1b1eb522b112a50474bf5303cc4a77cdc99446",
+      "claim_text": "consolidation~\\citep{zhou2026mem,yu2026memagent} further extend agent capabilities over long horizons.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:10",
+      "occurrence_id": "occ_38736be04076d5db",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "gao2026agentic"
+      ],
+      "claim_fingerprint": "sha256:022ef2463882759da7cfdd4cbfea31747840495a7513d7fd659ded7d9d1ccd2a",
+      "claim_text": "agent~\\citep{gao2026agentic}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:10",
+      "occurrence_id": "occ_4761bc48bd334fe3",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "wu2023autogen",
+        "langgraph2024",
+        "qian2024chatdev",
+        "hong2024metagpt"
+      ],
+      "claim_fingerprint": "sha256:90d17a78a30fbe097d6dc0fc637e6f6a5a88330e134fdbb07d0530fc11abd311",
+      "claim_text": "communication~\\citep{wu2023autogen,langgraph2024,qian2024chatdev,hong2024metagpt}, or explore emergent cooperation via role-playing and dynamic group formation~\\citep{li2023camel,chen2024agentverse}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:14",
+      "occurrence_id": "occ_4015f3c7bc327de3",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "li2023camel",
+        "chen2024agentverse"
+      ],
+      "claim_fingerprint": "sha256:03dc1277a7deaa4416f3131f9bf81c9c9d656726e5025efef409986ca3b78c12",
+      "claim_text": "formation~\\citep{li2023camel,chen2024agentverse}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/03_related.tex:14",
+      "occurrence_id": "occ_e3624ec2fc480ade",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "novikov2025alphaevolve"
+      ],
+      "claim_fingerprint": "sha256:934104510e92a8741d8bd050d368b07fea9a7be8cee21e1f8207cfc32c9131cb",
+      "claim_text": "AlphaEvolve~\\citep{novikov2025alphaevolve}, the working context $\\hat{\\mathcal{M}}_t$ is constructed from $\\mathcal{M}_t$ using predetermined selection rules inspired by MAP-Elites and island models.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/04_method.tex:62",
+      "occurrence_id": "occ_0bad5186f0dfca66",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "langgraph2024"
+      ],
+      "claim_fingerprint": "sha256:a3051b00f3c09ea1203ba3a353292fbc99505931068ba1df91ab1ae750cc46ac",
+      "claim_text": "other~\\citep{langgraph2024}, coordination between agents occurs primarily through shared persistent memory.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/04_method.tex:137",
+      "occurrence_id": "occ_1a968e868c3f4d21",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "liu2026evox"
+      ],
+      "claim_fingerprint": "sha256:28b2f00489981e3add1cc42ed7684a17c8412bff52aa74c2ba575a50f0b0fb60",
+      "claim_text": "EvoX~\\citep{liu2026evox} and TTT-Discover ~\\citep{yuksekgonul2026tttdiscover}, consisting of 6 mathematical optimization tasks (e.g., circle packing, Erd\\H{o}s minimum overlap) and 5 systems optimization tasks (e.g., expert placement load balancing, GPU placement, cross-cloud transfer).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:14",
+      "occurrence_id": "occ_6c0d06fa1101e60f",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "yuksekgonul2026tttdiscover"
+      ],
+      "claim_fingerprint": "sha256:a4915398bfb829f14f2bf292c2c048a2f86621ad578b20941bfb3f191213ef05",
+      "claim_text": "~\\citep{yuksekgonul2026tttdiscover}, consisting of 6 mathematical optimization tasks (e.g., circle packing, Erd\\H{o}s minimum overlap) and 5 systems optimization tasks (e.g., expert placement load balancing, GPU placement, cross-cloud transfer).",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:14",
+      "occurrence_id": "occ_4a06783663e798bf",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "anthropic_takehome"
+      ],
+      "claim_fingerprint": "sha256:982e05e4047e9c519899a611368cfe4d05cd68acae3f35f96b1d9a81df93eeae",
+      "claim_text": "~\\citep{anthropic_takehome}, a VLIW SIMD tree-traversal task with an official best score of 1,363 cycles, and the Polyominoes packing problem from Frontier-CS~\\citep{mang2025frontiercs}, which is one of the hardest among all 172 problems in the benchmark.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:15",
+      "occurrence_id": "occ_ec12be9044f51fc2",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "mang2025frontiercs"
+      ],
+      "claim_fingerprint": "sha256:2fab8d8223e63f51084b4a28f0e5cbc1a26fcd462d0056fe8b46e485850212d2",
+      "claim_text": "Frontier-CS~\\citep{mang2025frontiercs}, which is one of the hardest among all 172 problems in the benchmark.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:15",
+      "occurrence_id": "occ_89627fb74785a6b9",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "sharma2025openevolve"
+      ],
+      "claim_fingerprint": "sha256:64b729744cefb8d7f1c6fdd82469032fa15aa93e74ef34324e4b1ec18fad7dbe",
+      "claim_text": "OpenEvolve~\\citep{sharma2025openevolve}, ShinkaEvolve~\\citep{lange2025shinkaevolve}, and EvoX~\\citep{liu2026evox}, all given the same seed programs, evaluators, and budgets.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:18",
+      "occurrence_id": "occ_a223a5ffeadf3814",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "lange2025shinkaevolve"
+      ],
+      "claim_fingerprint": "sha256:04a1ceb08dca4c08b003d69c376217c66352a5234932fc2d533590b20e13d1fa",
+      "claim_text": "ShinkaEvolve~\\citep{lange2025shinkaevolve}, and EvoX~\\citep{liu2026evox}, all given the same seed programs, evaluators, and budgets.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:18",
+      "occurrence_id": "occ_8336e3b09ab837b6",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "liu2026evox"
+      ],
+      "claim_fingerprint": "sha256:6caee7661e58440d9c47b7ba0e2caaa54326cf2de8933b07827cffc93a48c3bc",
+      "claim_text": "EvoX~\\citep{liu2026evox}, all given the same seed programs, evaluators, and budgets.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:18",
+      "occurrence_id": "occ_24ca898ef5a2ef65",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "minimax2026m25"
+      ],
+      "claim_fingerprint": "sha256:380cd4442c597c205b27c6df8c0e42862ff3cfdc2dd43b2389db24b48f7d88ee",
+      "claim_text": "M2.5~\\citep{minimax2026m25} + OpenCode~\\citep{opencode2025}) to verify that CORAL's gains generalize beyond proprietary models and agents.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:18",
+      "occurrence_id": "occ_e89b22b12c66efc9",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "opencode2025"
+      ],
+      "claim_fingerprint": "sha256:084561f09cd30a081c8d0b63e4fafbcc928c82f3c374a47018d82ae7833bff7b",
+      "claim_text": "OpenCode~\\citep{opencode2025}) to verify that CORAL's gains generalize beyond proprietary models and agents.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:18",
+      "occurrence_id": "occ_5d668d93e1e53b6f",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "liu2026evox"
+      ],
+      "claim_fingerprint": "sha256:643908957ab4238f3c806c126fde3cf4c313355b990eac6b7b30b1ae34d85589",
+      "claim_text": "EvoX~\\citep{liu2026evox} is the strongest competitor due to its meta-evolved search strategy, yet CORAL still outperforms it on every task.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/05_exp.tex:32",
+      "occurrence_id": "occ_7fe39e83dce48c6e",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "karpathy2026autoresearch",
+        "liu2026autoevolver",
+        "rllmorg2026hive"
+      ],
+      "claim_fingerprint": "sha256:52b185eb101e29dc23b8a6675b4c17b03ad6398999b07ee3e632e1f0b5a7171a",
+      "claim_text": "projects~\\citep{karpathy2026autoresearch,liu2026autoevolver,rllmorg2026hive} and emerging studies~\\citep{chen2026avoagenticvariationoperators} point in a similar direction, and together with the empirical evidence in this work, they suggest that we may be approaching a turning point in how AI systems tackle problems that require iterative search, learning from feedback, and accumulation of knowledge over time.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/06_conclusion.tex:7",
+      "occurrence_id": "occ_5341ceb99067a668",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "chen2026avoagenticvariationoperators"
+      ],
+      "claim_fingerprint": "sha256:1be4855b3a6266f3cfbc67e4a95fd99a9d29dcc254d96ab4ce646c248e274965",
+      "claim_text": "studies~\\citep{chen2026avoagenticvariationoperators} point in a similar direction, and together with the empirical evidence in this work, they suggest that we may be approaching a turning point in how AI systems tackle problems that require iterative search, learning from feedback, and accumulation of knowledge over time.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/06_conclusion.tex:7",
+      "occurrence_id": "occ_810d8d88a0310e57",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "mang2025frontiercs"
+      ],
+      "claim_fingerprint": "sha256:b78ffcd0418c117af58bb9062d64c1fd06ea952abcb07db7b6e1a2cfef2f2027",
+      "claim_text": "benchmark~\\citep{mang2025frontiercs}, requires packing all polyominoes as tightly as possible into a grid to minimize unused area.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:21",
+      "occurrence_id": "occ_35761c558b07e889",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "skydiscover2026"
+      ],
+      "claim_fingerprint": "sha256:6a6a14c7083fb2d2ce868b398cfba6011dbdcfdcc6a53d9e655e88e3337dd5a7",
+      "claim_text": "repository~\\citep{skydiscover2026}, which provides evaluator implementations originally from the Sky-Discover repository.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:605",
+      "occurrence_id": "occ_71dfd5aff8a70219",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "opencode2025"
+      ],
+      "claim_fingerprint": "sha256:8e915ad4ff5d3d2f94e2a84e9e85c6d7a7c19c8ec71e13250d81639fa2e97c53",
+      "claim_text": "OpenCode~\\citep{opencode2025} runtime.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:647",
+      "occurrence_id": "occ_6a601878274b26f5",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "sharma2025openevolve"
+      ],
+      "claim_fingerprint": "sha256:1ac5d93d814554ff574e4eff7c203bd5ef46357c3591aedee63b689be47159b3",
+      "claim_text": "\\textbf{OpenEvolve}~\\citep{sharma2025openevolve}: Open-source implementation of AlphaEvolve with static elite populations and diversity maintenance.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:651",
+      "occurrence_id": "occ_65c333b9e46e22f8",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "lange2025shinkaevolve"
+      ],
+      "claim_fingerprint": "sha256:fb09abece82cbb1a3b32740f9c31c0904ca97535164449a2353a0b5c104849f5",
+      "claim_text": "\\textbf{ShinkaEvolve}~\\citep{lange2025shinkaevolve}: Adaptive sampling with bandit-based selection.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:652",
+      "occurrence_id": "occ_81d85894be9329e9",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "liu2026evox"
+      ],
+      "claim_fingerprint": "sha256:aa309c32c83e6cd2c56beea515a9ab0e465f2fac8390883eec86b0de27e90dbd",
+      "claim_text": "\\textbf{EvoX}~\\citep{liu2026evox}: Meta-evolved search strategy with co-evolutionary outer loop.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:653",
+      "occurrence_id": "occ_f765eddd1eaffbbe",
+      "review_state": "pending"
+    },
+    {
+      "citation_keys": [
+        "skydiscover2026"
+      ],
+      "claim_fingerprint": "sha256:4ca7012e35fc579f2a7e0adec148053bb54b78ee0b25da9b4ea42a9a6a7ad714",
+      "claim_text": "repository~\\citep{skydiscover2026}.",
+      "claim_text_truncated": false,
+      "command": "citep",
+      "manuscript_location": "paper/sections/10_appendix.tex:655",
+      "occurrence_id": "occ_8abb785f44456699",
+      "review_state": "pending"
+    }
+  ],
+  "citation_usages": [],
+  "claim_evidence": [],
+  "references": [],
+  "schema_version": "paper-reference-ledger-v2"
+}

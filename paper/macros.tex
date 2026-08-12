@@ -1,7 +1,60 @@
-% Project macros. Generated number macros are included from generated/results-macros.tex when populated.
-% Reusable display macros (headings, float refs, table helpers) live in paper/style/ccfa-paper.sty, not here.
+% Project-specific, paper-facing interfaces plus migration authoring aids.
+% Reusable display helpers live in paper/style/ccfa-paper.sty.
+% Update every active consumer when an interface meaning changes.
+
 % Migrated from arXiv 2604.01658 preamble.tex (project-specific text macro). See
 % paper/supplementary/source-attribution.md for the migration mapping.
 \newcommand{\method}{\textsc{CORAL}}
 \newcommand{\rowstrut}{\rule{0pt}{2.6ex}}
 \newcommand{\stage}[1]{\textsc{#1}}
+
+% Interface: PaperTODO
+% Meaning: an explicit Draft-only placeholder that remains compilable.
+% Control: free implementation; Release must reject active uses.
+\providecommand{\PaperTODO}[1]{\textbf{[TODO: #1]}}
+
+% Interface: PaperTitle
+% Meaning: the canonical title shared by publication variants.
+% Control: bounded wording; a positioning change requires Human review.
+\providecommand{\PaperTitle}{CORAL: Towards Autonomous Multi-Agent Evolution\\ for Open-Ended Discovery}
+
+% Interface: PaperAuthors
+% Meaning: the canonical visible author line for non-anonymous variants.
+% Control: locked identity; anonymous variants hide rather than redefine it.
+\providecommand{\PaperAuthors}{%
+Ao Qu$^{1,8*}$ \quad Han Zheng$^{1*}$ \quad Zijian Zhou$^{2,3*}$ \quad
+\textbf{Yihao Yan} \quad \textbf{Yihong Tang$^{4}$} \\[4pt] \textbf{Shao Yong Ong$^{2}$} \quad \textbf{Fenglu Hong$^{5,6}$} \quad \textbf{Kaichen Zhou$^{1}$} \quad
+\textbf{Chonghe Jiang$^{1,8}$} \\[4pt]
+\textbf{Minwei Kong$^{8}$} \quad \textbf{Jiacheng Zhu$^{7\ddagger}$} \quad \textbf{Xuan Jiang$^{9\ddagger}$} \quad \textbf{Sirui Li$^{10\ddagger}$} \\[4pt]
+\textbf{Cathy Wu$^{1\dagger}$} \quad \textbf{Bryan Kian Hsiang Low$^{2,8\dagger}$} \quad \textbf{Jinhua Zhao$^{1,8\dagger}$} \quad \textbf{Paul Pu Liang$^{1,8\dagger}$} \\[8pt]
+$^{1}$MIT \quad $^{2}$NUS \quad $^{3}$MiniMax \quad $^{4}$McGill \quad $^{5}$Stanford \quad $^{6}$SambaNova \quad $^{7}$Meta \\
+$^{8}$Singapore-MIT Alliance for Research and Technology \quad $^{9}$Amazon \quad $^{10}$Microsoft \\[4pt]
+{\small $*$ Equal contribution (alphabetical order) \quad $\dagger$ Joint advising \quad $\ddagger$ Work done outside the authors' employment.} \\[2pt]}
+
+% Interface: MethodName
+% Meaning: the approved paper-facing name of the proposed method or system.
+% Control: locked meaning; changing the name requires a global consumer review.
+\providecommand{\MethodName}{CORAL}
+
+% Interface: CoreTerm
+% Meaning: the preferred recurring term for the paper's central concept.
+% Control: bounded wording; semantic redefinition requires Human review.
+\providecommand{\CoreTerm}{multi-agent evolution}
+
+% Interface: StateSymbol
+% Meaning: the shared persistent memory symbol used by the method.
+% Control: bounded notation; a symbol change requires collision and consumer review.
+\providecommand{\StateSymbol}{\mathcal{M}}
+
+% Interface: MainResult
+% Meaning: the main paper-facing result under the approved primary protocol.
+% Control: bounded value; metric, split, aggregation, or checkpoint changes require Human review.
+\providecommand{\MainResult}{3--10$\times$ higher improvement rates}
+
+% Interface: MainResultUncertainty
+% Meaning: the uncertainty paired with \MainResult under the same protocol.
+% Control: bounded value; uncertainty type or aggregation changes require Human review.
+\providecommand{\MainResultUncertainty}{not reported in the arXiv source}
+
+% Reviewed generated numeric macros may override or add result interfaces.
+\InputIfFileExists{generated/results-macros.tex}{}{}
