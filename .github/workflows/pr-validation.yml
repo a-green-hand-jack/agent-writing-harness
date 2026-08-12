@@ -86,10 +86,16 @@ jobs:
             ! grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
           fi
           if [[ "$variant" == camera-ready || "$variant" == arxiv ]]; then
-            # Positive author/acknowledgement markers are template-specific.
-            # Downstream papers carry real authors; assert only that the PDF exists.
-            if [[ "${{ github.repository }}" == "a-green-hand-jack/ccfa-writing-paper-template" ]]; then
+            # The template placeholder paper (base branch main) carries literal
+            # TODO Authors in camera-ready/arxiv; real papers must never carry
+            # them. Branch on the PR base (or the pushed ref) instead of the
+            # repository, because real-paper case branches live in the same repo.
+            base_ref="${{ github.event.pull_request.base.ref || github.ref }}"
+            if [[ "$base_ref" == "main" ]]; then
               grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
+              grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
+            else
+              ! grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
               grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
             fi
           fi
