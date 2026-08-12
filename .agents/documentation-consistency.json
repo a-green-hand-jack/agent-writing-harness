@@ -21,5 +21,13 @@
       "no separate table registry",
       "bash .agents/tools/verify.sh"
     ]
+  },
+  "stale_patterns": {
+    "\\bICLR[ _-]?2026\\b": "obsolete target venue ICLR 2026",
+    "lab/artifacts/": "removed lab artifact registry",
+    "state/float-placement-map\\.yaml": "removed float-placement map",
+    "scripts/check-figures-tables\\.py": "removed figure/table checker",
+    "scripts/export-venue-template\\.sh": "removed venue-export script",
+    "NOT used by paper/main\\.tex": "obsolete venue-compatibility usage note"
   }
 }
