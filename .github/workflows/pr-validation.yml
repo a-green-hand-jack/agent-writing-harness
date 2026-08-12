@@ -60,6 +60,10 @@ jobs:
             texlive-latex-recommended \
             texlive-latex-extra \
             texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-plain-generic \
+            texlive-pictures \
+            texlive-science \
             texlive-bibtex-extra
 
       - name: Build publication variant
@@ -117,6 +121,10 @@ jobs:
             texlive-latex-recommended \
             texlive-latex-extra \
             texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-plain-generic \
+            texlive-pictures \
+            texlive-science \
             texlive-bibtex-extra
 
       - name: Compile all variants with only paper present
@@ -164,6 +172,10 @@ jobs:
             texlive-latex-recommended \
             texlive-latex-extra \
             texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-plain-generic \
+            texlive-pictures \
+            texlive-science \
             texlive-bibtex-extra \
             texlive-extra-utils
 
