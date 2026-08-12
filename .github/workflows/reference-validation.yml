@@ -1,0 +1,124 @@
+name: Reference validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reference-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  references:
+    name: references
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout the validated head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'refs/heads/main' || github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run the offline ledger gate
+        run: python3 .agents/tools/check-reference-integrity.py --profile draft
+
+      - name: Record offline citation-support state
+        run: |
+          python3 .agents/tools/reference-evidence.py status
+          python3 .agents/tools/reference-evidence.py --offline inventory
+          cp dist/reference-support/*/inventory.json dist/reference-support/inventory.json 2>/dev/null || true
+
+      - name: Detect reviewed activation policy
+        id: policy
+        shell: bash
+        run: |
+          set +e
+          python3 .agents/tools/check-reference-integrity.py --policy-enabled
+          status=$?
+          set -e
+          case "$status" in
+            0) echo "enabled=true" >> "$GITHUB_OUTPUT" ;;
+            1)
+              echo "enabled=false" >> "$GITHUB_OUTPUT"
+              echo "Reference metadata audit is inert until PUBLICATION.md enables it."
+              ;;
+            *) exit "$status" ;;
+          esac
+
+      - name: Install the locked uv runner
+        if: steps.policy.outputs.enabled == 'true'
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.11.23"
+          enable-cache: true
+          cache-dependency-glob: .agents/dependencies/reference-integrity/uv.lock
+
+      - name: Run the locked BibTeX format gate
+        if: steps.policy.outputs.enabled == 'true'
+        env:
+          UV_PROJECT_ENVIRONMENT: ${{ github.workspace }}/dist/reference-integrity/venv
+          UV_CACHE_DIR: ${{ github.workspace }}/dist/reference-integrity/uv-cache
+        run: |
+          uv run --project .agents/dependencies/reference-integrity --frozen --no-dev \
+            python .agents/tests/test_bibtex_format_helper.py
+          uv run --project .agents/dependencies/reference-integrity --frozen --no-dev \
+            python .agents/tests/test_bibtex_correction_helper.py
+          python3 .agents/tools/check-bibtex-format.py
+
+      - name: Run keyless correction audit
+        if: steps.policy.outputs.enabled == 'true' && github.event_name == 'pull_request'
+        env:
+          BIBTEX_CHECK_MAILTO: ${{ vars.BIBTEX_CHECK_MAILTO || 'jieke.wu@kaust.edu.sa' }}
+        run: python3 .agents/tools/check-reference-corrections.py
+
+      - name: Run keyless metadata audit
+        if: steps.policy.outputs.enabled == 'true' && github.event_name == 'pull_request'
+        env:
+          BIBTEX_CHECK_MAILTO: ${{ vars.BIBTEX_CHECK_MAILTO || 'jieke.wu@kaust.edu.sa' }}
+        run: python3 .agents/tools/check-reference-metadata.py
+
+      - name: Run trusted correction audit
+        if: steps.policy.outputs.enabled == 'true' && github.event_name != 'pull_request'
+        env:
+          BIBTEX_CHECK_MAILTO: ${{ vars.BIBTEX_CHECK_MAILTO || 'jieke.wu@kaust.edu.sa' }}
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
+          S2_API_KEY: ${{ secrets.S2_API_KEY }}
+        run: python3 .agents/tools/check-reference-corrections.py
+
+      - name: Run trusted metadata audit
+        if: steps.policy.outputs.enabled == 'true' && github.event_name != 'pull_request'
+        env:
+          BIBTEX_CHECK_MAILTO: ${{ vars.BIBTEX_CHECK_MAILTO || 'jieke.wu@kaust.edu.sa' }}
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
+          S2_API_KEY: ${{ secrets.S2_API_KEY }}
+        run: python3 .agents/tools/check-reference-metadata.py
+
+      - name: Upload reference audit evidence
+        if: always() && steps.policy.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: reference-integrity-${{ github.run_id }}
+          path: |
+            dist/reference-integrity/format.json
+            dist/reference-integrity/format-run.json
+            dist/reference-integrity/metadata.jsonl
+            dist/reference-integrity/run.json
+            dist/reference-integrity/corrections/candidate.bib
+            dist/reference-integrity/corrections/report.jsonl
+            dist/reference-integrity/corrections/run.json
+            dist/reference-integrity/corrections/format.json
+            dist/reference-integrity/corrections/validation.json
+            dist/reference-support/inventory.json
+          if-no-files-found: warn
+          retention-days: 14
