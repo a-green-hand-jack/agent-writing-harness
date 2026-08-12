@@ -171,9 +171,10 @@ def reset_documentation_config(root: Path, changes: list[str]) -> None:
         return
     if not isinstance(data, dict) or data.get("schema_version") != "paper-documentation-consistency-v1":
         return
-    if data.get("required_facts") == {}:
+    if data.get("required_facts") == {} and data.get("stale_patterns", {}) == {}:
         return
     data["required_facts"] = {}
+    data["stale_patterns"] = {}
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     changes.append(DOCUMENTATION_CONFIG_RELATIVE.as_posix())
 

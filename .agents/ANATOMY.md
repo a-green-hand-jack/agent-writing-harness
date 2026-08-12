@@ -9,7 +9,7 @@
 - `skills/`: focused procedures for orientation, control review, decision packets, section writing, style alignment, post-version manuscript consistency review, interface maintenance, publication planning, release review, initial template adoption, and downstream template synchronization.
 - `template-sync.json`: downstream-local upstream URL, remote/branch, reviewed baseline, and optional path-policy extensions; adoption first writes an uninitialized downstream-specific configuration and pins the commit only after review.
 - `overleaf-sync.json`: project-specific Overleaf Git remote/branch and the canonical `paper/` source prefix; never contains credentials.
-- `documentation-consistency.json`: expected current facts for README and Human-facing contracts; downstream papers update these facts instead of editing checker source.
+- `documentation-consistency.json`: expected current facts for README and Human-facing contracts plus repository-local `stale_patterns` overrides; downstream papers update these facts instead of editing checker source.
 - `dependencies/reference-integrity/`: exact, hash-bearing lock for the non-mutating Pybtex format gate and optional non-generative bibliography metadata checker; no package is vendored.
 - `init-state.json`: downstream initialization marker written after template-specific governance residue is removed; absent in the upstream template.
 - `tools/`:
