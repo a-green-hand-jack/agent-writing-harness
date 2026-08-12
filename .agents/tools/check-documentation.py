@@ -9,7 +9,7 @@ import sys
 from pathlib import Path, PurePosixPath
 
 CONFIG_RELATIVE = Path(".agents/documentation-consistency.json")
-STALE_PATTERNS = {
+DEFAULT_STALE_PATTERNS: dict[str, str] = {
     r"\bICLR[ _-]?2026\b": "obsolete target venue ICLR 2026",
     r"lab/artifacts/": "removed lab artifact registry",
     r"state/float-placement-map\.yaml": "removed float-placement map",
@@ -27,7 +27,7 @@ def error(message: str) -> int:
     return 1
 
 
-def read_config(root: Path) -> dict[str, list[str]] | None:
+def read_config(root: Path) -> dict[str, Any] | None:
     path = root / CONFIG_RELATIVE
     if not path.is_file():
         return None
@@ -52,7 +52,15 @@ def read_config(root: Path) -> dict[str, list[str]] | None:
         ):
             raise ValueError(f"required_facts.{relative} must be a non-empty string list")
         result[relative] = [fact.strip() for fact in facts]
-    return result
+
+    stale_patterns = data.get("stale_patterns", {})
+    if not isinstance(stale_patterns, dict) or not all(
+        isinstance(pattern, str) and isinstance(description, str)
+        for pattern, description in stale_patterns.items()
+    ):
+        raise ValueError("stale_patterns must be an object mapping patterns to descriptions")
+    data["_required_facts"] = result
+    return data
 
 
 def documentation_files(root: Path) -> list[Path]:
@@ -68,11 +76,27 @@ def check(root: Path) -> int:
     code = 0
     documents = documentation_files(root)
 
+    try:
+        config = read_config(root)
+    except ValueError as exc:
+        code |= error(str(exc))
+        config = None
+
+    if config is None:
+        stale_patterns = DEFAULT_STALE_PATTERNS
+    else:
+        stale_patterns = config.get("stale_patterns", {})
+
     for path in documents:
         relative = path.relative_to(root).as_posix()
         text = path.read_text(encoding="utf-8")
-        for pattern, description in STALE_PATTERNS.items():
-            if re.search(pattern, text, flags=re.IGNORECASE):
+        for pattern, description in stale_patterns.items():
+            try:
+                compiled = re.compile(pattern, flags=re.IGNORECASE)
+            except re.error:
+                code |= error(f"invalid stale_patterns expression: {pattern}")
+                continue
+            if compiled.search(text):
                 code |= error(f"{relative} contains {description}")
 
         for match in LOCAL_AGENT_REFERENCE_RE.finditer(text):
@@ -80,11 +104,7 @@ def check(root: Path) -> int:
             if not (root / reference).exists():
                 code |= error(f"{relative} references missing repository path: {reference}")
 
-    try:
-        required_facts = read_config(root)
-    except ValueError as exc:
-        code |= error(str(exc))
-        required_facts = None
+    required_facts = config.get("_required_facts") if config is not None else None
 
     if required_facts is not None:
         for relative, facts in required_facts.items():
