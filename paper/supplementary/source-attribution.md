@@ -111,6 +111,9 @@ numbers, and citations in `paper/sections/*.tex`, `paper/figures/*.tex`, and
   this stamp at upload time and it is not reproduced locally.
 - **A/B/C/D fidelity (paper-fidelity.py evidence under
   `.agents/runtime/fidelity/`, ignored)**:
+  - A (official arXiv v2 PDF, 27 pages) vs B (original source rebuilt locally
+    with TeX Live 2026, 27 pages): 26/27 pages match exactly; page 1 differs
+    only by the arXiv platform stamp and author-block line wrapping.
   - A (official arXiv v2 PDF, 27 pages) vs D (adopted-tree `arxiv` variant,
     27 pages): 19/27 pages match exactly after the header fix. Page 1 differs by
     the arXiv stamp and author-block line wrapping (TeX Live 2025 font metrics
