@@ -1,6 +1,63 @@
-% Project macros. Generated number macros are included from generated/results-macros.tex when populated.
-% Reusable display macros (headings, float refs, table helpers) live in paper/style/ccfa-paper.sty, not here.
+% Project-specific, paper-facing interfaces plus migration authoring aids.
+% Reusable display helpers live in paper/style/ccfa-paper.sty.
+% Update every active consumer when an interface meaning changes.
+
 % Migrated verbatim from arXiv 2505.22954 main.tex preamble. See
 % paper/supplementary/source-attribution.md for the migration mapping.
 \newcommand{\fix}{\marginpar{FIX}}
 \newcommand{\new}{\marginpar{NEW}}
+
+% Interface: PaperTODO
+% Meaning: an explicit Draft-only placeholder that remains compilable.
+% Control: free implementation; Release must reject active uses.
+\providecommand{\PaperTODO}[1]{\textbf{[TODO: #1]}}
+
+% Interface: PaperTitle
+% Meaning: the canonical title shared by publication variants.
+% Control: bounded wording; a positioning change requires Human review.
+\providecommand{\PaperTitle}{Darwin G\"odel Machine: Open-Ended Evolution of Self-Improving Agents}
+
+% Interface: PaperAuthors
+% Meaning: the canonical visible author line for non-anonymous variants.
+% Control: locked identity; anonymous variants hide rather than redefine it.
+\providecommand{\PaperAuthors}{%
+Jenny Zhang\textsuperscript{*,1,2} \quad
+Shengran Hu\textsuperscript{*,1,2,3} \quad
+Cong Lu\textsuperscript{1,2,3} \quad
+Robert Lange\textsuperscript{\dag,3} \quad
+Jeff Clune\textsuperscript{\dag,1,2,4}
+\\
+\textsuperscript{1}University of British Columbia \quad
+\textsuperscript{2}Vector Institute \quad
+\textsuperscript{3}Sakana AI \quad
+\textsuperscript{4}Canada CIFAR AI Chair
+\\
+\texttt{\{jennyzzt,srhu,conglu\}@cs.ubc.ca}, \texttt{robert@sakana.ai}, \texttt{jeff.clune@ubc.ca}}
+
+% Interface: MethodName
+% Meaning: the approved paper-facing name of the proposed method or system.
+% Control: locked meaning; changing the name requires a global consumer review.
+\providecommand{\MethodName}{Darwin G\"odel Machine}
+
+% Interface: CoreTerm
+% Meaning: the preferred recurring term for the paper's central concept.
+% Control: bounded wording; semantic redefinition requires Human review.
+\providecommand{\CoreTerm}{self-improving}
+
+% Interface: StateSymbol
+% Meaning: the persistent state of the method: the growing archive of discovered agents.
+% Control: bounded notation; a symbol change requires collision and consumer review.
+\providecommand{\StateSymbol}{archive}
+
+% Interface: MainResult
+% Meaning: the main paper-facing result under the approved primary protocol.
+% Control: bounded value; metric, split, aggregation, or checkpoint changes require Human review.
+\providecommand{\MainResult}{SWE-bench from 20.0\% to 50.0\%}
+
+% Interface: MainResultUncertainty
+% Meaning: the uncertainty paired with \MainResult under the same protocol.
+% Control: bounded value; uncertainty type or aggregation changes require Human review.
+\providecommand{\MainResultUncertainty}{not reported in the arXiv source}
+
+% Reviewed generated numeric macros may override or add result interfaces.
+\InputIfFileExists{generated/results-macros.tex}{}{}

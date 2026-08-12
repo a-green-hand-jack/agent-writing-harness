@@ -24,11 +24,11 @@
       }
     ],
     "status": "in_progress",
-    "target_commit": "9a3db5f48c6457f045c889c2d0c81ab3ad79feaa"
+    "target_commit": "f7d1a37287f045913cca435738ac7e4b4d2888d0"
   },
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Template adoption is in progress against 9a3db5f48c6457f045c889c2d0c81ab3ad79feaa; finalize only after semantic review and validation.",
+  "last_sync_note": "Template adoption is in progress against f7d1a37287f045913cca435738ac7e4b4d2888d0; finalize only after semantic review and validation.",
   "last_synced_at": null,
   "last_synced_commit": null,
   "reference_integrity": {

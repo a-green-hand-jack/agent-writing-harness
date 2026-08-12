@@ -1,6 +1,11 @@
 % Venue-specific preamble. Verify against official current-year author kit before submission.
 % Migrated verbatim from arXiv 2505.22954 main.tex preamble. See
 % paper/supplementary/source-attribution.md for the migration mapping.
+% Load the bundled venue-era fancyhdr/natbib before the venue class so the
+% build matches the arXiv source environment (Round-1 placed them under
+% style/ where \RequirePackage could not find them).
+\usepackage{style/fancyhdr}
+\usepackage{style/natbib}
 \usepackage{style/iclr2026_conference}
 \usepackage{times}
 

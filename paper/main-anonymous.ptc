@@ -1,0 +1,39 @@
+\contentsline {section}{\numberline {1}Introduction}{1}{section.1}%
+\contentsline {section}{\numberline {2}Related Work}{3}{section.2}%
+\contentsline {section}{\numberline {3}Darwin G\"odel Machine}{4}{section.3}%
+\contentsline {section}{\numberline {4}Experiments}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Experiment Setup}{5}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Benchmarks}{5}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Baselines}{6}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Results}{6}{subsection.4.4}%
+\contentsline {section}{\numberline {5}Safety Discussion}{8}{section.5}%
+\contentsline {section}{\numberline {6}Conclusion}{11}{section.6}%
+\contentsline {section}{\numberline {7}Limitations}{11}{section.7}%
+\ttl@starttoc {sections@1}
+\contentsline {section}{\numberline {A}Additional Results}{25}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Baselines on SWE-bench}{25}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}Generality across models on Polyglot}{26}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}Ablation of Parent Selection}{26}{subsection.A.3}%
+\contentsline {subsection}{\numberline {A.4}Additional Statistics of DGM runs}{26}{subsection.A.4}%
+\contentsline {section}{\numberline {B}Additional Related Work}{27}{appendix.B}%
+\contentsline {section}{\numberline {C}Algorithmic Details}{28}{appendix.C}%
+\contentsline {subsection}{\numberline {C.1}Initial Coding Agent}{28}{subsection.C.1}%
+\contentsline {subsection}{\numberline {C.2}Parent Selection}{29}{subsection.C.2}%
+\contentsline {subsection}{\numberline {C.3}Self-Improve Prompts}{29}{subsection.C.3}%
+\contentsline {subsection}{\numberline {C.4}Pseudocode}{32}{subsection.C.4}%
+\contentsline {section}{\numberline {D}Experiment Details}{33}{appendix.D}%
+\contentsline {subsection}{\numberline {D.1}Hyperparameters for Foundation Models}{33}{subsection.D.1}%
+\contentsline {section}{\numberline {E}Benchmark Details}{33}{appendix.E}%
+\contentsline {subsection}{\numberline {E.1}Cost Estimate}{33}{subsection.E.1}%
+\contentsline {subsection}{\numberline {E.2}SWE-bench Tasks}{34}{subsection.E.2}%
+\contentsline {subsection}{\numberline {E.3}Polyglot Tasks}{36}{subsection.E.3}%
+\contentsline {subsection}{\numberline {E.4}SWE-bench State-of-The-Art}{37}{subsection.E.4}%
+\contentsline {subsection}{\numberline {E.5}Polyglot Representative Agent}{37}{subsection.E.5}%
+\contentsline {section}{\numberline {F}Best-Discovered Agents}{37}{appendix.F}%
+\contentsline {subsection}{\numberline {F.1}DGM on SWE-bench}{37}{subsection.F.1}%
+\contentsline {subsection}{\numberline {F.2}DGM on Polyglot}{51}{subsection.F.2}%
+\contentsline {section}{\numberline {G}Similar Target Functionality, Different Implementations}{61}{appendix.G}%
+\contentsline {section}{\numberline {H}Case Study: Solving Hallucination}{70}{appendix.H}%
+\contentsline {section}{\numberline {I}Additional Safety Discussion}{72}{appendix.I}%
+\contentsline {section}{\numberline {J}Additional Future Work Directions}{73}{appendix.J}%
+\contentsfinish 

@@ -1,0 +1,71 @@
+name: Build release instance
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_id:
+        description: Immutable release ID, for example iclr2027-submission-r1
+        required: true
+        type: string
+      variant:
+        description: Publication variant
+        required: true
+        type: choice
+        options:
+          - anonymous
+          - camera-ready
+          - arxiv
+          - draft
+      targets:
+        description: Comma-separated delivery targets
+        required: true
+        default: pdf,source-zip,arxiv-flat,overleaf-zip
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install TeX and flatten tools
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            latexmk \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-bibtex-extra \
+            texlive-extra-utils
+
+      - name: Build strict release instance
+        run: |
+          python3 .agents/tools/release.py build \
+            --id "${{ inputs.release_id }}" \
+            --variant "${{ inputs.variant }}" \
+            --profile release \
+            --targets "${{ inputs.targets }}" \
+            --verify-tex
+          python3 .agents/tools/check-release.py "dist/${{ inputs.release_id }}"
+
+      - name: Upload release instance
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.release_id }}
+          path: dist/${{ inputs.release_id }}/
+          if-no-files-found: error
+          retention-days: 30
