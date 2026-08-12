@@ -118,6 +118,15 @@ def inventory_occurrences(root: Path) -> list[dict]:
     return result
 
 
+def inventory_cache(root: Path) -> Path:
+    """Run inventory with a fixed run-dir so the cache path is date-independent.
+
+    --run-dir is a main-parser option and must precede the subcommand.
+    """
+    run(root, "--run-dir", str(root / "dist/reference-support/testrun"), "inventory")
+    return root / "dist/reference-support/testrun" / "inventory.json"
+
+
 class CliInventoryTests(unittest.TestCase):
     def test_inventory_detects_occurrences_with_claim_and_fingerprint(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -127,7 +136,7 @@ class CliInventoryTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("k1", result.stdout)
             self.assertIn("k2", result.stdout)
-            cache = root / "dist/reference-support" / "20260811" / "inventory.json"
+            cache = inventory_cache(root)
             self.assertTrue(cache.is_file())
             items = json.loads(cache.read_text(encoding="utf-8"))
             self.assertEqual(len(items), 1)
@@ -262,7 +271,7 @@ class CliPacketTests(unittest.TestCase):
             root = Path(directory)
             fixture(root, teX=teX_occurrence())
             inv = inventory_occurrences(root)
-            cache = root / "dist/reference-support" / "20260811" / "inventory.json"
+            cache = inventory_cache(root)
             items = json.loads(cache.read_text(encoding="utf-8"))
             occ_id = items[0]["occurrence_id"]
             result = run(root, "packet", occ_id, "--key", "k1")
@@ -278,8 +287,7 @@ class CliRecordTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             fixture(root, teX=teX_occurrence())
-            run(root, "inventory")
-            cache = root / "dist/reference-support" / "20260811" / "inventory.json"
+            cache = inventory_cache(root)
             items = json.loads(cache.read_text(encoding="utf-8"))
             occ_id = items[0]["occurrence_id"]
             result = run(
@@ -305,8 +313,7 @@ class CliRecordTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             fixture(root, teX=teX_occurrence())
-            run(root, "inventory")
-            cache = root / "dist/reference-support" / "20260811" / "inventory.json"
+            cache = inventory_cache(root)
             items = json.loads(cache.read_text(encoding="utf-8"))
             occ_id = items[0]["occurrence_id"]
             result = run(
@@ -407,8 +414,7 @@ class CheckerV2Tests(unittest.TestCase):
 First claim~\citep{k1}. Second different claim~\citep{k1}.
 """
             fixture(root, teX=teX)
-            run(root, "inventory")
-            cache = root / "dist/reference-support" / "20260811" / "inventory.json"
+            cache = inventory_cache(root)
             items = json.loads(cache.read_text(encoding="utf-8"))
             self.assertEqual(len(items), 2)
             # only one occurrence recorded -> coverage check fails for the other
@@ -427,8 +433,7 @@ First claim~\citep{k1}. Second different claim~\citep{k1}.
 A claim~\citep{k1} is made.
 """
             fixture(root, teX=teX)
-            run(root, "inventory")
-            cache = root / "dist/reference-support" / "20260811" / "inventory.json"
+            cache = inventory_cache(root)
             items = json.loads(cache.read_text(encoding="utf-8"))
             occ = items[0]
             occurrences = [
@@ -464,8 +469,7 @@ A claim~\citep{k1} is made.
 A claim~\citep{k1} is made.
 """
             fixture(root, teX=teX)
-            run(root, "inventory")
-            cache = root / "dist/reference-support" / "20260811" / "inventory.json"
+            cache = inventory_cache(root)
             items = json.loads(cache.read_text(encoding="utf-8"))
             occ = items[0]
             occurrences = [

@@ -500,6 +500,13 @@ def default_run_dir(root: Path) -> Path:
     return root / DEFAULT_RUN_DIR / now_iso().replace("-", "")
 
 
+def run_dir_for(root: Path, args: argparse.Namespace) -> Path:
+    """Run directory honoring --run-dir when supplied."""
+    if getattr(args, "run_dir", None):
+        return Path(args.run_dir).expanduser().resolve()
+    return default_run_dir(root)
+
+
 def cache_path(run_dir: Path, name: str) -> Path:
     return run_dir / "cache" / f"{name}.json"
 
@@ -592,7 +599,7 @@ def cmd_inventory(args: argparse.Namespace) -> int:
         item for item in existing.values() if item["occurrence_id"] in current_ids
     ]
     ledger.save()
-    run_dir = default_run_dir(root)
+    run_dir = run_dir_for(root, args)
     write_json(run_dir / "inventory.json", occurrences)
     for item in occurrences:
         print(
@@ -609,7 +616,7 @@ def cmd_resolve(args: argparse.Namespace) -> int:
     client = ProviderClient(
         offline=args.offline, fixture_dir=args.fixture_dir, timeout=args.timeout
     )
-    run_dir = default_run_dir(root)
+    run_dir = run_dir_for(root, args)
     run_dir.mkdir(parents=True, exist_ok=True)
 
     source = args.key or args.doi or args.arxiv or args.url or args.title
@@ -706,7 +713,7 @@ def cmd_search(args: argparse.Namespace) -> int:
     client = ProviderClient(
         offline=args.offline, fixture_dir=args.fixture_dir, timeout=args.timeout
     )
-    run_dir = default_run_dir(root)
+    run_dir = run_dir_for(root, args)
     run_dir.mkdir(parents=True, exist_ok=True)
     query = args.query
     if args.context:
@@ -738,7 +745,7 @@ def cmd_passages(args: argparse.Namespace) -> int:
     client = ProviderClient(
         offline=args.offline, fixture_dir=args.fixture_dir, timeout=args.timeout
     )
-    run_dir = default_run_dir(root)
+    run_dir = run_dir_for(root, args)
     run_dir.mkdir(parents=True, exist_ok=True)
 
     identity: dict[str, Any] = {}
@@ -843,7 +850,7 @@ def cmd_packet(args: argparse.Namespace) -> int:
         },
         "assessment": {},
     }
-    run_dir = default_run_dir(root)
+    run_dir = run_dir_for(root, args)
     run_dir.mkdir(parents=True, exist_ok=True)
     packet_path = run_dir / f"packet-{args.occurrence_id}-{key}.json"
     write_json(packet_path, packet)
@@ -1082,6 +1089,7 @@ def main() -> int:
     parser.add_argument("--offline", action="store_true", help="do not contact providers")
     parser.add_argument("--fixture-dir", type=Path, default=None, help="fixture cache directory for deterministic tests")
     parser.add_argument("--timeout", type=int, default=TIMEOUT_SECONDS)
+    parser.add_argument("--run-dir", default="", help="fixed run directory (default: dist/reference-support/<date>)")
     sub = parser.add_subparsers(dest="command", required=True)
 
     inv = sub.add_parser("inventory", help="inventory TeX citation occurrences")
