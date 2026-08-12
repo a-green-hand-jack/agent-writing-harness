@@ -28,12 +28,15 @@ FIXTURE_CONFIG = {
 
 
 def fixture(root: Path) -> None:
-    for source in ROOT.rglob("*.md"):
-        if ".git" in source.parts or "dist" in source.parts:
-            continue
-        target = root / source.relative_to(ROOT)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
+    (root / "paper/figures").mkdir(parents=True)
+    (root / "paper/figures/README.md").write_text(
+        "There is no separate figure registry\n", encoding="utf-8"
+    )
+    (root / "paper/tables").mkdir(parents=True)
+    (root / "paper/tables/README.md").write_text(
+        "There is no separate table registry\n", encoding="utf-8"
+    )
+    (root / "README.md").write_text("# Fixture README\n", encoding="utf-8")
     shutil.copytree(ROOT / ".agents/tools", root / ".agents/tools", dirs_exist_ok=True)
     config = root / ".agents"
     config.mkdir(parents=True, exist_ok=True)

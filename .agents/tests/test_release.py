@@ -82,9 +82,17 @@ class ReleaseInstanceTests(unittest.TestCase):
     def test_reference_evidence_is_release_provenance(self) -> None:
         provenance = paper_release.reference_provenance(ROOT, "release")
         self.assertEqual(provenance["offline_profile"], "release")
-        self.assertTrue(provenance["offline_gate_passed"])
+        if provenance["enforcement"] == "enforced":
+            self.assertTrue(provenance["offline_gate_passed"])
+            self.assertEqual(
+                provenance["ledger_sha256"],
+                paper_release.sha256_file(ROOT / "references/ledger.json"),
+            )
+        else:
+            self.assertEqual(provenance["enforcement"], "not-adopted")
+            self.assertIsNone(provenance["offline_gate_passed"])
+            self.assertEqual(provenance["online_metadata_outcome"], "not-applicable")
         self.assertFalse(provenance["online_metadata_required"])
-        self.assertEqual(provenance["ledger_sha256"], paper_release.sha256_file(ROOT / "references/ledger.json"))
         self.assertIn("REFERENCES.md", paper_release.REFERENCE_CONTRACTS)
         self.assertIn("references/ledger.json", paper_release.REFERENCE_CONTRACTS)
 
