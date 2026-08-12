@@ -61,6 +61,7 @@ jobs:
             texlive-latex-extra \
             texlive-fonts-recommended \
             texlive-fonts-extra \
+            tex-gyre \
             texlive-plain-generic \
             texlive-pictures \
             texlive-science \
@@ -83,7 +84,7 @@ jobs:
           pdftotext "$pdf" "$RUNNER_TEMP/$variant.txt"
           if [[ "$variant" == anonymous ]]; then
             ! grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
-            ! grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
+            ! grep -Eq "Acknowledg(e)?ments" "$RUNNER_TEMP/$variant.txt"
           fi
           if [[ "$variant" == camera-ready || "$variant" == arxiv ]]; then
             # The template placeholder paper (base branch main) carries literal
@@ -93,10 +94,10 @@ jobs:
             base_ref="${{ github.event.pull_request.base.ref || github.ref }}"
             if [[ "$base_ref" == "main" ]]; then
               grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
-              grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
+              grep -Eq "Acknowledg(e)?ments" "$RUNNER_TEMP/$variant.txt"
             else
               ! grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
-              grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
+              grep -Eq "Acknowledg(e)?ments" "$RUNNER_TEMP/$variant.txt"
             fi
           fi
 
@@ -128,6 +129,7 @@ jobs:
             texlive-latex-extra \
             texlive-fonts-recommended \
             texlive-fonts-extra \
+            tex-gyre \
             texlive-plain-generic \
             texlive-pictures \
             texlive-science \
@@ -151,7 +153,7 @@ jobs:
           test -s paper-only-default-main.pdf
           pdftotext paper-only-default-main.pdf "$RUNNER_TEMP/default-main.txt"
           ! grep -Fq "TODO Authors" "$RUNNER_TEMP/default-main.txt"
-          ! grep -Fq "Acknowledgements" "$RUNNER_TEMP/default-main.txt"
+          ! grep -Eq "Acknowledg(e)?ments" "$RUNNER_TEMP/default-main.txt"
 
   release-package:
     name: release-package
@@ -179,6 +181,7 @@ jobs:
             texlive-latex-extra \
             texlive-fonts-recommended \
             texlive-fonts-extra \
+            tex-gyre \
             texlive-plain-generic \
             texlive-pictures \
             texlive-science \
