@@ -50,6 +50,7 @@ jobs:
             texlive-latex-extra \
             texlive-fonts-recommended \
             texlive-fonts-extra \
+            tex-gyre \
             texlive-plain-generic \
             texlive-pictures \
             texlive-science \
