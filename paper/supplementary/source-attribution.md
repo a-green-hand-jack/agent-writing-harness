@@ -118,3 +118,8 @@ numbers, and citations in `paper/sections/*.tex`, `paper/figures/*.tex`, and
     structural changes plus TeX-version drift. All content is present in both.
   - C (Round-1 committed `paper/main.pdf`) vs D: identical except the restored
     header on every page.
+
+- **CI portability fix**: `\squishlisttwo[\arabic*.]` relies on newer
+  enumitem behavior; the label now spells the counter explicitly as
+  `\arabic{squishlisttwoitem}.`, rendering identical labels on older TeX
+  Live distributions.

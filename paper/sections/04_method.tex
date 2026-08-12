@@ -9,7 +9,7 @@
 We consider open-ended discovery tasks, where the optimal solution is unknown and increasingly strong candidate solutions must be discovered through iterative search under evaluator feedback. A task instance is specified by a task description $x$ and an evaluator $E$, where evaluating a candidate solution $y$ returns $E(x,y) := (s,f),$ with $s$ denoting the score of $y$ and $f$ denoting auxiliary feedback such as sub-score breakdowns or textual critique from an LLM-powered evaluator.
 
 Let $\mathcal{M}_t$ denote the shared persistent memory available at search step $t$, such as prior candidate solutions and their evaluation outcomes. At an abstract level, each improvement step consists of four stages:
-\squishlisttwo[\arabic*.]
+\squishlisttwo[\arabic{squishlisttwoitem}.]
     \item \stage{Retrieve}: construct a working context $\hat{\mathcal{M}}_t$ from $\mathcal{M}_t$;
     \item \stage{Propose}: generate a candidate solution $y_{t+1}$ conditioned on $x$ and $\hat{\mathcal{M}}_t$;
     \item \stage{Evaluate}: obtain score and feedback $(s_{t+1}, f_{t+1}) = E(x, y_{t+1})$;
