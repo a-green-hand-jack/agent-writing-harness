@@ -61,6 +61,7 @@ jobs:
             texlive-latex-extra \
             texlive-fonts-recommended \
             texlive-fonts-extra \
+            tex-gyre \
             texlive-plain-generic \
             texlive-pictures \
             texlive-science \
@@ -83,14 +84,21 @@ jobs:
           pdftotext "$pdf" "$RUNNER_TEMP/$variant.txt"
           if [[ "$variant" == anonymous ]]; then
             ! grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
-            ! grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
+            ! grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/$variant.txt"
           fi
           if [[ "$variant" == camera-ready || "$variant" == arxiv ]]; then
-            # Positive author/acknowledgement markers are template-specific.
-            # Downstream papers carry real authors; assert only that the PDF exists.
-            if [[ "${{ github.repository }}" == "a-green-hand-jack/ccfa-writing-paper-template" ]]; then
+            # The template placeholder paper (base branch main) carries literal
+            # TODO Authors in camera-ready/arxiv; real papers must never carry
+            # them. Branch on the PR base (or the pushed ref) instead of the
+            # repository, because real-paper case branches live in the same repo.
+            base_ref="${{ github.event.pull_request.base.ref || github.ref }}"
+            if [[ "$base_ref" == "main" ]]; then
               grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
-              grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
+              grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/$variant.txt"
+            else
+              # Real papers must never carry literal TODO placeholders.
+              # Acknowledgements presence is not asserted: some papers have none.
+              ! grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
             fi
           fi
 
@@ -122,6 +130,7 @@ jobs:
             texlive-latex-extra \
             texlive-fonts-recommended \
             texlive-fonts-extra \
+            tex-gyre \
             texlive-plain-generic \
             texlive-pictures \
             texlive-science \
@@ -145,7 +154,7 @@ jobs:
           test -s paper-only-default-main.pdf
           pdftotext paper-only-default-main.pdf "$RUNNER_TEMP/default-main.txt"
           ! grep -Fq "TODO Authors" "$RUNNER_TEMP/default-main.txt"
-          ! grep -Fq "Acknowledgements" "$RUNNER_TEMP/default-main.txt"
+          ! grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/default-main.txt"
 
   release-package:
     name: release-package
@@ -173,6 +182,7 @@ jobs:
             texlive-latex-extra \
             texlive-fonts-recommended \
             texlive-fonts-extra \
+            tex-gyre \
             texlive-plain-generic \
             texlive-pictures \
             texlive-science \
