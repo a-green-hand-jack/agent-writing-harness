@@ -82,8 +82,12 @@ jobs:
             ! grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
           fi
           if [[ "$variant" == camera-ready || "$variant" == arxiv ]]; then
-            grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
-            grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
+            # Positive author/acknowledgement markers are template-specific.
+            # Downstream papers carry real authors; assert only that the PDF exists.
+            if [[ "${{ github.repository }}" == "a-green-hand-jack/ccfa-writing-paper-template" ]]; then
+              grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
+              grep -Fq "Acknowledgements" "$RUNNER_TEMP/$variant.txt"
+            fi
           fi
 
   paper-only:

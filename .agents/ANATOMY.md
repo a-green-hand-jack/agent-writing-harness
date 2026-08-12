@@ -27,6 +27,7 @@
   - `template-adoption.py` inspects an unrelated existing repository, proposes evidence-backed mappings, installs only missing Agent-sidecar infrastructure, verifies the result, and records the first reviewed baseline.
   - `template-sync.py` performs reviewed path-level three-way synchronization after a baseline exists.
   - `overleaf-sync.py` exports only `paper/` to Overleaf and imports online edits only through a dedicated review branch.
+  - `paper-fidelity.py` produces repeatable original-vs-rebuilt PDF comparison evidence (page counts, per-page ordered-text digests, first mismatch page) and verifies file SHA-256 digests; it reports evidence and never approves a release.
   - `check-structure.py`, `check-documentation.py`, `check-paper-contracts.py`, `check-paper-interfaces.py`, and `check-publication.py` enforce the paper-first collaboration model.
 - `tests/`: standard-library positive and negative regressions, including release immutability, checksum drift, adoption safety, and template-sync safety.
 - `runtime/`: ignored session, worktree, release, adoption, or template-sync coordination state; never durable project truth.
@@ -63,7 +64,7 @@ If `.agents/init-state.json` is missing, run `paper-init.py clean --commit` befo
 
 ## Overleaf synchronization
 
-`overleaf-sync.py` maps canonical `paper/` to the root of the Overleaf project. Governance, CI, Agent tooling, release records, and other repository files never enter the exported tree. Export runs only from a clean `main`; import runs only from a clean `sync/overleaf-*` branch. An online edit blocks the next export until it has been pulled back for review.
+`overleaf-sync.py` maps canonical `paper/` to the root of the Overleaf project. Governance, CI, Agent tooling, release records, and other repository files never enter the exported tree. Export runs only from a clean canonical branch (`main`, `master`, `trunk`, or a protected `case/<name>` branch); import runs only from a clean `sync/overleaf-*` branch. An online edit blocks the next export until it has been pulled back for review.
 
 ## Release honesty
 
