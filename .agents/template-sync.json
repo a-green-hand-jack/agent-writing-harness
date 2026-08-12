@@ -1,0 +1,21 @@
+{
+  "adoption": {
+    "prior_sync_history": [],
+    "status": "in_progress",
+    "target_commit": "cdd2c7050123c93faa33b120c47be26918c510ef"
+  },
+  "always_manual": [],
+  "ignored_paths": [],
+  "last_sync_note": "Template adoption is in progress against cdd2c7050123c93faa33b120c47be26918c510ef; finalize only after semantic review and validation.",
+  "last_synced_at": null,
+  "last_synced_commit": null,
+  "reference_integrity": {
+    "adopted": false
+  },
+  "schema_version": "paper-template-sync-v1",
+  "upstream": {
+    "branch": "main",
+    "remote": "template",
+    "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git"
+  }
+}
