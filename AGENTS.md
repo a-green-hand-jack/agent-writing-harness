@@ -20,7 +20,7 @@ This removes template-specific governance IDs, resets downstream-local metadata,
 4. Read `PUBLICATION.md` only for variants, delivery targets, or release instances.
 5. Read only relevant decisions in `DECISIONS.md` and release records.
 6. Inspect the active paper section and current diff.
-7. Load one focused skill or knowledge document.
+7. Load one primary owner skill plus any explicitly permitted sidecar skills; never load the whole family.
 
 ## Task routing
 
@@ -38,6 +38,30 @@ This removes template-specific governance IDs, resets downstream-local metadata,
 - immutable release candidate → `.agents/skills/release-review/SKILL.md`
 - adapt an existing paper repository to this template → `.agents/skills/template-adoption/SKILL.md`
 - synchronize an adopted downstream repository with the upstream template → `.agents/skills/template-sync/SKILL.md`
+
+### Bundled CCFA skills
+
+The template ships the CCFA-Skills suite and writing-dna-skill as immutable snapshots under `.agents/vendor/` (see `.agents/vendor/README.md` and `.agents/dependencies/vendored-skills/provenance.json`). Wrappers below route to those snapshots and enforce the paper-contract boundaries. Load one as a sidecar of the matching owner skill, never as a substitute for the owner:
+
+- shared CCFA governance → `.agents/skills/ccf-common/SKILL.md`
+- experiment design, ablations, result-table semantics → `.agents/skills/ccf-experiment-designer/SKILL.md`
+- manuscript-facing humanization preflight → `.agents/skills/ccf-humanization/SKILL.md`
+- idea optimization and research-direction shaping → `.agents/skills/ccf-idea-optimizer/SKILL.md`
+- idea scoring, ranking, triage → `.agents/skills/ccf-idea-reviewer/SKILL.md`
+- claim/evidence/citation integrity audit → `.agents/skills/ccf-integrity-auditor/SKILL.md`
+- arXiv/OpenReview novelty and competitor monitoring → `.agents/skills/ccf-literature-monitor/SKILL.md`
+- external literature and related-work search → `.agents/skills/ccf-literature-searcher/SKILL.md`
+- assessment-only manuscript review and scoring → `.agents/skills/ccf-paper-reviewer/SKILL.md`
+- paper PDF → writing exemplar cards → `.agents/skills/ccf-paper-to-exemplar/SKILL.md`
+- drafting, revision, polishing, compression → `.agents/skills/ccf-paper-writer/SKILL.md`
+- full-project stage planning and routing → `.agents/skills/ccf-pipeline-orchestrator/SKILL.md`
+- external project scaffolding → `.agents/skills/ccf-project-scaffolder/SKILL.md`
+- rebuttal and reviewer-response drafting → `.agents/skills/ccf-rebuttal-writer/SKILL.md`
+- skill maintenance and auditing → `.agents/skills/ccf-skill-forger/SKILL.md`
+- submission-readiness checking → `.agents/skills/ccf-submission-checker/SKILL.md`
+- figure/table/diagram visual composition → `.agents/skills/ccf-visual-composer/SKILL.md`
+- writing-style distillation from an approved corpus → `.agents/skills/writing-dna-skill/SKILL.md`
+- whitelist cleanup of AI writing tells → `.agents/skills/lieflat-less-ai-tone/SKILL.md`
 
 Do not load all skills for an ordinary local edit.
 Do not inject manuscript-wide reviewer passes into section drafting. Version-level consistency review is explicit, starts only after the Human marks a manuscript version ready, and is findings-only by default.

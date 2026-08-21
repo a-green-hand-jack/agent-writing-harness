@@ -144,6 +144,33 @@ class DocumentationChecks(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("missing current fact", result.stdout)
 
+    def test_vendor_tree_is_exempt_from_documentation_scan(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            vendor = root / ".agents/vendor/ccfa-skills/ccf-paper-writer/references"
+            vendor.mkdir(parents=True)
+            (vendor / "venue-guide.md").write_text(
+                "Target venue ICLR 2026.\nRun `.agents/tools/removed-check.py`.\n",
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_vendor_sibling_markdown_is_still_scanned(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            write = root / ".agents/AGENTS.md"
+            write.parent.mkdir(parents=True, exist_ok=True)
+            write.write_text(
+                "Target ICLR 2026.\n",
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("obsolete target venue ICLR 2026", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

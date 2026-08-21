@@ -67,6 +67,30 @@ bash .agents/tools/verify.sh
 
 `verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, the offline reference ledger (including occurrence coverage and claim-support state), publication variants, release-record boundaries, template-adoption and template-sync configuration, and regressions. The separate `Reference validation` workflow installs hash-locked Pybtex format validation and the open-source metadata checker only after the protected publication policy enables them.
 
+## Bundled Agent skills
+
+The template ships the CCFA-Skills suite and writing-dna-skill as immutable
+snapshots under `.agents/vendor/` so downstream paper repositories work out of
+the box without any global skill installation. All 17 `ccf-*` skills plus
+`writing-dna-skill` and `lieflat-less-ai-tone` are available as wrappers under
+`.agents/skills/`; each wrapper routes to the vendor snapshot and enforces the
+paper-contract boundaries.
+
+- Writing engine: `ccf-paper-writer` runs inside the `section-writing` contract.
+- Review: `ccf-paper-reviewer` and `ccf-integrity-auditor` run inside the
+  Human-triggered, findings-only `manuscript-consistency-review` boundary.
+- Style: `writing-dna-skill` distills a Human-approved Writing DNA
+  (`.agents/knowledge/writing/paper-writing-dna.md`) that never overrides the
+  paper contracts.
+- Everything else: experiment design, idea triage, literature search/monitor,
+  visual composition, submission checks, rebuttals, and pipeline planning.
+
+Vendor provenance, hashes, and excluded upstream resources (third-party paper
+PDFs, the venue LaTeX corpus, demo assets) are recorded in
+`.agents/dependencies/vendored-skills/provenance.json` and verified by
+`.agents/tools/check-vendored-skills.py`. Never edit the vendor tree; updates
+arrive through template-sync after review. See `.agents/vendor/README.md`.
+
 ## Adopting the template in an existing repository
 
 An existing paper repository may use different paths, build commands, CI, venue files, and Agent instructions. Do not copy the template tree over it. Run the adoption tool from a trusted template checkout so the target repository does not need `.agents/` in advance:

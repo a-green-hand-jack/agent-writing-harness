@@ -28,6 +28,22 @@ Do not use this skill for a manuscript-wide review after a version is complete.
 Do not load the complete manuscript, all references, release tooling, or venue
 knowledge unless the active section actually requires them.
 
+## Bundled writing engine
+
+The bundled `ccf-paper-writer` skill (wrapper at
+`.agents/skills/ccf-paper-writer/SKILL.md`, canonical content in
+`.agents/vendor/ccfa-skills/ccf-paper-writer/`) is the upstream writing engine.
+Load it as a sidecar when the task is substantial drafting, polishing, or
+compression. It never replaces this skill as the local text owner and never
+bypasses the paper contracts. Where CCFA guidance conflicts with `PAPER.md`,
+`EXPERIMENTS.md`, `PAPER_INTERFACES.md`, or `PUBLICATION.md`, the local
+contract wins.
+
+Use distilled exemplar cards only for transferable rhetorical moves. Never copy
+wording, claims, examples, technical content, or distinctive phrasing from a
+reference paper, and do not treat the bundled `llava-4d`/`vggt` cards as a
+default writing format for this paper.
+
 ## Procedure
 
 1. Identify the active section and its reader task from `PAPER.md`.

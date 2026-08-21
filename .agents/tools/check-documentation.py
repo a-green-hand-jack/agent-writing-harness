@@ -68,7 +68,10 @@ def documentation_files(root: Path) -> list[Path]:
         path
         for suffix in ("*.md", "*.tex", "*.sty")
         for path in root.rglob(suffix)
-        if ".git" not in path.parts and "dist" not in path.parts
+        if ".git" not in path.parts
+        and "dist" not in path.parts
+        and path.relative_to(root).as_posix() != ".agents/vendor"
+        and not path.relative_to(root).as_posix().startswith(".agents/vendor/")
     )
 
 

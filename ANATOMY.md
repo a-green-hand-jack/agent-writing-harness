@@ -27,10 +27,11 @@ Variants may control publication-facing presentation. They do not own copied sec
 
 - `AGENTS.md`: thin routing entrypoint.
 - `.agents/knowledge/`: optional reference knowledge loaded only when relevant.
-- `.agents/skills/`: focused procedures for writing, publication planning, release review, initial template adoption, and downstream template synchronization.
+- `.agents/skills/`: focused procedures for writing, publication planning, release review, initial template adoption, downstream template synchronization, and wrappers for the bundled third-party skill suites.
+- `.agents/vendor/`: immutable snapshots of the bundled CCFA-Skills and writing-dna-skill suites with MIT licenses and a hash manifest; never edited locally.
 - `.agents/template-sync.json`: downstream-local upstream location and template baseline; adoption first creates an uninitialized downstream-specific configuration and records the exact commit only after review.
-- `.agents/tools/`: structure, contract, interface, publication, release-build, manifest, record, template-adoption, and template-sync tools.
-- `.agents/dependencies/`: optional Agent-tool dependency projects with exact locks; never a `paper/` runtime dependency.
+- `.agents/tools/`: structure, contract, interface, publication, release-build, manifest, record, template-adoption, template-sync, and vendored-skill integrity tools.
+- `.agents/dependencies/`: optional Agent-tool dependency projects with exact locks (`reference-integrity/`, `vendored-skills/`); never a `paper/` runtime dependency.
 - `.agents/tests/`: positive and negative regressions.
 - `.agents/runtime/`: ignored short-lived coordination, release, adoption, and template-sync state.
 

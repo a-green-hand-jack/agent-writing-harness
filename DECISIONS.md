@@ -88,6 +88,38 @@ Rationale: these branches and issues carry real-paper verification evidence, sou
 
 This decision governs this upstream template repository. Downstream paper repositories must record their own protected case branches and tracker issues in their own `DECISIONS.md`; do not copy these IDs as project facts.
 
+## DEC-0015: Bundled third-party skill suites
+
+Decision: the template distributes the complete functional CCFA-Skills suite
+(`v0.9.0`, commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`, MIT) and
+writing-dna-skill (commit `d5145ef671be70d3439524b6b72f55fe06a869a9`, MIT) as
+immutable snapshots under `.agents/vendor/`, so downstream paper repositories
+work out of the box without any global skill installation. All 17 `ccf-*`
+skills plus `writing-dna-skill` and `lieflat-less-ai-tone` are exposed as
+thin wrappers under `.agents/skills/` that route to the snapshots and enforce
+the paper-contract boundaries.
+
+The "complete functional suite" boundary excludes copyright-ambiguous content
+and non-functional assets: third-party paper full-text PDFs and full-text
+Markdown reproductions, the 71 MB `ccf-latex-templates` venue LaTeX corpus,
+upstream demo/evaluation/plugin/CI surfaces, runtime adapter configs, and the
+broken duplicate script `convert_pdf_to_card.py`. Exclusions and file hashes
+are recorded in `.agents/dependencies/vendored-skills/provenance.json` and
+verified by `.agents/tools/check-vendored-skills.py`.
+
+Ownership: `section-writing` remains the local text owner and runs
+`ccf-paper-writer` as its writing engine; `manuscript-consistency-review`
+remains Human-triggered and findings-only with `ccf-paper-reviewer` and
+`ccf-integrity-auditor` as sidecars; `style-alignment` governs approval of any
+Writing DNA distilled by `writing-dna-skill`. The vendor tree is never edited
+locally; upstream updates flow through template-sync after review. Human-facing
+contracts always take precedence over bundled guidance and exemplar defaults.
+
+Rationale: this makes the template's Agent capability layer self-contained and
+verifiable while keeping the paper contracts as the single source of truth, and
+avoids redistributing third-party paper content whose redistribution rights are
+unverified.
+
 ## Recording future decisions
 
 Record durable, high-impact Human decisions and rationale here. Do not record every sentence edit or temporary discussion. A useful decision states what was chosen, affected paper objects, rejected alternatives when relevant, and what future change requires review.
