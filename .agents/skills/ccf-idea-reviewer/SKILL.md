@@ -30,6 +30,8 @@ Scoring is diagnostic feedback only; a score is never an acceptance probability 
 
 Reports go to ignored `.agents/runtime/`; do not promote scores into `PAPER.md` or `DECISIONS.md` without Human review.
 
+Ranking/selection is only performed on explicit Human request; scores are diagnostic feedback, never acceptance probabilities. A chosen direction is a Human decision via `decision-packet`.
+
 ## Provenance
 
 Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

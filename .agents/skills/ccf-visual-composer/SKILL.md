@@ -30,6 +30,8 @@ Candidate output first; promotion into `paper/figures/` follows the paper-interf
 
 Generated figures are candidates under ignored `.agents/runtime/` until Human review; captions and interface names come from `PAPER_INTERFACES.md`.
 
+Table beautification/redesign of an already-specified result table is this skill's deliverable (not ccf-paper-writer's table-style-guide, which is drafting-only). Caption wording after layout is this skill's; caption facts/claims must come from supplied values (`ccf-experiment-designer` semantics), never invented.
+
 ## Provenance
 
 Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

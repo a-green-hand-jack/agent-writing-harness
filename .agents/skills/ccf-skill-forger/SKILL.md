@@ -30,6 +30,8 @@ May create candidate skills, but cannot mutate the pinned vendor snapshots silen
 
 New skills live in `.agents/skills/` as first-party content after Human review; vendor files remain immutable.
 
+Vendored SVG/documentation-generation steps do not apply here (no CCFA diagram generator exists in this template); generated candidates go to ignored `.agents/runtime/`. Skill-authoring work complements `check-vendored-skills.py` (create/maintain vs validate).
+
 ## Provenance
 
 Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

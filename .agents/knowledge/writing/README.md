@@ -41,6 +41,8 @@ choices, technical content, or a named author's personal identity. The paper's
 own contracts (`PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`) always take
 precedence over any distilled style.
 
+When an exemplar card's "reusable technique" conflicts with a Writing-DNA rule, the Human-approved Writing DNA wins; cards are source material, DNA is the approved distillation.
+
 ## Output contract
 
 A promoted `paper-writing-dna.md` must state: the corpus identity (titles and

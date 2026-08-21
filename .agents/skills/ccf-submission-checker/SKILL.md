@@ -30,6 +30,8 @@ Auxiliary to `publication-planning` and `release-review`; official current venue
 
 Findings go to the publication/release workflow; never constructs a release instance by itself.
 
+Venue-rule baseline is `.agents/knowledge/venues/<venue>-<year>.md` with a checked official source; the vendored `venue-guides/` corpus is upstream fallback only and may be stale (its own index says current-year official verification is required). This skill is a sidecar of `publication-planning` and `release-review`; it never constructs a release instance or asserts submission readiness.
+
 ## Provenance
 
 Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

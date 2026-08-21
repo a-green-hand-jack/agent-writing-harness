@@ -30,6 +30,8 @@ Broad discovery support; known manuscript claim support stays with `citation-sup
 
 Candidate references enter `REFERENCES.md` and the ledger only through the citation-support workflow.
 
+Reports observed facts only (clusters, coverage, quality scores, benchmark candidates). Gap, differentiation, and rescue-route recommendations belong to `ccf-idea-optimizer`; a 'stop / pivot' verdict is a direction decision for the Human, not this skill. Citation candidates are leads only; insertion requires `citation-support-review`.
+
 ## Provenance
 
 Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

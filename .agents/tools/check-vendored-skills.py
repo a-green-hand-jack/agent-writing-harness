@@ -5,7 +5,12 @@ Checks the vendor tree against `.agents/dependencies/vendored-skills/provenance.
 
 - every manifest file exists with the exact recorded SHA-256;
 - no unrecorded files, symlinks, nested Git metadata, or bytecode caches;
-- every wrapper skill under `.agents/skills/` points at an existing vendor file;
+- every wrapper skill under `.agents/skills/` points at an existing vendor file
+  under `.agents/vendor/` whose path matches the wrapper name;
+- the wrapper expectation list is taken from the manifest's `"wrappers"` key
+  (falling back to the built-in list when the key is missing);
+- the vendor tree never ships full-text paper reproductions under
+  `paper_ref/` or `references/exemplars/papers/`;
 - the excluded-content boundary holds (no paper PDFs or demo images shipped);
 - each source has its license file present.
 
@@ -29,6 +34,9 @@ WRAPPER_TARGET_RE = re.compile(r"- Skill: `([^`]+)`")
 FORBIDDEN_SUFFIXES = {".pdf", ".jpg", ".jpeg", ".png"}
 FORBIDDEN_NAMES = {".git", "__pycache__", ".venv", "dist"}
 FORBIDDEN_SUFFIX_PYC = ".pyc"
+ALLOWED_VENDOR_PREFIXES = {"ccfa-skills", "writing-dna-skill"}
+FORBIDDEN_FULLTEXT_PARTS = {"paper_ref"}
+FORBIDDEN_FULLTEXT_SUBPATH = ("references", "exemplars", "papers")
 
 EXPECTED_WRAPPERS = (
     "ccf-common",
@@ -74,6 +82,16 @@ def load_manifest(root: Path) -> dict:
     if not isinstance(files, dict) or not files:
         raise SystemExit("ERROR vendored-skills manifest requires files")
     return data
+
+
+def wrappers_from_manifest(manifest: dict) -> tuple[str, ...]:
+    """Wrapper expectation list, preferring the manifest's `wrappers` key."""
+    wrappers = manifest.get("wrappers")
+    if isinstance(wrappers, list) and wrappers and all(
+        isinstance(item, str) for item in wrappers
+    ):
+        return tuple(wrappers)
+    return EXPECTED_WRAPPERS
 
 
 def check_manifest(root: Path, manifest: dict) -> int:
@@ -122,13 +140,35 @@ def check_manifest(root: Path, manifest: dict) -> int:
         for rel in sorted(set(actual) - set(entries)):
             code |= error(f"{VENDOR_RELATIVE / prefix}/{rel} is not recorded in the manifest")
 
+    code |= check_no_fulltext_dirs(root, vendor_root)
+    return code
+
+
+def check_no_fulltext_dirs(root: Path, vendor_root: Path) -> int:
+    """Reject vendor directories that would host full-text paper reproductions."""
+    code = 0
+    for path in sorted(vendor_root.rglob("*")):
+        if not path.is_dir():
+            continue
+        rel_parts = path.relative_to(vendor_root).as_posix().split("/")
+        if any(part in FORBIDDEN_FULLTEXT_PARTS for part in rel_parts):
+            code |= error(
+                f"vendored full-text paper dir is forbidden: {path.relative_to(root)}"
+            )
+        for index in range(len(rel_parts) - len(FORBIDDEN_FULLTEXT_SUBPATH) + 1):
+            if tuple(rel_parts[index:index + len(FORBIDDEN_FULLTEXT_SUBPATH)]) == FORBIDDEN_FULLTEXT_SUBPATH:
+                code |= error(
+                    f"vendored full-text paper dir is forbidden: {path.relative_to(root)}"
+                )
     return code
 
 
 def check_wrappers(root: Path, manifest: dict) -> int:
     code = 0
     skills_root = root / SKILLS_RELATIVE
-    for name in EXPECTED_WRAPPERS:
+    vendor_root = (root / VENDOR_RELATIVE).resolve()
+    wrappers = wrappers_from_manifest(manifest)
+    for name in wrappers:
         wrapper = skills_root / name / "SKILL.md"
         if not wrapper.is_file():
             code |= error(f"missing wrapper skill: {SKILLS_RELATIVE / name}/SKILL.md")
@@ -144,12 +184,29 @@ def check_wrappers(root: Path, manifest: dict) -> int:
                 code |= error(
                     f"{wrapper.relative_to(root)} vendor target missing: {target_rel}"
                 )
+                continue
+            try:
+                vendor_parts = target.resolve().relative_to(vendor_root).parts
+            except ValueError:
+                code |= error(
+                    f"{wrapper.relative_to(root)} vendor target outside vendor tree: {target_rel}"
+                )
+                continue
+            if not vendor_parts or vendor_parts[0] not in ALLOWED_VENDOR_PREFIXES:
+                code |= error(
+                    f"{wrapper.relative_to(root)} vendor target outside vendored skill prefixes: {target_rel}"
+                )
+                continue
+            if name not in vendor_parts:
+                code |= error(
+                    f"{wrapper.relative_to(root)} vendor target does not match skill name: {target_rel}"
+                )
 
     # Every wrapper name must be routed by the root router (mirrors check-skills).
     router = root / "AGENTS.md"
     if router.is_file():
         router_text = router.read_text(encoding="utf-8")
-        for name in EXPECTED_WRAPPERS:
+        for name in wrappers:
             marker = f".agents/skills/{name}/SKILL.md"
             if marker not in router_text:
                 code |= error(f"root AGENTS.md does not route vendored skill: {name}")

@@ -11,6 +11,8 @@ python3 .agents/tools/paper-init.py status
 python3 .agents/tools/check-actions.py
 python3 .agents/tools/check-skills.py
 python3 .agents/tools/check-vendored-skills.py
+python3 .agents/vendor/ccfa-skills/ccf-common/scripts/check_markdown_links.py
+python3 .agents/vendor/ccfa-skills/ccf-common/scripts/check_path_privacy.py .agents/vendor/ccfa-skills
 python3 .agents/tools/check-documentation.py
 python3 .agents/tools/check-venue-knowledge.py
 python3 .agents/tools/check-paper-contracts.py --profile draft

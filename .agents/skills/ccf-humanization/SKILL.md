@@ -30,6 +30,8 @@ Narrow post-draft sidecar only. It cannot change claims, evidence, structure, te
 
 Concerns go to a separate user-review warning, never injected into the manuscript without approval.
 
+The vendored `experiment-humanization` mode and `references/experiment-discipline.md` are experiment-integrity policy, not prose: load them only for experiment-facing tasks, never for a prose pass, and never to change claims/evidence/structure. Prose de-defending and the warning-only contract are the default scope.
+
 ## Provenance
 
 Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

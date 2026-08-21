@@ -1,6 +1,6 @@
 ---
 name: ccf-integrity-auditor
-description: Audit paper integrity: claim-support alignment, numeric and terminology consistency, figure/table-to-text consistency, citation existence, BibTeX metadata, and citation-context support. Use for evidence audit, citation audit, consistency check, 引用核验, claim审计. Do not perform full scientific review.
+description: Audit paper integrity: numeric and terminology consistency, result-to-claim numeric agreement, and figure/table-to-text consistency. Use for evidence audit, numeric audit, consistency check, 数字一致性. Do not perform full scientific review or citation audit.
 ---
 
 # CCF Integrity Auditor (bundled)
@@ -29,6 +29,8 @@ Load the full upstream skill and its resources from the vendor tree (immutable; 
 Routes citation issues to `citation-support-review` and `reference-repair`; manuscript-wide use remains Human-triggered.
 
 Findings only by default; repair happens through the local reference-ledger contracts, never by silently editing `paper/refs.bib`.
+
+Vendor modes `citation-audit` and the claim-support portion of `claim-audit` are disabled in this template: claim-support verdicts belong to `citation-support-review` (and the `references/ledger.json` Human-confirmation gate), BibTeX metadata/duplicate repair belongs to `reference-repair`. Run this skill for `numeric-audit` and result-to-claim numeric consistency only.
 
 ## Provenance
 

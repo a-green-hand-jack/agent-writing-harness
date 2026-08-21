@@ -30,6 +30,8 @@ Optional final whitelist pass; approved Writing DNA and scientific meaning take 
 
 Only handles whitelisted patterns; any prose change that touches claims or meaning routes back through `section-writing`.
 
+When both `ccf-humanization` and this skill would touch the same surface, `ccf-humanization`'s `references/humanization-policy.md` thresholds win (e.g., em-dash/openers/enumeration counts); this skill is an optional post-final whitelist pass and must not re-litigate counts already resolved. It applies to whitelisted patterns only and never changes article framework.
+
 ## Provenance
 
 Source: https://github.com/larashero3-dotcom/writing-dna-skill at commit `d5145ef671be70d3439524b6b72f55fe06a869a9`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

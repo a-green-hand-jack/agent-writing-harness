@@ -1,6 +1,6 @@
 ---
 name: ccf-paper-writer
-description: Own text-changing deliverables for papers: draft, rewrite, revise, polish, or compress manuscript and presentation prose while preserving supplied scope and evidence. Use for abstract/introduction/related work/method/experiment writing, paragraph edits, reviewer-motivated rewrites, 润色论文, 改写, 压缩论文. Do not use for assessment-only requests.
+description: Upstream writing engine for drafting, revision, polishing, and compression; load as a sidecar of the local `section-writing` skill, which remains the text owner.
 ---
 
 # CCF Paper Writer (bundled)
@@ -29,6 +29,12 @@ Load the full upstream skill and its resources from the vendor tree (immutable; 
 `section-writing` remains the local text-owner; load this skill as the upstream writing engine and route manuscript changes through the section-writing contract.
 
 Manuscript edits go to canonical `paper/` only through the normal section-writing flow; never create second canonical copies; citations via `citation-support-review`.
+
+`references/table-style-guide.md` applies only to content scaffolding while drafting; final table beautification/redesign of an already-specified table belongs to `ccf-visual-composer`.
+
+Vendored `venue-guides/` corpus is fallback only; the template's `.agents/knowledge/venues/` and official checked sources win. Vendored citation-density targets (e.g., 25-40 references) are advisory and never justify a citation that fails the `citation-support-review` Draft profile.
+
+Dead upstream references to `ccf-latex-templates/...` and `paper_ref/*.pdf` are excluded resources; from-scratch LaTeX drafting uses this repository's own `paper/` tree and Makefile variants instead.
 
 ## Provenance
 

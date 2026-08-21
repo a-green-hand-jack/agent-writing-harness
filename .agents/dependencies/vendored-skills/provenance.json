@@ -56,6 +56,27 @@
       "source": "writing-dna-skill"
     }
   ],
+  "wrappers": [
+    "ccf-common",
+    "ccf-experiment-designer",
+    "ccf-humanization",
+    "ccf-idea-optimizer",
+    "ccf-idea-reviewer",
+    "ccf-integrity-auditor",
+    "ccf-literature-monitor",
+    "ccf-literature-searcher",
+    "ccf-paper-reviewer",
+    "ccf-paper-to-exemplar",
+    "ccf-paper-writer",
+    "ccf-pipeline-orchestrator",
+    "ccf-project-scaffolder",
+    "ccf-rebuttal-writer",
+    "ccf-skill-forger",
+    "ccf-submission-checker",
+    "ccf-visual-composer",
+    "writing-dna-skill",
+    "lieflat-less-ai-tone"
+  ],
   "files": {
     "ccfa-skills": {
       "LICENSE": "1ac138d752fc345d61c5790df57caed3487e4d66d59879d6bd60272765d087d2",

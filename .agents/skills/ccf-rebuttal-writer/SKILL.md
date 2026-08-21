@@ -30,6 +30,8 @@ Requires an active rebuttal publication context and follows `section-writing` bo
 
 Response documents are candidates under ignored `.agents/runtime/` until Human review; do not overwrite release records.
 
+`resubmission` mode changes the active variant/venue; `publication-planning` owns that decision and `PUBLICATION.md` gates it. This skill drafts the response/revision ledger only.
+
 ## Provenance
 
 Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

@@ -30,6 +30,8 @@ Proposals only. Central thesis, contributions, and story changes require `contro
 
 Candidate idea documents go to ignored `.agents/runtime/` or the discussion; do not edit `PAPER.md` claims without Human approval.
 
+The vendored mandatory experiment-plan checklist is narrowed here to a minimum viable evidence sketch (which claim needs which discriminating test); dataset/baseline/metric/ablation selection and result-table schema belong to `ccf-experiment-designer`. Output improves a direction; it never selects a winner (comparison verdicts belong to `ccf-idea-reviewer` + a Human `decision-packet`).
+
 ## Provenance
 
 Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

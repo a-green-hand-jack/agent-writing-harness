@@ -30,6 +30,8 @@ Writes candidate cards outside the immutable vendor tree; no full-text source co
 
 Source PDFs live outside Git or under ignored `.agents/runtime/writing-dna/`; cards are candidates until Human review.
 
+The vendored save-path steps do not apply: write candidate cards to ignored `.agents/runtime/writing-dna/cards/` and register them in a local index there; the `ccf-paper-writer` wrapper loads local cards before vendor defaults. Never write into `.agents/vendor/`.
+
 ## Provenance
 
 Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

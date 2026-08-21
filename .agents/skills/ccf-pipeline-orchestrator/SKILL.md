@@ -30,6 +30,8 @@ Orchestrator only; it cannot bypass any local owner skill or Human gate.
 
 Plans must route work through the template's owner skills; do not treat `ccfa.yaml` as project state.
 
+When this skill names a next CCFA owner, use the local translation: ccf-paper-writer -> section-writing; ccf-experiment-designer -> EXPERIMENTS.md (proposals to Human); ccf-submission-checker -> publication-planning / release-review; ccf-rebuttal-writer -> publication-planning context; ccf-literature-* -> citation-support-review for claim support; ccf-idea-* -> control-review / decision-packet for central decisions.
+
 ## Provenance
 
 Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

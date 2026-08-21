@@ -101,6 +101,7 @@ def fixture(root: Path) -> None:
             },
         ],
         "excluded": [],
+        "wrappers": list(WRAPPERS),
         "files": files,
     }
     write(
@@ -218,6 +219,35 @@ class VendoredSkillsChecks(unittest.TestCase):
             result = run(root)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("vendor target missing", result.stdout)
+
+    def test_wrapper_target_outside_vendor_tree_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            write(root / ".agents/outside.md", "outside\n")
+            wrapper = root / ".agents/skills/ccf-paper-writer/SKILL.md"
+            wrapper.write_text(
+                wrapper.read_text(encoding="utf-8")
+                + "\n- Skill: `.agents/outside.md`\n",
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("vendor target outside vendor tree", result.stdout)
+
+    def test_wrapper_target_mismatched_skill_name_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            wrapper = root / ".agents/skills/ccf-paper-writer/SKILL.md"
+            wrapper.write_text(
+                wrapper.read_text(encoding="utf-8")
+                + "\n- Skill: `.agents/vendor/ccfa-skills/ccf-experiment-designer/SKILL.md`\n",
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("does not match skill name", result.stdout)
 
     def test_unrouted_wrapper_fails(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
