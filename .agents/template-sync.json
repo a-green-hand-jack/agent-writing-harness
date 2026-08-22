@@ -1,14 +1,16 @@
 {
   "adoption": {
     "prior_sync_history": [],
-    "status": "in_progress",
-    "target_commit": "f7d1a37287f045913cca435738ac7e4b4d2888d0"
+    "reviewed_at": "2026-08-22T09:52:01+00:00",
+    "status": "reviewed",
+    "target_commit": "f7d1a37287f045913cca435738ac7e4b4d2888d0",
+    "verification_repository_fingerprint": "e6e641c82bf91dd0884e782ebb4ef2a675dd42c8269f994f35c10a3818b9e1a0"
   },
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Template adoption is in progress against f7d1a37287f045913cca435738ac7e4b4d2888d0; finalize only after semantic review and validation.",
-  "last_synced_at": null,
-  "last_synced_commit": null,
+  "last_sync_note": "Reviewed initial adoption from an existing paper repository (CORAL).",
+  "last_synced_at": "2026-08-22T09:52:01+00:00",
+  "last_synced_commit": "f7d1a37287f045913cca435738ac7e4b4d2888d0",
   "reference_integrity": {
     "adopted": false
   },
