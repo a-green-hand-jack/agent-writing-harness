@@ -23,6 +23,7 @@ jobs:
       - name: Checkout the validated head
         uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Python
@@ -54,6 +55,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            cm-super \
             latexmk \
             poppler-utils \
             texlive-latex-base \
@@ -123,6 +125,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            cm-super \
             latexmk \
             poppler-utils \
             texlive-latex-base \
@@ -217,6 +220,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            cm-super \
             latexmk \
             texlive-latex-base \
             texlive-latex-recommended \
