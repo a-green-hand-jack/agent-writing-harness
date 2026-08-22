@@ -1,0 +1,37 @@
+---
+name: ccf-humanization
+description: Humanize and de-defend publication-facing prose and artifacts as a sidecar preflight, never as the primary task owner. Use before manuscript drafting/revision and before final manuscript experiment text, tables, captions, or method descriptions. Do not conceal material evidence, fabricate results, or override venue-mandated disclosures.
+---
+
+# CCF Humanization (bundled)
+
+Bundled from the CCFA-Skills suite (MIT). The canonical upstream skill lives in the immutable vendor tree; this wrapper routes to it and enforces the paper-contract boundaries. Do not edit the vendor tree.
+
+## Canonical content
+
+Load the full upstream skill and its resources from the vendor tree (immutable; never edit):
+
+- Skill: `.agents/vendor/ccfa-skills/ccf-humanization/SKILL.md`
+- Resources: any existing sibling `references/`, `scripts/`, `resources/`, `templates/`, or `assets/` directories under `.agents/vendor/ccfa-skills/ccf-humanization`.
+
+## Local precedence
+
+1. Current Human request and Human-approved decisions.
+2. `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, `PUBLICATION.md`, and `DECISIONS.md`.
+3. Local owner skill or contract boundary (see below).
+4. Current official venue knowledge: `.agents/knowledge/venues/`.
+5. Human-approved Writing DNA: `.agents/knowledge/writing/paper-writing-dna.md` (only when the Human has activated it).
+6. Upstream CCFA guidance.
+7. Upstream exemplar defaults and generic quotas.
+
+## Owner and boundary
+
+Narrow post-draft sidecar only. It cannot change claims, evidence, structure, terminology meaning, or limitations.
+
+Concerns go to a separate user-review warning, never injected into the manuscript without approval.
+
+The vendored `experiment-humanization` mode and `references/experiment-discipline.md` are experiment-integrity policy, not prose: load them only for experiment-facing tasks, never for a prose pass, and never to change claims/evidence/structure. Prose de-defending and the warning-only contract are the default scope.
+
+## Provenance
+
+Source: https://github.com/mikubaka88/CCFA-Skills (v0.9.0) at commit `fd5c7e3afcc097d874d296a0e1e8118ae597f847`. Excluded upstream resources (third-party paper PDFs, venue LaTeX template corpus, demo/evaluation assets, runtime adapter configs, broken duplicate scripts) are recorded in `.agents/dependencies/vendored-skills/provenance.json`. Fetch reference PDFs on demand into ignored `.agents/runtime/`; never write into `.agents/vendor/`.

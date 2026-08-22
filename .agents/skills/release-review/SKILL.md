@@ -25,11 +25,12 @@ Do not load historical alternatives unless a current conflict requires them.
 1. Confirm the selected variant and permitted differences from the canonical paper.
 2. If a venue is active, run `python3 .agents/tools/check-venue-knowledge.py --strict` and recheck official venue facts before relying on deadlines, page limits, anonymity, or operational rules.
 3. Run the Draft and Release contract checks; do not suppress unresolved or placeholder failures.
-4. List high-impact changes since the last Human review.
-5. Check claim strength, experiment interpretation, stable interfaces, limitations, negative evidence, anonymity, author/acknowledgement behavior, appendix inclusion, reference-ledger Release status, claim evidence, figures, tables, and compilation.
-6. Build the exact release candidate and verify its manifest and artifact checksums.
-7. Mark unavailable external environments as unverified, not successful.
-8. Produce a short release summary with blockers, accepted exceptions, residual risks, and an Agent recommendation.
+4. Run `.agents/skills/ccf-submission-checker/SKILL.md` as the compliance sidecar for template, page-limit, and anonymity checks; it is a compliance aid, never a substitute for release verification.
+5. List high-impact changes since the last Human review.
+6. Check claim strength, experiment interpretation, stable interfaces, limitations, negative evidence, anonymity, author/acknowledgement behavior, appendix inclusion, reference-ledger Release status, claim evidence, figures, tables, and compilation.
+7. Build the exact release candidate and verify its manifest and artifact checksums.
+8. Mark unavailable external environments as unverified, not successful.
+9. Produce a short release summary with blockers, accepted exceptions, residual risks, and an Agent recommendation.
 
 ## Human decision
 

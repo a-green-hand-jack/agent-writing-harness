@@ -8,7 +8,8 @@ Before merge:
 
 1. wait for both the `PR validation` and `Reference validation` workflows to finish;
 2. require every applicable job to succeed:
-   - `harness` — paper-first checks and Agent regressions;
+   - `harness` — paper-first checks, Agent regressions, and vendored-skill integrity;
+   - `vendored-skills` — locked runtime sync, vendored script compilation, and the applicable upstream CCFA checks on the vendored subset;
    - `references` (in `Reference validation`) — offline ledger enforcement plus locked correction-candidate and non-generative metadata audits when the protected policy enables them;
    - `latex (<variant>)` — real TeX builds and variant-surface checks;
    - `paper-only` — all variants compile with only `paper/` present;

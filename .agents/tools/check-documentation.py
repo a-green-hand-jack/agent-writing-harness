@@ -18,7 +18,16 @@ DEFAULT_STALE_PATTERNS: dict[str, str] = {
     r"NOT used by paper/main\.tex": "obsolete venue-compatibility usage note",
 }
 LOCAL_AGENT_REFERENCE_RE = re.compile(
-    r"(?P<path>\.agents/(?:tools|skills)/[A-Za-z0-9_.\-/]+)"
+    r"(?P<path>\.agents/(?:tools|skills|vendor|knowledge|dependencies)/[A-Za-z0-9_.\-/]+)"
+)
+# On-demand artifacts: like `.agents/runtime/`, these paths are created only
+# when the Human activates the corresponding workflow (for example Writing DNA)
+# and may not exist in a fresh template checkout. References to them are valid
+# forward-references, not stale paths, so they are not existence-checked.
+ON_DEMAND_REFERENCES = frozenset(
+    {
+        ".agents/knowledge/writing/paper-writing-dna.md",
+    }
 )
 
 
@@ -68,7 +77,10 @@ def documentation_files(root: Path) -> list[Path]:
         path
         for suffix in ("*.md", "*.tex", "*.sty")
         for path in root.rglob(suffix)
-        if ".git" not in path.parts and "dist" not in path.parts
+        if ".git" not in path.parts
+        and "dist" not in path.parts
+        and path.relative_to(root).as_posix() != ".agents/vendor"
+        and not path.relative_to(root).as_posix().startswith(".agents/vendor/")
     )
 
 
@@ -101,6 +113,8 @@ def check(root: Path) -> int:
 
         for match in LOCAL_AGENT_REFERENCE_RE.finditer(text):
             reference = match.group("path").rstrip("./")
+            if reference in ON_DEMAND_REFERENCES:
+                continue
             if not (root / reference).exists():
                 code |= error(f"{relative} references missing repository path: {reference}")
 

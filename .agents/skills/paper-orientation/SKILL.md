@@ -15,7 +15,7 @@ Use this skill at the start of a new session or when paper context is unclear. R
 4. Read `PUBLICATION.md` only when the task touches variants, venues, delivery targets, or release instances.
 5. Read only relevant decisions in `DECISIONS.md`.
 6. Inspect the active paper section and current Git diff.
-7. Load one task-specific skill or knowledge document.
+7. Load one primary owner skill plus any explicitly permitted sidecar skills (for example a bundled CCFA wrapper); never load the whole family.
 
 ## Before a high-impact edit
 

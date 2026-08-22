@@ -283,6 +283,11 @@ contrast,” or “therefore.”
 - Do not apply mechanical bans on particular words or sentence forms. Revise a
   construction when it is unclear, repetitive, misleading, or inconsistent
   with the current paper, not merely because it matches a generic style list.
+- Bundled writing-engine guardrails (for example em-dash or filler-pattern
+  thresholds in `ccf-paper-writer`'s prose-quality-guardrails) are diagnostic
+  signals, not automatic bans: a pattern flagged by a threshold may still be
+  right when it carries evidence-bounded meaning; resolve conflicts in favor
+  of clarity and scientific meaning.
 
 ## Final pass
 
