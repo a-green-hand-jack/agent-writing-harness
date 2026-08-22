@@ -31,6 +31,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Fetch the configured template baseline
+        run: python3 .agents/tools/template-sync.py fetch
+
       - name: Run paper-first verification
         run: bash .agents/tools/verify.sh
 
