@@ -52,10 +52,12 @@ Active venue planning facts live in `.agents/knowledge/venues/<venue>-<year>.md`
 When sources conflict, prefer:
 
 1. the latest explicit Human decision;
-2. current `PAPER.md` / `EXPERIMENTS.md` / `PAPER_INTERFACES.md` contracts;
+2. current `PAPER.md` / `EXPERIMENTS.md` / `PAPER_INTERFACES.md` / `PUBLICATION.md` contracts (variants and release boundaries);
 3. applicable durable rationale in `DECISIONS.md`;
-4. task-specific skill guidance;
-5. general knowledge and heuristics;
-6. Agent preference or inference.
+4. Human-approved Writing DNA under `.agents/knowledge/writing/` (promoted to `paper-writing-dna.md`, effective only once activated in `PAPER.md`);
+5. current official venue knowledge under `.agents/knowledge/venues/`;
+6. task-specific skill guidance;
+7. general knowledge and heuristics;
+8. Agent preference or inference.
 
 Runtime notes and chat context do not silently become durable project truth.

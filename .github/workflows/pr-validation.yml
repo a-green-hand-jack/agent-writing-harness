@@ -156,6 +156,47 @@ jobs:
           ! grep -Fq "TODO Authors" "$RUNNER_TEMP/default-main.txt"
           ! grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/default-main.txt"
 
+  vendored-skills:
+    name: vendored-skills
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout the validated head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned uv
+        run: python3 -m pip install "uv==0.11.23"
+
+      - name: Sync frozen vendored-skills runtime
+        run: uv sync --project .agents/dependencies/vendored-skills --locked
+
+      - name: Compile vendored scripts
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/pycache
+        run: python3 -m compileall -q .agents/vendor
+
+      - name: Run applicable upstream CCFA checks on the vendored subset
+        working-directory: .agents/vendor/ccfa-skills
+        run: |
+          set -euo pipefail
+          venv=../../../.agents/dependencies/vendored-skills/.venv/bin/python
+          "$venv" ccf-common/scripts/check_markdown_links.py
+          "$venv" ccf-common/scripts/check_path_privacy.py .
+          "$venv" ccf-common/scripts/check_sources.py
+          # check_v04.py validates the full upstream repository layout (root
+          # assets/, demo/, evaluation/), which this template intentionally
+          # excludes; it is not applicable to the vendored subset.
+
+      - name: Confirm checks did not mutate tracked files
+        run: git diff --exit-code
+
   release-package:
     name: release-package
     runs-on: ubuntu-latest

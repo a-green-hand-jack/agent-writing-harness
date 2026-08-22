@@ -134,6 +134,9 @@ class TemplateSyncTests(unittest.TestCase):
         write(self.upstream, 'Makefile', 'pdf:\n\t@true\n# template v2\n')
         write(self.upstream, '.agents/tools/check-reference-integrity.py', 'sidecar checker\n')
         write(self.upstream, '.agents/dependencies/reference-integrity/uv.lock', 'locked dependency\n')
+        write(self.upstream, '.agents/vendor/ccfa-skills/ccf-common/SKILL.md', '# common v2\n')
+        write(self.upstream, '.agents/vendor/README.md', '# Vendored skills v2\n')
+        write(self.upstream, '.agents/dependencies/vendored-skills/provenance.json', '{"schema_version":"paper-vendored-skills-v1"}\n')
         write(self.upstream, '.github/workflows/reference-validation.yml', 'inert until policy enables it\n')
         write(self.upstream, 'REFERENCES.md', 'reference contract\n')
         write(self.upstream, 'references/ledger.json', '{}\n')
@@ -170,9 +173,24 @@ class TemplateSyncTests(unittest.TestCase):
         self.assertEqual(by_path['PUBLICATION.md']['category'], 'manual')
         self.assertEqual(by_path['.agents/tools/check-reference-integrity.py']['category'], 'safe')
         self.assertEqual(by_path['.agents/dependencies/reference-integrity/uv.lock']['category'], 'manual')
+        self.assertEqual(by_path['.agents/vendor/README.md']['category'], 'safe')
+        self.assertEqual(by_path['.agents/vendor/ccfa-skills/ccf-common/SKILL.md']['category'], 'safe')
+        self.assertEqual(by_path['.agents/dependencies/vendored-skills/provenance.json']['category'], 'safe')
         self.assertEqual(by_path['.github/workflows/reference-validation.yml']['category'], 'manual')
         self.assertEqual(by_path['REFERENCES.md']['category'], 'manual')
         self.assertEqual(by_path['references/ledger.json']['category'], 'manual')
+
+    def test_downstream_vendor_modification_is_conflict(self) -> None:
+        write(self.downstream, '.agents/vendor/ccfa-skills/ccf-common/SKILL.md', '# common downstream\n')
+        commit_all(self.downstream, 'downstream vendor edit')
+        plan = self.tool('plan')
+        self.assertEqual(plan.returncode, 0, plan.stderr)
+        data = json.loads((self.downstream / '.agents/runtime/template-sync/plan.json').read_text())
+        by_path = {item['path']: item for item in data['items']}
+        self.assertEqual(
+            by_path['.agents/vendor/ccfa-skills/ccf-common/SKILL.md']['category'],
+            'conflict',
+        )
 
     def test_apply_safe_and_export_review_bundle(self) -> None:
         plan = self.tool('plan')

@@ -102,6 +102,17 @@ class SkillChecks(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("stale adapter reference", result.stdout)
 
+    def test_vendor_tree_is_exempt_from_stale_adapter_scan(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            write(
+                root / ".agents/vendor/ccfa-skills/ccf-common/references/routing.md",
+                "Registry at ../.agent/capabilities/registry.yaml\n",
+            )
+            result = run(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

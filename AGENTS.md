@@ -20,27 +20,55 @@ This removes template-specific governance IDs, resets downstream-local metadata,
 4. Read `PUBLICATION.md` only for variants, delivery targets, or release instances.
 5. Read only relevant decisions in `DECISIONS.md` and release records.
 6. Inspect the active paper section and current diff.
-7. Load one focused skill or knowledge document.
+7. Load one primary owner skill plus any explicitly permitted sidecar skills; never load the whole family.
 
 ## Task routing
 
 - unclear paper context or new session → `.agents/skills/paper-orientation/SKILL.md`
 - high-impact meaning or control boundary → `.agents/skills/control-review/SKILL.md`
 - focused Human choice → `.agents/skills/decision-packet/SKILL.md`
-- drafting or substantially revising a specific paper section → `.agents/skills/section-writing/SKILL.md`
+- drafting or substantially revising a specific paper section → `.agents/skills/section-writing/SKILL.md` (primary; sidecar: ccf-paper-writer)
+- result interpretation or natural-language result statements → `.agents/skills/ccf-experiment-designer/SKILL.md` (sidecar; owners: `EXPERIMENTS.md`, section-writing)
 - setting or changing positioning, narrative architecture, section responsibility, or writing policy → `.agents/skills/style-alignment/SKILL.md`
-- Human-requested consistency review after a manuscript version is ready → `.agents/skills/manuscript-consistency-review/SKILL.md`
+- Human-requested consistency review after a manuscript version is ready → `.agents/skills/manuscript-consistency-review/SKILL.md` (primary; sidecars: ccf-paper-reviewer, ccf-integrity-auditor)
 - recurring semantic interface → `.agents/skills/paper-interface-maintenance/SKILL.md`
 - bibliography identity, metadata, duplicate, or version repair → `.agents/skills/reference-repair/SKILL.md`
 - citation discovery, claim-support assessment, or evidence-passage retrieval → `.agents/skills/citation-support-review/SKILL.md`
-- publication variant or allowed difference → `.agents/skills/publication-planning/SKILL.md`
-- venue planning, deadlines, page budget, or official submission rules → `.agents/skills/publication-planning/SKILL.md` and `.agents/knowledge/venues/README.md`
+- publication variant, venue planning, deadlines, official submission rules, or allowed differences → `.agents/skills/publication-planning/SKILL.md` and `.agents/knowledge/venues/README.md`
+- template, page-limit, or anonymity compliance checks → `.agents/skills/ccf-submission-checker/SKILL.md` (sidecar of publication-planning/release-review)
 - immutable release candidate → `.agents/skills/release-review/SKILL.md`
 - adapt an existing paper repository to this template → `.agents/skills/template-adoption/SKILL.md`
 - synchronize an adopted downstream repository with the upstream template → `.agents/skills/template-sync/SKILL.md`
+- repository tooling, build, or CI fixes → `.agents/tools/` (no skill; follow `CONTRIBUTING.md` and `verify.sh`)
+
+### Bundled CCFA skills
+
+The template ships the CCFA-Skills suite and writing-dna-skill as immutable snapshots under `.agents/vendor/` (see `.agents/vendor/README.md` and `.agents/dependencies/vendored-skills/provenance.json`). Wrappers below route to those snapshots and enforce the paper-contract boundaries. Load one as a sidecar of the matching owner skill, never as a substitute for the owner:
+
+- shared CCFA governance → `.agents/skills/ccf-common/SKILL.md`
+- experiment design, ablations, result-table semantics → `.agents/skills/ccf-experiment-designer/SKILL.md`
+- manuscript-facing humanization preflight → `.agents/skills/ccf-humanization/SKILL.md` (sidecar of section-writing)
+- idea optimization and research-direction shaping → `.agents/skills/ccf-idea-optimizer/SKILL.md`
+- idea scoring, ranking, triage → `.agents/skills/ccf-idea-reviewer/SKILL.md`
+- claim/evidence/citation integrity audit → `.agents/skills/ccf-integrity-auditor/SKILL.md` (sidecar)
+- arXiv/OpenReview novelty and competitor monitoring → `.agents/skills/ccf-literature-monitor/SKILL.md`
+- external literature and related-work search → `.agents/skills/ccf-literature-searcher/SKILL.md`
+- assessment-only manuscript review and scoring → `.agents/skills/ccf-paper-reviewer/SKILL.md` (sidecar)
+- paper PDF → writing exemplar cards → `.agents/skills/ccf-paper-to-exemplar/SKILL.md`
+- drafting, revision, polishing, compression → `.agents/skills/ccf-paper-writer/SKILL.md` (sidecar)
+- full-project stage planning and routing → `.agents/skills/ccf-pipeline-orchestrator/SKILL.md` (sidecar)
+- external project scaffolding → `.agents/skills/ccf-project-scaffolder/SKILL.md`
+- rebuttal and reviewer-response drafting → `.agents/skills/ccf-rebuttal-writer/SKILL.md`
+- skill maintenance and auditing → `.agents/skills/ccf-skill-forger/SKILL.md`
+- submission-readiness checking → `.agents/skills/ccf-submission-checker/SKILL.md` (sidecar)
+- figure/table/diagram visual composition → `.agents/skills/ccf-visual-composer/SKILL.md`
+- writing-style distillation from an approved corpus → `.agents/skills/writing-dna-skill/SKILL.md` (sidecar)
+- whitelist cleanup of AI writing tells → `.agents/skills/lieflat-less-ai-tone/SKILL.md` (sidecar)
 
 Do not load all skills for an ordinary local edit.
 Do not inject manuscript-wide reviewer passes into section drafting. Version-level consistency review is explicit, starts only after the Human marks a manuscript version ready, and is findings-only by default.
+
+**Single-owner invariant.** Each task loads exactly ONE primary owner skill; bundled CCFA skills are sidecars that never override a local owner skill or a Human contract. When two skills both match the same task, the local owner and the Human contract win and the other skill is treated as a sidecar. A bundled skill is never loaded standalone as an owner.
 
 ## Collaboration cues
 

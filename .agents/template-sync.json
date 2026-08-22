@@ -30,9 +30,9 @@
   },
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed adoption against f7d1a37; DGM content preserved; reference-integrity stays adopted:false; optional template surfaces (root ANATOMY.md/CLAUDE.md, .agents/dependencies/reference-integrity/*) intentionally not added.",
-  "last_synced_at": "2026-08-22T09:58:30+00:00",
-  "last_synced_commit": "f7d1a37287f045913cca435738ac7e4b4d2888d0",
+  "last_sync_note": "Reviewed sync to 1f5d4f1; DGM content preserved; reference-integrity dependency metadata restored with adopted:false; root ANATOMY.md and CLAUDE.md remain intentionally absent.",
+  "last_synced_at": "2026-08-22T10:43:27+00:00",
+  "last_synced_commit": "1f5d4f1cb0450feca5f724158554f5d419bfb85d",
   "reference_integrity": {
     "adopted": false
   },

@@ -50,7 +50,7 @@ DEFAULT_MANUAL_PATHS = (
     "paper/supplementary/",
     "paper/style/",
     "references/",
-    ".agents/dependencies/",
+    ".agents/dependencies/reference-integrity/",
     ".agents/knowledge/",
 )
 DEFAULT_IGNORED_PATHS = (

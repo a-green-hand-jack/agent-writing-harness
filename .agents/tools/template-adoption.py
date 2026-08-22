@@ -32,6 +32,15 @@ REQUIRED_TARGET_PATHS = {
     ADOPTION_SKILL_RELATIVE.as_posix(),
     ".agents/tools/template-sync.py",
     ".agents/skills/template-sync/SKILL.md",
+    ".agents/tools/check-vendored-skills.py",
+    ".agents/dependencies/vendored-skills/provenance.json",
+    ".agents/dependencies/vendored-skills/uv.lock",
+    ".agents/vendor/README.md",
+    ".agents/vendor/ccfa-skills/LICENSE",
+    ".agents/vendor/ccfa-skills/ccf-common/SKILL.md",
+    ".agents/vendor/ccfa-skills/ccf-paper-writer/SKILL.md",
+    ".agents/vendor/writing-dna-skill/LICENSE",
+    ".agents/vendor/writing-dna-skill/SKILL.md",
     ".agents/runtime/.gitignore",
 }
 DEFAULT_UPSTREAM_URL = "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git"
@@ -45,10 +54,12 @@ SAFE_PATHS = (
     ".agents/runtime/.gitignore",
 )
 SAFE_PREFIXES = (
+    ".agents/dependencies/vendored-skills/",
     ".agents/knowledge/",
     ".agents/skills/",
     ".agents/tests/",
     ".agents/tools/",
+    ".agents/vendor/",
 )
 IGNORED_PATHS = (
     ".agents/template-sync.json",
@@ -116,6 +127,7 @@ ASSESSMENT_COMMANDS = (
     ("python3", ".agents/tools/paper-init.py", "status"),
     ("python3", ".agents/tools/check-actions.py"),
     ("python3", ".agents/tools/check-skills.py"),
+    ("python3", ".agents/tools/check-vendored-skills.py"),
     ("python3", ".agents/tools/check-documentation.py"),
     ("python3", ".agents/tools/check-venue-knowledge.py"),
     ("python3", ".agents/tools/check-paper-contracts.py", "--profile", "draft"),
