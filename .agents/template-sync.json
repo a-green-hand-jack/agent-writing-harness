@@ -8,9 +8,9 @@
   },
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed initial adoption from an existing paper repository (CORAL).",
-  "last_synced_at": "2026-08-22T09:52:01+00:00",
-  "last_synced_commit": "f7d1a37287f045913cca435738ac7e4b4d2888d0",
+  "last_sync_note": "Reviewed Agent-assisted template synchronization.",
+  "last_synced_at": "2026-08-22T10:35:31+00:00",
+  "last_synced_commit": "1f5d4f1cb0450feca5f724158554f5d419bfb85d",
   "reference_integrity": {
     "adopted": false
   },
