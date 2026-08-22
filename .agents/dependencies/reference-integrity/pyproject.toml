@@ -1,0 +1,11 @@
+[project]
+name = "paper-reference-integrity-dependencies"
+version = "0.0.0"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+  "bibtex-updater==1.6.1",
+  "pybtex==0.26.1",
+]
+
+[tool.uv]
+package = false
