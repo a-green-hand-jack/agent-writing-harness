@@ -60,6 +60,17 @@ them in the review scope.
 10. Report findings only. Do not edit the manuscript or silently choose which
     conflicting statement, number, or interpretation is correct.
 
+## Bundled review sidecars
+
+The bundled `ccf-paper-reviewer` skill (`.agents/skills/ccf-paper-reviewer/SKILL.md`)
+and `ccf-integrity-auditor` skill
+(`.agents/skills/ccf-integrity-auditor/SKILL.md`) may be loaded as sidecars for
+deeper assessment. They are subject to the same boundary as this skill: the
+Human identifies a manuscript version as ready, the pass is findings-only by
+default, and neither produces edits. Upstream scores are diagnostic feedback,
+never acceptance probabilities or approved Human decisions. Where CCFA review
+criteria conflict with the paper contracts, the local contracts win.
+
 ## Output contract
 
 Order findings by severity:
@@ -73,7 +84,8 @@ Order findings by severity:
 
 Each finding must include:
 
-- exact file and line references for every conflicting surface;
+<!-- paper-skill-contract: F7-MCR-001-v1 -->
+- an enumeration of every conflicting or affected surface found, with exact file and line references;
 - short quotations or values that demonstrate the conflict;
 - the governing contract or interface when one exists;
 - why the inconsistency matters;

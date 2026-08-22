@@ -1,42 +1,63 @@
-# TODO Paper Title
+# ARIS: Autonomous Research via Adversarial Multi-Agent Collaboration
 
-Evidence-first paper repo for `ICLR 2027`.
+A paper-first repository for the ARIS technical report, using its imported ICLR
+2026 style and preserving arXiv 2605.03042 source attribution.
 
-## Entry Points
+## Human-facing surface
 
-- Human summary: `PROJECT.md`
-- Agent entry: `AGENTS.md`
-- Structure map: `ANATOMY.md`
-- Live writing state: `state/ccfa.yaml`
-- Current status: `memory/current-status.md`
+- `PAPER.md`: thesis, contributions, story, style, protected meaning, and unresolved work.
+- `EXPERIMENTS.md`: observational evidence, future-work protocol, and interpretation boundaries.
+- `PAPER_INTERFACES.md`: stable identity, terminology, notation, and reported-result meaning.
+- `PUBLICATION.md`: variants, Overleaf boundary, delivery targets, and immutable release policy.
+- `REFERENCES.md` and `references/ledger.json`: bibliography identity and occurrence-level claim-support states.
+- `DECISIONS.md`: durable project decisions.
+- `paper/`: the only canonical authored LaTeX project.
+
+The cues **locked**, **bounded**, **free**, and **unresolved** are flexible
+Human-Agent collaboration language, not a separate permission engine.
+
+## Build
+
+```bash
+make pdf
+make pdf VARIANT=anonymous
+make pdf VARIANT=camera-ready
+make pdf VARIANT=arxiv
+```
+
+`make pdf` defaults to `draft`; `paper/main.tex` defaults to `anonymous` for a
+direct source or Overleaf import. Clean generated LaTeX files with `make clean`.
 
 ## Validate
 
 ```bash
-rph validate --profile paper .
-python scripts/check-writing-harness.py
-python scripts/check-capability-parity.py
-python scripts/check-paper-surface.py
-bash scripts/export-tex-release.sh
-python scripts/check-release-package.py
+bash .agents/tools/verify.sh
 ```
 
-After importing a real paper, also run:
+The verification chain checks paper-first structure, Human contracts, stable
+interfaces, references, publication variants, release boundaries, template
+synchronization, regressions, and immutable vendored skills. Real TeX builds
+remain separate integration evidence and must cover all four variants.
 
-```bash
-python scripts/check-paper-populated.py
-bash scripts/check-latex.sh --compile
-python scripts/check-release-freshness.py
-python scripts/check-arxiv-portability.py
-bash scripts/check-latex.sh --compile-release arxiv
-```
+## Releases and Overleaf
 
-The release directories are tex-only export surfaces. Do not edit them as the primary paper source.
-Successful exports rewrite `release/manifest.yaml` with deterministic sha256, relpath, and size entries for each surface.
+Generated delivery artifacts belong under ignored `dist/<release-id>/`; never
+commit another paper tree. Durable reviewed provenance belongs under
+`releases/records/`.
 
-`release/arxiv-flat/` is an optional, `latexpand`-flattened, single-entry-point companion to
-`release/arxiv/`, produced automatically by the export when `latexpand` is available (see
-`release/ANATOMY.md`). `scripts/check-latex.sh --compile-release arxiv` compiles both directly inside
-the export surface, independent of `paper/`, and reports `UNVERIFIED` instead of a false pass when no
-TeX toolchain is present. `.github/workflows/overleaf-publish.yml` publishes `release/overleaf/` to an
-`overleaf` branch on push; this is a one-way publish, not a live sync (see `release/ANATOMY.md`).
+The configured Overleaf project is a paper-only working copy. Use
+`.agents/tools/overleaf-sync.py` to validate, fetch, import, or export the
+tracked `paper/` tree. Overleaf never receives governance, CI, contracts, or
+Agent tooling, and it is not a second canonical source.
+
+## Agent sidecar
+
+`AGENTS.md` is a thin router. Agents start from the current Human contracts and
+load one primary owner skill plus explicitly allowed sidecars.
+
+This repository ships the CCFA-Skills suite and writing-dna-skill as immutable
+snapshots under `.agents/vendor/`. All 17 `ccf-*` skills plus
+`writing-dna-skill` and `lieflat-less-ai-tone` are available as wrappers under
+`.agents/skills/`; they never override ARIS contracts or approve scientific
+meaning. Vendor provenance and hashes are recorded under
+`.agents/dependencies/vendored-skills/`.

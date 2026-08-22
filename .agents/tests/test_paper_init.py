@@ -90,11 +90,32 @@ def fixture(root: Path) -> None:
     commit_all(root, "template scaffold")
 
 
+def set_upstream_origin(root: Path) -> None:
+    git(root, "remote", "add", "origin", "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git")
+
+
+def valid_marker(root: Path, **replacements: object) -> str:
+    data: dict[str, object] = {
+        "schema_version": "paper-init-v1",
+        "initialized_at": "2026-08-09T12:00:00+00:00",
+        "mode": "downstream",
+        "template_cleanup": True,
+        "git_head": git(root, "rev-parse", "HEAD").stdout.strip(),
+    }
+    data.update(replacements)
+    return json.dumps(data) + "\n"
+
+
 class PaperInitTests(unittest.TestCase):
-    def test_upstream_template_status_passes(self) -> None:
+    def test_current_repository_status_passes(self) -> None:
         result = run([sys.executable, str(TOOL), "--root", str(ROOT), "status"], ROOT, check=False)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("upstream_template", result.stdout)
+        expected = (
+            "initialized"
+            if (ROOT / ".agents/init-state.json").is_file()
+            else "upstream_template"
+        )
+        self.assertIn(expected, result.stdout)
 
     def test_clean_removes_template_governance_residue(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -148,6 +169,219 @@ class PaperInitTests(unittest.TestCase):
                 message,
                 "chore: initialize paper repository and remove template governance residue",
             )
+
+    def test_same_origin_requires_explicit_downstream_override(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            set_upstream_origin(root)
+
+            default = run(
+                [sys.executable, str(TOOL), "--root", str(root), "clean"],
+                root,
+                check=False,
+            )
+            self.assertEqual(default.returncode, 0, default.stdout + default.stderr)
+            self.assertIn("upstream_template", default.stdout)
+            self.assertFalse((root / ".agents/init-state.json").exists())
+            self.assertIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
+
+            overridden = run(
+                [sys.executable, str(TOOL), "--root", str(root), "clean", "--downstream"],
+                root,
+                check=False,
+            )
+            self.assertEqual(overridden.returncode, 0, overridden.stdout + overridden.stderr)
+            self.assertTrue((root / ".agents/init-state.json").is_file())
+            self.assertNotIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
+
+    def test_same_origin_commit_downstream_creates_initialization_commit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            set_upstream_origin(root)
+
+            result = run(
+                [
+                    sys.executable,
+                    str(TOOL),
+                    "--root",
+                    str(root),
+                    "clean",
+                    "--commit",
+                    "--downstream",
+                ],
+                root,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("committed", result.stdout)
+            self.assertTrue((root / ".agents/init-state.json").is_file())
+            self.assertEqual(
+                git(root, "log", "-1", "--format=%s").stdout.strip(),
+                "chore: initialize paper repository and remove template governance residue",
+            )
+
+    def test_initialized_marker_takes_precedence_over_same_origin(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            set_upstream_origin(root)
+            write(root, ".agents/init-state.json", valid_marker(root))
+            marker = (root / ".agents/init-state.json").read_bytes()
+
+            result = run(
+                [sys.executable, str(TOOL), "--root", str(root), "status"],
+                root,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("initialized", result.stdout)
+            self.assertNotIn("upstream_template", result.stdout)
+
+            cleaned = run(
+                [sys.executable, str(TOOL), "--root", str(root), "clean"],
+                root,
+                check=False,
+            )
+            self.assertEqual(cleaned.returncode, 0, cleaned.stdout + cleaned.stderr)
+            self.assertIn("already_initialized", cleaned.stdout)
+            self.assertEqual(marker, (root / ".agents/init-state.json").read_bytes())
+            self.assertIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
+
+    def test_invalid_markers_fail_closed_on_same_origin(self) -> None:
+        marker_cases = {
+            "empty object": "{}\n",
+            "truncated JSON": '{"schema_version": "paper-init-v1"',
+            "wrong schema": valid_marker(root=ROOT, schema_version="paper-init-v2"),
+            "wrong mode": valid_marker(root=ROOT, mode="upstream"),
+            "incomplete cleanup": valid_marker(root=ROOT, template_cleanup=False),
+            "invalid timestamp": valid_marker(root=ROOT, initialized_at="yesterday"),
+        }
+        for label, marker in marker_cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                fixture(root)
+                set_upstream_origin(root)
+                write(root, ".agents/init-state.json", marker)
+
+                before = run(
+                    [sys.executable, str(TOOL), "--root", str(root), "status"],
+                    root,
+                    check=False,
+                )
+                self.assertNotEqual(before.returncode, 0)
+                self.assertIn("invalid marker", before.stdout)
+                self.assertNotIn("upstream_template", before.stdout)
+
+                preserved = {
+                    relative: (root / relative).read_bytes()
+                    for relative in (
+                        "AGENTS.md",
+                        "DECISIONS.md",
+                        ".agents/documentation-consistency.json",
+                        ".agents/overleaf-sync.json",
+                        ".agents/init-state.json",
+                    )
+                }
+                cleaned = run(
+                    [sys.executable, str(TOOL), "--root", str(root), "clean"],
+                    root,
+                    check=False,
+                )
+                self.assertNotEqual(cleaned.returncode, 0)
+                self.assertIn("invalid initialization marker", cleaned.stderr)
+                self.assertIn("--downstream", cleaned.stderr)
+                self.assertEqual(
+                    preserved,
+                    {relative: (root / relative).read_bytes() for relative in preserved},
+                )
+
+                overridden = run(
+                    [
+                        sys.executable,
+                        str(TOOL),
+                        "--root",
+                        str(root),
+                        "clean",
+                        "--downstream",
+                    ],
+                    root,
+                    check=False,
+                )
+                self.assertEqual(overridden.returncode, 0, overridden.stdout + overridden.stderr)
+                self.assertNotIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
+                self.assertTrue((root / ".agents/init-state.json").is_file())
+
+    def test_marker_bound_to_another_repository_fails_closed_on_same_origin(self) -> None:
+        with tempfile.TemporaryDirectory() as directory, tempfile.TemporaryDirectory() as other_directory:
+            root = Path(directory)
+            other = Path(other_directory)
+            fixture(root)
+            fixture(other)
+            write(other, "other-repository.txt", "different history\n")
+            commit_all(other, "different repository")
+            set_upstream_origin(root)
+            write(root, ".agents/init-state.json", valid_marker(other))
+
+            result = run(
+                [sys.executable, str(TOOL), "--root", str(root), "status"],
+                root,
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("invalid marker", result.stdout)
+
+            preserved = {
+                relative: (root / relative).read_bytes()
+                for relative in (
+                    "AGENTS.md",
+                    "DECISIONS.md",
+                    ".agents/documentation-consistency.json",
+                    ".agents/overleaf-sync.json",
+                    ".agents/init-state.json",
+                )
+            }
+            cleaned = run(
+                [sys.executable, str(TOOL), "--root", str(root), "clean"],
+                root,
+                check=False,
+            )
+            self.assertNotEqual(cleaned.returncode, 0)
+            self.assertIn("--downstream", cleaned.stderr)
+            self.assertEqual(
+                preserved,
+                {relative: (root / relative).read_bytes() for relative in preserved},
+            )
+
+            overridden = run(
+                [
+                    sys.executable,
+                    str(TOOL),
+                    "--root",
+                    str(root),
+                    "clean",
+                    "--downstream",
+                ],
+                root,
+                check=False,
+            )
+            self.assertEqual(overridden.returncode, 0, overridden.stdout + overridden.stderr)
+            self.assertNotIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
+
+    def test_marker_commit_must_be_in_current_history(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            write(root, ".agents/init-state.json", valid_marker(root, git_head="f" * 40))
+
+            result = run(
+                [sys.executable, str(TOOL), "--root", str(root), "status"],
+                root,
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("invalid marker", result.stdout)
 
 
 if __name__ == "__main__":

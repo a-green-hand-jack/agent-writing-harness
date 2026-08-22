@@ -28,6 +28,31 @@ Do not use this skill for a manuscript-wide review after a version is complete.
 Do not load the complete manuscript, all references, release tooling, or venue
 knowledge unless the active section actually requires them.
 
+## Bundled writing engine
+
+The bundled `ccf-paper-writer` skill (wrapper at
+`.agents/skills/ccf-paper-writer/SKILL.md`, canonical content in
+`.agents/vendor/ccfa-skills/ccf-paper-writer/`) is the upstream writing engine.
+Load it as a sidecar when the task is substantial drafting, polishing, or
+compression. It never replaces this skill as the local text owner and never
+bypasses the paper contracts. Where CCFA guidance conflicts with `PAPER.md`,
+`EXPERIMENTS.md`, `PAPER_INTERFACES.md`, or `PUBLICATION.md`, the local
+contract wins.
+
+Use distilled exemplar cards only for transferable rhetorical moves. Never copy
+wording, claims, examples, technical content, or distinctive phrasing from a
+reference paper, and do not treat the bundled `llava-4d`/`vggt` cards as a
+default writing format for this paper.
+
+## Bundled experiment-design sidecar
+
+The bundled `ccf-experiment-designer` skill (wrapper at
+`.agents/skills/ccf-experiment-designer/SKILL.md`) is the experiment-evidence
+designer. Load it as a sidecar when drafting experiment, evidence, or
+result-interpretation text; it proposes evidence design and result-table
+semantics, while primary metrics, baselines, fairness, and interpretation
+remain Human decisions under `EXPERIMENTS.md`.
+
 ## Procedure
 
 1. Identify the active section and its reader task from `PAPER.md`.
@@ -36,12 +61,22 @@ knowledge unless the active section actually requires them.
    `.agents/knowledge/scientific-writing.md`.
 4. Separate scientific content from presentation. Preserve locked and bounded
    meaning while handling free wording directly.
-5. Draft from available claims, evidence, results, interfaces, and references.
+<!-- paper-skill-contract: F7-SW-001-v1 -->
+5. If the prompt introduces, fabricates, removes, or materially changes a
+   citation or claim-support request, inspect `REFERENCES.md` and the relevant
+   records in `references/ledger.json` before drafting; do not invent support.
+6. When the draft adds or checks a citation, run the Draft profile of
+   `.agents/skills/citation-support-review/SKILL.md`: inventory the active
+   occurrence, resolve or discover the source, retrieve a bounded passage set,
+   compare once in the current writing context, and record a passing result as
+   `provisional`. Never insert a citation from title relevance or metadata
+   existence alone, and never upgrade provisional support to `human-confirmed`.
+7. Draft from available claims, evidence, results, interfaces, and references.
    Keep missing material visible rather than filling it plausibly.
-6. Check the active section locally for defined terms, claim strength,
+8. Check the active section locally for defined terms, claim strength,
    citation placement, figure/table references, and continuity with immediate
    neighbors.
-7. Report any unresolved input or proposed wording that would change a claim,
+9. Report any unresolved input or proposed wording that would change a claim,
    experiment interpretation, consequential limitation, or interface meaning.
 
 ## Drafting boundary
@@ -49,7 +84,9 @@ knowledge unless the active section actually requires them.
 Do not invoke a reviewer persona, launch parallel reviewer passes, audit the
 complete manuscript, or emit a manuscript review report while drafting. A
 local coherence check is part of writing; a version-level consistency review
-is a separate Human-requested task.
+is a separate Human-requested task. The Draft citation-support flow stays
+bounded to the active claim, uses at most three passages and one semantic
+comparison, and never launches a reviewer subagent or persona.
 
 ## Human decision
 

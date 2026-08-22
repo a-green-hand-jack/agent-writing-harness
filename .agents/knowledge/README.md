@@ -29,7 +29,13 @@ These normally apply across tasks:
 
 ### Heuristics
 
-Writing and organization advice is usually conditional. A heuristic must not override `PAPER.md`, `EXPERIMENTS.md`, `DECISIONS.md`, or a current Human instruction.
+Writing and organization advice is usually conditional. A heuristic must not
+override `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, `PUBLICATION.md`,
+`DECISIONS.md`, or a current Human instruction.
+
+`scientific-writing.md` contains section-specific drafting guidance. Load only
+the active section's guidance; do not interrupt drafting with an unrequested
+manuscript-wide review.
 
 Examples:
 
@@ -50,10 +56,14 @@ Active venue planning facts live in `.agents/knowledge/venues/<venue>-<year>.md`
 When sources conflict, prefer:
 
 1. the latest explicit Human decision;
-2. current `PAPER.md` / `EXPERIMENTS.md` / `PAPER_INTERFACES.md` contracts;
+2. current `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`,
+   `PUBLICATION.md`, and `REFERENCES.md` contracts;
 3. applicable durable rationale in `DECISIONS.md`;
-4. task-specific skill guidance;
-5. general knowledge and heuristics;
-6. Agent preference or inference.
+4. Human-approved Writing DNA under `.agents/knowledge/writing/`, once the
+   Human has activated it for this project;
+5. current official venue knowledge under `.agents/knowledge/venues/`;
+6. task-specific skill guidance;
+7. general knowledge and heuristics;
+8. Agent preference or inference.
 
 Runtime notes and chat context do not silently become durable project truth.

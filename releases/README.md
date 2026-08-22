@@ -17,7 +17,7 @@ A release instance binds:
 Strict release-ready build:
 
 ```bash
-RELEASE_ID=iclr2027-submission-r1 VARIANT=anonymous \
+RELEASE_ID=aris-iclr2026-submission-r1 VARIANT=anonymous \
   bash .agents/tools/release.sh
 ```
 
@@ -25,14 +25,17 @@ Direct tool usage:
 
 ```bash
 python3 .agents/tools/release.py build \
-  --id iclr2027-submission-r1 \
+  --id aris-iclr2026-submission-r1 \
   --variant anonymous \
   --profile release \
   --targets pdf,source-zip,arxiv-flat,overleaf-zip \
   --verify-tex
 ```
 
-The factory template contains unresolved placeholders, so a strict build is expected to fail until a real paper is ready. CI uses `--profile draft` only to verify the packaging mechanism and records `release_ready: false`.
+The ARIS ledger still contains pending identity and citation-support review, so
+a strict release remains blocked until those Human-review obligations are
+resolved. CI uses `--profile draft` only to verify packaging and records
+`release_ready: false`.
 
 ## Storage boundary
 

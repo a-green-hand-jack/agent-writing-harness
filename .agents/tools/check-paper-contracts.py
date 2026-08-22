@@ -53,8 +53,18 @@ FOCUSED_SKILLS = (
     "manuscript-consistency-review",
     "paper-interface-maintenance",
     "publication-planning",
+    "citation-support-review",
     "release-review",
 )
+SKILL_CONTRACT_REQUIREMENTS = {
+    "F7-CR-001-v1": "control-review",
+    "F7-DP-001-v1": "decision-packet",
+    "F7-SW-001-v1": "section-writing",
+    "F7-MCR-001-v1": "manuscript-consistency-review",
+    "F7-RR-001-v1": "reference-repair",
+    "F7-CSR-001-v1": "citation-support-review",
+    "F7-TS-001-v1": "template-sync",
+}
 PLACEHOLDER_RE = re.compile(r"\b(?:TODO|TBD|PLACEHOLDER)\b|\\PaperTODO\b", re.I)
 UNRESOLVED_CURRENT_RE = re.compile(
     r"(?:^#{2,6} .*\bunresolved\b|^\s*[-*]\s+.*\bunresolved\b|^\s*\|.*\bunresolved\b.*\|)",
@@ -133,6 +143,18 @@ def check_draft(root: Path) -> int:
         for heading in ("## Trigger", "## Minimum context", "## Procedure"):
             if heading not in text:
                 code |= fail(f"{relative} missing heading: {heading}")
+
+    # These declarations detect contract removal or drift. They do not prove that
+    # an Agent or tool follows the adjacent imperative guidance at runtime.
+    for requirement_id, skill in SKILL_CONTRACT_REQUIREMENTS.items():
+        relative = f".agents/skills/{skill}/SKILL.md"
+        text = read_text(root, relative) or ""
+        declaration = f"<!-- paper-skill-contract: {requirement_id} -->"
+        if declaration not in strip_fenced_code(text).splitlines():
+            code |= fail(
+                f"{relative} missing exact contract declaration: {declaration} "
+                "(contract presence/drift check only)"
+            )
 
     section_writing = read_text(root, ".agents/skills/section-writing/SKILL.md") or ""
     if "Do not invoke a reviewer persona" not in section_writing:

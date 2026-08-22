@@ -4,11 +4,12 @@ __pycache__/
 *.aux
 *.bbl
 *.blg
+*.fdb_latexmk
+*.fls
 *.log
 *.out
 *.synctex.gz
-release/reports/*.log
-release/venue/
+paper/main*.pdf
 /dist/
 /.orca/
 /.env

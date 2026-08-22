@@ -1,6 +1,9 @@
 # Tables
 
-Every active table must be listed in `lab/artifacts/table-index.yaml`, bound to `state/float-placement-map.yaml`, and include source/generation provenance. Verified or final quantitative tables must reference numeric or result IDs.
+Table wrappers live in this directory. Table bodies may be authored inline or
+loaded from `paper/generated/tables/`. Keep metric, conditions, aggregation,
+uncertainty, and provenance visible for quantitative results; recurring result
+meaning belongs in `PAPER_INTERFACES.md` and `paper/macros.tex`.
 
 ## Naming convention
 
@@ -10,5 +13,6 @@ Table wrapper files use the same two-digit numeric prefix as figures: `NN_name.t
 - Second digit: order within that group, starting at `0`.
 - `name` is a short lowercase snake_case slug (e.g. `main_results`, `ablation`).
 
-Tables have no `srcs/` asset directory; content comes from `paper/generated/tables/`
-or is authored inline. `scripts/check-figures-tables.py` enforces the naming pattern.
+Tables have no `srcs/` asset directory. The repository currently has no
+separate table registry or table-specific checker; the full verification entry
+point is `bash .agents/tools/verify.sh`.

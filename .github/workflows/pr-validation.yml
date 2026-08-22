@@ -1,0 +1,256 @@
+name: PR validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - case/arxiv-2605-03042
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  harness:
+    name: harness
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout the validated head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run paper-first verification
+        run: bash .agents/tools/verify.sh
+
+      - name: Confirm checks did not mutate tracked files
+        run: git diff --exit-code
+
+  latex:
+    name: latex (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [draft, anonymous, camera-ready, arxiv]
+    steps:
+      - name: Checkout the validated head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install TeX and PDF text tools
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            latexmk \
+            poppler-utils \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            tex-gyre \
+            texlive-plain-generic \
+            texlive-pictures \
+            texlive-science \
+            texlive-bibtex-extra
+
+      - name: Build publication variant
+        run: make pdf VARIANT="${{ matrix.variant }}"
+
+      - name: Check variant surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          variant="${{ matrix.variant }}"
+          if [[ "$variant" == draft ]]; then
+            pdf="paper/main.pdf"
+          else
+            pdf="paper/main-$variant.pdf"
+          fi
+          test -s "$pdf"
+          pdftotext "$pdf" "$RUNNER_TEMP/$variant.txt"
+          ! grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
+          if [[ "$variant" == anonymous ]]; then
+            ! grep -Fq "Ruofeng Yang" "$RUNNER_TEMP/$variant.txt"
+            ! grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/$variant.txt"
+          else
+            grep -Fq "Ruofeng Yang" "$RUNNER_TEMP/$variant.txt"
+          fi
+
+  paper-only:
+    name: paper-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout the validated head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Create a paper-only checkout
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/paper-only"
+          cp -a paper "$RUNNER_TEMP/paper-only/paper"
+          test ! -e "$RUNNER_TEMP/paper-only/.agents"
+
+      - name: Install TeX
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            latexmk \
+            poppler-utils \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            tex-gyre \
+            texlive-plain-generic \
+            texlive-pictures \
+            texlive-science \
+            texlive-bibtex-extra
+
+      - name: Compile all variants with only paper present
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/paper-only/paper"
+          for variant in draft anonymous camera_ready arxiv; do
+            job="paper-only-$variant"
+            latexmk -pdf -jobname="$job" -interaction=nonstopmode -halt-on-error "variants/$variant.tex"
+            test -s "$job.pdf"
+          done
+
+      - name: Compile root main.tex safe default
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/paper-only/paper"
+          latexmk -pdf -jobname=paper-only-default-main -interaction=nonstopmode -halt-on-error main.tex
+          test -s paper-only-default-main.pdf
+          pdftotext paper-only-default-main.pdf "$RUNNER_TEMP/default-main.txt"
+          ! grep -Fq "TODO Authors" "$RUNNER_TEMP/default-main.txt"
+          ! grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/default-main.txt"
+
+  vendored-skills:
+    name: vendored-skills
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout the validated head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned uv
+        run: python3 -m pip install "uv==0.11.23"
+
+      - name: Sync frozen vendored-skills runtime
+        run: uv sync --project .agents/dependencies/vendored-skills --locked
+
+      - name: Compile vendored scripts
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/pycache
+        run: python3 -m compileall -q .agents/vendor
+
+      - name: Run applicable upstream CCFA checks on the vendored subset
+        working-directory: .agents/vendor/ccfa-skills
+        run: |
+          set -euo pipefail
+          venv=../../../.agents/dependencies/vendored-skills/.venv/bin/python
+          "$venv" ccf-common/scripts/check_markdown_links.py
+          "$venv" ccf-common/scripts/check_path_privacy.py .
+          "$venv" ccf-common/scripts/check_sources.py
+
+      - name: Confirm checks did not mutate tracked files
+        run: git diff --exit-code
+
+  release-package:
+    name: release-package
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout the validated head
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install TeX and flatten tools
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            latexmk \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            tex-gyre \
+            texlive-plain-generic \
+            texlive-pictures \
+            texlive-science \
+            texlive-bibtex-extra \
+            texlive-extra-utils
+
+      - name: Build Draft-validation release instance
+        run: |
+          python3 .agents/tools/release.py build \
+            --id ci-anonymous-r1 \
+            --variant anonymous \
+            --profile draft \
+            --targets pdf,source-zip,arxiv-flat,overleaf-zip \
+            --verify-tex
+
+      - name: Validate manifest and artifacts
+        run: |
+          python3 .agents/tools/check-release.py dist/ci-anonymous-r1
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('dist/ci-anonymous-r1/manifest.json').read_text())
+          assert manifest['profile'] == 'draft'
+          assert manifest['release_ready'] is False
+          assert manifest['checks']['isolated_source_compile'] is True
+          assert manifest['checks']['isolated_flat_compile'] is True
+          PY
+
+      - name: Exercise non-overwriting release record generation
+        run: |
+          python3 .agents/tools/release.py record \
+            --instance dist/ci-anonymous-r1 \
+            --output "$RUNNER_TEMP/ci-anonymous-r1.md" \
+            --status candidate \
+            --notes "CI packaging validation only; not Human-approved."
+          test -s "$RUNNER_TEMP/ci-anonymous-r1.md"
+
+      - name: Upload immutable release candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-anonymous-r1
+          path: dist/ci-anonymous-r1/
+          if-no-files-found: error
+          retention-days: 7

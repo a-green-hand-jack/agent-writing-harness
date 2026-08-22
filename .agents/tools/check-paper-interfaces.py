@@ -18,7 +18,15 @@ REQUIRED = (
     "MainResultUncertainty",
 )
 REQUIRED_CONSUMERS = tuple(name for name in REQUIRED if name != "PaperTODO")
-DEFINITION_TEMPLATE = r"\\(?:newcommand|renewcommand|providecommand)\s*\{{?\\{name}\}}?"
+
+
+def command_pattern(name: str) -> str:
+    return rf"\\{re.escape(name)}(?![A-Za-z@])"
+
+
+def definition_pattern(name: str) -> str:
+    command = command_pattern(name)
+    return rf"\\(?:newcommand|renewcommand|providecommand)\s*(?:\{{\s*{command}\s*\}}|{command})"
 
 
 def error(message: str) -> int:
@@ -40,10 +48,10 @@ def check(root: Path) -> int:
     code = 0
 
     for name in REQUIRED:
-        if f"% Interface: {name}" not in raw_macros:
+        marker = rf"^\s*%\s*Interface:\s*{re.escape(name)}\s*$"
+        if not re.search(marker, raw_macros, re.M):
             code |= error(f"paper/macros.tex missing Human-readable interface marker: {name}")
-        pattern = DEFINITION_TEMPLATE.format(name=re.escape(name))
-        if not re.search(pattern, active_macros):
+        if not re.search(definition_pattern(name), active_macros):
             code |= error(f"paper/macros.tex missing interface definition: \\{name}")
 
     if "generated/results-macros.tex" not in active_macros:
@@ -57,7 +65,7 @@ def check(root: Path) -> int:
             continue
         text = active_tex(path.read_text(encoding="utf-8"))
         for name in REQUIRED_CONSUMERS:
-            if re.search(rf"\\{re.escape(name)}\b", text):
+            if re.search(command_pattern(name), text):
                 consumers[name].append(relative)
 
     for name, paths in consumers.items():
@@ -70,7 +78,7 @@ def check(root: Path) -> int:
     else:
         interface_text = interface_doc.read_text(encoding="utf-8")
         for name in REQUIRED:
-            if f"\\{name}" not in interface_text:
+            if not re.search(command_pattern(name), interface_text):
                 code |= error(f"PAPER_INTERFACES.md does not document \\{name}")
 
     if code == 0:

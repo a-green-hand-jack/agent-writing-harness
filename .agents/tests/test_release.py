@@ -82,9 +82,17 @@ class ReleaseInstanceTests(unittest.TestCase):
     def test_reference_evidence_is_release_provenance(self) -> None:
         provenance = paper_release.reference_provenance(ROOT, "release")
         self.assertEqual(provenance["offline_profile"], "release")
-        self.assertTrue(provenance["offline_gate_passed"])
+        if provenance["enforcement"] == "enforced":
+            self.assertTrue(provenance["offline_gate_passed"])
+            self.assertEqual(
+                provenance["ledger_sha256"],
+                paper_release.sha256_file(ROOT / "references/ledger.json"),
+            )
+        else:
+            self.assertEqual(provenance["enforcement"], "not-adopted")
+            self.assertIsNone(provenance["offline_gate_passed"])
+            self.assertEqual(provenance["online_metadata_outcome"], "not-applicable")
         self.assertFalse(provenance["online_metadata_required"])
-        self.assertEqual(provenance["ledger_sha256"], paper_release.sha256_file(ROOT / "references/ledger.json"))
         self.assertIn("REFERENCES.md", paper_release.REFERENCE_CONTRACTS)
         self.assertIn("references/ledger.json", paper_release.REFERENCE_CONTRACTS)
 
@@ -183,6 +191,87 @@ class ReleaseInstanceTests(unittest.TestCase):
             )
             self.assertNotEqual(second.returncode, 0)
             self.assertIn("will not be overwritten", second.stderr)
+
+    def test_approved_record_requires_structured_human_approval(self) -> None:
+        approvals = (
+            "no human approved this",
+            "Nobody approved this",
+            "no reviewer available",
+            "human unavailable",
+            "approval is awaited",
+            "Approved by A. Researcher on 2026-02-30",
+            "Approved by  on 2026-08-09",
+            "Approved by Nobody on 2026-08-09",
+            "Approved by no one on 2026-08-09",
+            "Approved by none on 2026-08-09",
+            "Approved by pending on 2026-08-09",
+            "Approved by todo on 2026-08-09",
+            "Approved by unknown on 2026-08-09",
+            "Approved by Nobody! on 2026-08-09",
+            "Approved by none. on 2026-08-09",
+            "Approved by (n/a) on 2026-08-09",
+            "Approved by Ｎｏｂｏｄｙ！ on 2026-08-09",
+            "Approved by no-human available on 2026-08-09",
+            "Approved by not—approved on 2026-08-09",
+            "Approved by without approval on 2026-08-09",
+            "Approved by awaiting approval on 2026-08-09",
+            "Approved by approval...pending on 2026-08-09",
+            "Approved by `reviewer` on 2026-08-09",
+            "Approved by reviewer\x07 on 2026-08-09",
+            "Approved by A. Researcher on 2026-08-09 because nobody approved it",
+            "Approved by A. Researcher [id:@reviewer] on 2026-02-30",
+            "Approved by A. Researcher [id:reviewer] on 2026-08-09",
+            "Approved by A. Researcher [id:@reviewer handle] on 2026-08-09",
+            "Approved by A. Researcher [id:@-reviewer] on 2026-08-09",
+            "Approved by A. [Researcher] [id:@reviewer] on 2026-08-09",
+            "Approved by `A. Researcher` [id:@reviewer] on 2026-08-09",
+            "Approved by A. Researcher [id:@reviewer] on 2026-08-09\x07",
+        )
+        for approval in approvals:
+            with self.subTest(approval=approval), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                instance = fake_instance(root)
+                result = run_release(
+                    "record",
+                    "--instance",
+                    str(instance),
+                    "--output",
+                    str(root / "record.md"),
+                    "--status",
+                    "approved",
+                    "--human-approval",
+                    approval,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("Approved by <optional display name>[id:@stable-handle]", result.stderr)
+
+    def test_approved_record_accepts_structured_human_approval(self) -> None:
+        approvals = (
+            "Approved by Cher [id:@cher] on 2026-08-09",
+            "Approved by Ludwig van Beethoven [id:@lvbeethoven] on 2026-08-09",
+            "Approved by José García [id:@jgarcia] on 2026-08-09",
+            "Approved by 王小明 [id:@wang.xm] on 2026-08-09",
+            "Approved by Mary O'Connor-Smith [id:@mary_oc] on 2026-08-09",
+            "Approved by [id:@reviewer-42] on 2026-08-09",
+        )
+        for approval in approvals:
+            with self.subTest(approval=approval), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                instance = fake_instance(root)
+                record = root / "record.md"
+                result = run_release(
+                    "record",
+                    "--instance",
+                    str(instance),
+                    "--output",
+                    str(record),
+                    "--status",
+                    "approved",
+                    "--human-approval",
+                    approval,
+                )
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn(f"- Human approval: `{approval}`", record.read_text(encoding="utf-8"))
 
     def test_deterministic_zip_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

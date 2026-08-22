@@ -27,10 +27,17 @@ def write(root: Path, relative: str, text: str) -> None:
 
 
 class VenueKnowledgeChecks(unittest.TestCase):
-    def test_unconfigured_template_passes(self) -> None:
+    def test_current_repository_configuration_passes(self) -> None:
         result = run(ROOT)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("unconfigured", result.stdout)
+        configured = any(
+            path.name not in {"README.md", "_template.md"}
+            for path in (ROOT / ".agents/knowledge/venues").glob("*.md")
+        )
+        self.assertIn(
+            "venue_knowledge" if configured else "unconfigured",
+            result.stdout,
+        )
 
     def test_missing_required_section_fails(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

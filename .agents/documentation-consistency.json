@@ -1,0 +1,33 @@
+{
+  "required_facts": {
+    "PAPER.md": [
+      "ARIS: Autonomous Research via Adversarial Multi-Agent Collaboration",
+      "Target venue/style: ICLR 2026",
+      "observational trajectory"
+    ],
+    "PUBLICATION.md": [
+      "ARIS",
+      "draft",
+      "anonymous",
+      "camera-ready",
+      "arxiv",
+      "Git root contains only the tracked `paper/` tree"
+    ],
+    "README.md": [
+      "ARIS: Autonomous Research via Adversarial Multi-Agent Collaboration",
+      "ICLR 2026",
+      "ships the CCFA-Skills suite and writing-dna-skill as immutable snapshots under `.agents/vendor/`",
+      "All 17 `ccf-*` skills plus `writing-dna-skill` and `lieflat-less-ai-tone` are available as wrappers"
+    ],
+    "paper/figures/README.md": [
+      "There is no separate figure registry",
+      ".agents/tools/check-structure.py"
+    ],
+    "paper/tables/README.md": [
+      "no separate table registry",
+      "bash .agents/tools/verify.sh"
+    ]
+  },
+  "schema_version": "paper-documentation-consistency-v1",
+  "stale_patterns": {}
+}

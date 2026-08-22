@@ -81,7 +81,7 @@ class OverleafSyncTests(unittest.TestCase):
             check=check,
         )
 
-    def test_configured_template_passes_static_validation(self) -> None:
+    def test_configured_repository_passes_static_validation(self) -> None:
         result = run(
             [sys.executable, str(TOOL), "--root", str(ROOT), "validate"],
             ROOT,
@@ -91,10 +91,14 @@ class OverleafSyncTests(unittest.TestCase):
         self.assertIn("source=paper/", result.stdout)
         config = json.loads((ROOT / ".agents/overleaf-sync.json").read_text(encoding="utf-8"))
         self.assertEqual(config["source_prefix"], "paper")
-        self.assertEqual(
-            config["remote"]["url"],
-            "https://git@git.overleaf.com/6a71e37eeb498fef8922f370",
-        )
+        remote = config["remote"]
+        self.assertIsInstance(remote, dict)
+        url = remote["url"]
+        self.assertIsInstance(url, str)
+        self.assertTrue(url)
+        self.assertNotIn("token=", url.lower())
+        self.assertNotIn("password=", url.lower())
+        self.assertNotRegex(url, r"://[^/@]+:[^/@]+@")
 
     def test_bootstrap_exports_only_paper_and_preserves_remote_history(self) -> None:
         result = self.tool("push", "--bootstrap")
@@ -129,6 +133,20 @@ class OverleafSyncTests(unittest.TestCase):
             "edited on overleaf\n",
         )
         self.assertEqual((self.repo / "AGENTS.md").read_text(encoding="utf-8"), "governance\n")
+
+    def test_push_allows_canonical_case_branch(self) -> None:
+        git(self.repo, "switch", "-c", "case/arxiv-test")
+        result = self.tool("push", "--bootstrap")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        git(self.repo, "fetch", "overleaf", "main")
+        files = git(self.repo, "ls-tree", "-r", "--name-only", "overleaf/main").stdout.splitlines()
+        self.assertEqual(files, ["main.tex", "refs.bib"])
+
+    def test_push_refuses_feature_branch(self) -> None:
+        git(self.repo, "switch", "-c", "feat/test")
+        refused = self.tool("push")
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("canonical branch", refused.stderr)
 
     def test_pull_refuses_default_branch(self) -> None:
         refused = self.tool("pull")

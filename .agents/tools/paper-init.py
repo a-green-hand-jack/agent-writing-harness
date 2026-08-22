@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -72,6 +73,37 @@ def init_state(root: Path) -> Path:
     return root / INIT_STATE_RELATIVE
 
 
+def valid_init_state(root: Path) -> bool:
+    path = init_state(root)
+    if not path.is_file():
+        return False
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    if not isinstance(data, dict):
+        return False
+    if (
+        data.get("schema_version") != "paper-init-v1"
+        or data.get("mode") != "downstream"
+        or data.get("template_cleanup") is not True
+    ):
+        return False
+    initialized_at = data.get("initialized_at")
+    if not isinstance(initialized_at, str):
+        return False
+    try:
+        timestamp = dt.datetime.fromisoformat(initialized_at)
+    except ValueError:
+        return False
+    if timestamp.tzinfo is None or timestamp.utcoffset() is None:
+        return False
+    git_head = data.get("git_head")
+    if not isinstance(git_head, str) or not re.fullmatch(r"[0-9a-f]{40}(?:[0-9a-f]{24})?", git_head):
+        return False
+    return run(root, "merge-base", "--is-ancestor", git_head, "HEAD", check=False).returncode == 0
+
+
 def worktree_clean(root: Path) -> bool:
     result = run(root, "status", "--porcelain=v1", "--untracked-files=all", check=False)
     return not result.stdout.strip()
@@ -83,12 +115,19 @@ def write_text(path: Path, text: str) -> None:
 
 
 def status(root: Path) -> int:
-    if is_upstream_template(root):
-        print("OK paper_init upstream_template")
-        return 0
-    if init_state(root).is_file():
+    marker_exists = init_state(root).is_file()
+    if valid_init_state(root):
         print("OK paper_init initialized")
         return 0
+    if not marker_exists and is_upstream_template(root):
+        print("OK paper_init upstream_template")
+        return 0
+    if marker_exists:
+        print(
+            "UNINITIALIZED paper_init invalid marker; run "
+            "`python3 .agents/tools/paper-init.py clean --commit`"
+        )
+        return 1
     print(
         "UNINITIALIZED paper_init downstream; run "
         "`python3 .agents/tools/paper-init.py clean --commit`"
@@ -132,9 +171,10 @@ def reset_documentation_config(root: Path, changes: list[str]) -> None:
         return
     if not isinstance(data, dict) or data.get("schema_version") != "paper-documentation-consistency-v1":
         return
-    if data.get("required_facts") == {}:
+    if data.get("required_facts") == {} and data.get("stale_patterns", {}) == {}:
         return
     data["required_facts"] = {}
+    data["stale_patterns"] = {}
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     changes.append(DOCUMENTATION_CONFIG_RELATIVE.as_posix())
 
@@ -164,12 +204,18 @@ def write_init_state(root: Path, changes: list[str]) -> None:
     changes.append(INIT_STATE_RELATIVE.as_posix())
 
 
-def clean(root: Path, commit: bool) -> int:
-    if is_upstream_template(root):
-        print("OK paper_init upstream_template")
-        return 0
-    if init_state(root).is_file():
+def clean(root: Path, commit: bool, downstream: bool) -> int:
+    marker_exists = init_state(root).is_file()
+    if valid_init_state(root):
         print("OK paper_init already_initialized")
+        return 0
+    if not downstream and is_upstream_template(root):
+        if marker_exists:
+            raise InitError(
+                "refusing to clean upstream template with an invalid initialization marker; "
+                "use --downstream only after confirming this repository is a downstream paper"
+            )
+        print("OK paper_init upstream_template")
         return 0
     if commit and not worktree_clean(root):
         raise InitError("clean --commit requires a clean worktree")
@@ -200,6 +246,11 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("status")
     clean_parser = subparsers.add_parser("clean")
     clean_parser.add_argument("--commit", action="store_true")
+    clean_parser.add_argument(
+        "--downstream",
+        action="store_true",
+        help="initialize as a downstream paper even when origin matches the upstream template",
+    )
     return parser
 
 
@@ -210,7 +261,7 @@ def main() -> int:
         if args.command == "status":
             return status(root)
         if args.command == "clean":
-            return clean(root, args.commit)
+            return clean(root, args.commit, args.downstream)
         raise InitError(f"unknown command: {args.command}")
     except InitError as exc:
         print(f"ERROR {exc}", file=sys.stderr)

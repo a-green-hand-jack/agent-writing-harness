@@ -32,8 +32,8 @@ Community contributions & 30+ contributed skills across robotics, hardware, comm
 \end{table}
 
 To illustrate the auto-review loop's operational dynamics under realistic conditions, we documented one overnight run end-to-end.
-Over approximately eight hours, the system completed four review--revise rounds, increased an internal reviewer score from 5.0 to 7.5/10, launched more than 20 GPU experiments, and removed claims that were not supported by the available evidence.
-This is a single trajectory on one paper; we do not generalize from it.
+Over approximately eight hours, the system completed four review--revise rounds, increased an internal reviewer score from \MainResult{}, launched more than 20 GPU experiments, and removed claims that were not supported by the available evidence.
+This is \MainResultUncertainty{}.
 
 This run should be read as evidence that the harness can operationalize claim pruning and review-driven revision in one realistic trajectory, not as causal evidence that cross-family review is superior to same-family review or that two cross-family reviewers are an optimal committee size.
 The bandit and game-theoretic framing in \S\ref{sec:intro} is used as a design analogy that motivates the two-role pattern; isolating its effect from researcher expertise, model choice, and task difficulty requires the controlled benchmark protocol described in Appendix~\ref{app:benchmark} as future work.

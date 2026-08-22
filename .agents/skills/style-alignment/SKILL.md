@@ -32,3 +32,19 @@ Do not load release tooling, all experiment state, or every exemplar by default.
 ## Human decision
 
 The Human chooses paper positioning, central narrative, major venue tradeoffs, and any style change that strengthens, weakens, hides, or reframes a scientific commitment.
+
+## Writing DNA adoption
+
+The bundled `writing-dna-skill` (`.agents/skills/writing-dna-skill/SKILL.md`,
+`.agents/vendor/writing-dna-skill/`) distills reusable style from a corpus.
+Inside this template it is an academic-writing adapter, governed by
+`.agents/knowledge/writing/README.md`:
+
+- the corpus is built by the Human from reference papers, kept outside Git or
+  under ignored `.agents/runtime/writing-dna/`;
+- distilled candidate rules are reviewed by the Human before any adoption;
+- only a Human-approved result may be promoted to
+  `.agents/knowledge/writing/paper-writing-dna.md` and activated from
+  `PAPER.md`;
+- a promoted Writing DNA must not override the current paper contracts, claim
+  strength, terminology, or scientific meaning.

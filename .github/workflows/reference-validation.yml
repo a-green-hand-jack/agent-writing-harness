@@ -33,6 +33,12 @@ jobs:
       - name: Run the offline ledger gate
         run: python3 .agents/tools/check-reference-integrity.py --profile draft
 
+      - name: Record offline citation-support state
+        run: |
+          python3 .agents/tools/reference-evidence.py status
+          python3 .agents/tools/reference-evidence.py --offline inventory
+          cp dist/reference-support/*/inventory.json dist/reference-support/inventory.json 2>/dev/null || true
+
       - name: Detect reviewed activation policy
         id: policy
         shell: bash

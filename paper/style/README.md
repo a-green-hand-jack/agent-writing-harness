@@ -1,6 +1,6 @@
 # Style Files
 
-`ccfa-paper.sty` is the Writing-owned, reusable Class API. It carries only
+`ccfa-paper.sty` is the repository's reusable internal-layout API. It carries only
 presentation logic that does not depend on this paper's specific claims,
 numbers, or references, so it can be dropped, swapped for a venue
 `compat.sty` shim, or reused by another paper without edits. Project-specific
@@ -15,14 +15,12 @@ Venue-provided `.sty`/`.cls`/`.bst` files may also be placed here after
 license and source checks, once the paper is hard-bound to a specific
 venue class.
 
-`compat.sty` is a separate, static shim that reimplements the same Class
-API on packages an official venue class already loads. It is not loaded
-by `paper/main.tex`; `scripts/export-venue-template.sh` copies it into a
-generated `release/venue/<venue>-<year>-<mode>/` preview alongside a
-locally supplied official kit, so the venue conversion never edits
-`paper/sections/*.tex`. See `.claude/skills/venue-adapt/SKILL.md`.
+`compat.sty` is a separate static shim that reimplements the same display API
+on packages an official venue class already loads. The canonical ARIS paper
+uses `ccfa-paper.sty` together with the imported ICLR 2026 style. Future venue
+conversion or release packaging must not edit `paper/sections/*.tex`.
 
-## Class API
+## Display API
 
 | Macro | Purpose |
 | --- | --- |

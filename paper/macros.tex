@@ -1,7 +1,56 @@
-% Project macros. Generated number macros are included from generated/results-macros.tex when populated.
-% Reusable display macros (headings, float refs, table helpers) live in paper/style/ccfa-paper.sty, not here.
-% Migrated verbatim from arXiv 2605.03042 main.tex preamble. See
-% paper/supplementary/source-attribution.md for the migration mapping.
-\newcommand{\aris}{\textsc{Aris}}
+% Project-specific, paper-facing interfaces.
+% Reusable display helpers live in paper/style/ccfa-paper.sty.
+% Update every active consumer when an interface meaning changes.
+
+% Interface: PaperTODO
+% Meaning: an explicit Draft-only placeholder that remains compilable.
+% Control: free implementation; Release must reject active uses.
+\providecommand{\PaperTODO}[1]{\textbf{[TODO: #1]}}
+
+% Interface: PaperTitle
+% Meaning: the canonical title shared by publication variants.
+% Control: locked identity and positioning; changes require Human review.
+\providecommand{\PaperTitle}{ARIS: Autonomous Research via\\ Adversarial Multi-Agent Collaboration}
+
+% Interface: PaperAuthors
+% Meaning: the canonical visible author and affiliation block.
+% Control: locked identity; anonymous variants hide rather than redefine it.
+\providecommand{\PaperAuthors}{%
+\textbf{Ruofeng Yang}$^{1\dagger}$, \textbf{Yongcan Li}$^{1}$, \textbf{Shuai Li}$^{1,2*}$ \\[3pt]
+$^1$Shanghai Jiao Tong University \quad $^2$Shanghai Innovation Institute \\[2pt]
+\texttt{\{wanshuiyin, joseph\_y, shuaili8\}@sjtu.edu.cn} \\[3pt]
+$^\dagger$Project Leader \quad $^*$Corresponding Author \\[2pt]
+{\small Project page: \url{https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep}}}
+
+% Interface: MethodName
+% Meaning: the approved paper-facing name of the described system.
+% Control: locked meaning; renaming requires global consumer review.
+\providecommand{\MethodName}{\textsc{Aris}}
+
+% Interface: CoreTerm
+% Meaning: the preferred term for the central system concept.
+% Control: bounded wording; semantic redefinition requires Human review.
+\providecommand{\CoreTerm}{research harness}
+
+% Interface: StateSymbol
+% Meaning: the prose-level label for the persistent-state bottleneck.
+% Control: locked to prose; the report defines no mathematical state variable.
+\providecommand{\StateSymbol}{state}
+
+% Interface: MainResult
+% Meaning: the internal reviewer-score transition in the documented overnight run.
+% Control: locked to the single observational trajectory described in EXPERIMENTS.md.
+\providecommand{\MainResult}{5.0 to 7.5/10}
+
+% Interface: MainResultUncertainty
+% Meaning: the qualitative scope limitation paired with \MainResult.
+% Control: locked interpretation; no numeric uncertainty was reported.
+\providecommand{\MainResultUncertainty}{a single trajectory on one paper; we do not generalize from it}
+
+% Reviewed generated numeric macros may override or add result interfaces.
+\InputIfFileExists{generated/results-macros.tex}{}{}
+
+% Source-compatible project shortcuts retained from arXiv 2605.03042.
+\newcommand{\aris}{\MethodName}
 \newcommand{\skillmd}{\texttt{SKILL.md}}
 \newcommand{\ariscode}{\textsc{Aris-Code}}

@@ -51,6 +51,8 @@ When adapting to a venue:
 
 Use exemplars to understand rhetorical moves, not to copy wording or imitate a named living author's personal style. Record why a move works and when it applies to the current paper.
 
+Style distillation uses the Writing DNA workflow (`.agents/knowledge/writing/README.md` and the bundled `writing-dna-skill`); distilled rules never override the ARIS paper contracts.
+
 ## Review questions
 
 Before making a broad style change, ask:

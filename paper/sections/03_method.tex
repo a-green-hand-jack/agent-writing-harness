@@ -3,7 +3,7 @@
 \label{sec:overview}
 % ==============================================================
 
-Following the harness-engineering taxonomy of \citet{lee2026metaharness}, \aris{} is a \emph{research harness}: a stateful system that orchestrates interactions with LLMs by selecting the context, tools, and feedback presented to them during each stage of a research workflow.
+Following the harness-engineering taxonomy of \citet{lee2026metaharness}, \MethodName{} is a \emph{research harness}: a stateful system that orchestrates interactions with LLMs by selecting the context, tools, and feedback presented to them during each stage of a research workflow.
 Before describing how the harness is organized internally, we first summarize what it does end-to-end.
 Figure~\ref{fig:pipeline} shows the workflow library: five workflows---idea discovery, experiment bridge, auto-review, paper writing, and rebuttal---chained through plain-text artifact contracts and grouped into four research phases (Discovery, Experimentation, Manuscript, Post-Submission).
 Figures~\ref{fig:wf2} and~\ref{fig:wf3} zoom into the two assurance-heavy workflows revisited when describing workflow orchestration in \S\ref{sec:realization}: Workflow~2 (Auto Review Loop) and Workflow~3 (Paper Writing).
@@ -40,7 +40,7 @@ Dependencies & None for skills; single binary for CLI \\
 \end{tabular}
 \end{table}
 
-These layers map to the three bottlenecks identified in \S\ref{sec:intro}: persistent state~(i) is realized by the per-project research wiki and versionable artifact contracts described in \S\ref{sec:wiki}; modular execution~(ii) is realized by self-contained Markdown skill files coordinated through the workflows of Figure~\ref{fig:pipeline}; and independent assurance~(iii) is realized by the assurance layer (\S\ref{sec:assurance}) under the cross-family executor/reviewer pairing detailed below.
+These layers map to the three bottlenecks identified in \S\ref{sec:intro}: persistent \StateSymbol{}~(i) is realized by the per-project research wiki and versionable artifact contracts described in \S\ref{sec:wiki}; modular execution~(ii) is realized by self-contained Markdown skill files coordinated through the workflows of Figure~\ref{fig:pipeline}; and independent assurance~(iii) is realized by the assurance layer (\S\ref{sec:assurance}) under the cross-family executor/reviewer pairing detailed below.
 
 \subsection{Design Principles}
 
