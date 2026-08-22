@@ -1,13 +1,13 @@
 ---
 name: publication-planning
-description: Use when adding, changing, comparing, or preparing a publication variant such as anonymous submission, camera-ready, arXiv, supplement, or rebuttal.
+description: Use when adding, changing, comparing, or preparing a publication variant such as `anonymous`, `camera-ready`, or `arxiv`; rebuttal drafting is handled by `ccf-rebuttal-writer`.
 ---
 
 # Publication Planning
 
 ## Trigger
 
-Use when adding, changing, comparing, or preparing a publication variant such as anonymous submission, camera-ready, arXiv, supplement, or rebuttal.
+Use when adding, changing, comparing, or preparing a publication variant such as `anonymous`, `camera-ready`, or `arxiv`; rebuttal drafting is handled by `ccf-rebuttal-writer`.
 
 ## Minimum context
 
@@ -26,10 +26,11 @@ Do not load unrelated venue knowledge until a concrete venue is active.
 3. Keep scientific and narrative changes in the canonical paper; use variants only for approved presentation differences.
 4. List every difference from the canonical paper and classify it as allowed, Human-review required, or forbidden.
 5. Treat official venue deadlines and limits as hard constraints. Derive internal writing, experiment, review, and approval buffers without labeling them official deadlines.
-6. Prefer a small switch/config change over copied sections or long-lived branches.
-7. Build every affected variant and inspect anonymity, author, acknowledgement, appendix, and interface behavior.
-8. Update `PUBLICATION.md`, venue knowledge, the checker, tests, and CI matrix when the set of variants or active venue facts changes.
-9. Report external venue or platform behavior as unverified unless actually exercised.
+6. For template, page-limit, or anonymity compliance, load `.agents/skills/ccf-submission-checker/SKILL.md` as the compliance sidecar; official current venue rules still prevail over any checker verdict.
+7. Prefer a small switch/config change over copied sections or long-lived branches.
+8. Build every affected variant and inspect anonymity, author, acknowledgement, appendix, and interface behavior.
+9. Update `PUBLICATION.md`, venue knowledge, the checker, tests, and CI matrix when the set of variants or active venue facts changes.
+10. Report external venue or platform behavior as unverified unless actually exercised.
 
 ## Human decision
 

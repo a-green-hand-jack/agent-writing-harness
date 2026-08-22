@@ -165,7 +165,7 @@ runtime, and none replaces the three-question review:
   measures coverage, not scientific truth.
 - ScholarQABench — citation precision/recall evaluation; limit: benchmark
   aggregates, not per-occurrence meaning.
-- Citation Check — per-occurrence inventory and unused-entry warnings; the
+- CiteCheck — per-occurrence inventory and unused-entry warnings; the
   implementation was rejected in `REFERENCES.md` for missing tagged releases,
   locked dependencies, non-generative fail-closed output, and field-level
   matching; only its concepts are retained.

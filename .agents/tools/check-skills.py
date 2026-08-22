@@ -82,7 +82,10 @@ def check(root: Path) -> int:
     markdown_paths = [root / "AGENTS.md"]
     if (root / ".agents/AGENTS.md").is_file():
         markdown_paths.append(root / ".agents/AGENTS.md")
-    markdown_paths.extend(sorted((root / ".agents").rglob("*.md")))
+    for path in sorted((root / ".agents").rglob("*.md")):
+        if path.relative_to(root).as_posix().startswith(".agents/vendor/"):
+            continue
+        markdown_paths.append(path)
     for path in markdown_paths:
         if path.is_file() and STALE_REFERENCE in path.read_text(encoding="utf-8"):
             code |= error(f"stale adapter reference in {path.relative_to(root)}: {STALE_REFERENCE}")
