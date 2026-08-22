@@ -96,7 +96,7 @@ jobs:
             # TODO Authors in camera-ready/arxiv; real papers must never carry
             # them. Branch on the PR base (or the pushed ref) instead of the
             # repository, because real-paper case branches live in the same repo.
-            base_ref="${{ github.event.pull_request.base.ref || github.ref }}"
+            base_ref="${{ github.event.pull_request.base.ref || github.ref_name }}"
             if [[ "$base_ref" == "main" ]]; then
               grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
               grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/$variant.txt"
