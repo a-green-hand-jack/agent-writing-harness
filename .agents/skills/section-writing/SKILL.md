@@ -44,6 +44,15 @@ wording, claims, examples, technical content, or distinctive phrasing from a
 reference paper, and do not treat the bundled `llava-4d`/`vggt` cards as a
 default writing format for this paper.
 
+## Bundled experiment-design sidecar
+
+The bundled `ccf-experiment-designer` skill (wrapper at
+`.agents/skills/ccf-experiment-designer/SKILL.md`) is the experiment-evidence
+designer. Load it as a sidecar when drafting experiment, evidence, or
+result-interpretation text; it proposes evidence design and result-table
+semantics, while primary metrics, baselines, fairness, and interpretation
+remain Human decisions under `EXPERIMENTS.md`.
+
 ## Procedure
 
 1. Identify the active section and its reader task from `PAPER.md`.

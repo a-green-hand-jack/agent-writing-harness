@@ -12,7 +12,7 @@ Bundled from the CCFA-Skills suite (MIT). The canonical upstream skill lives in 
 Load the full upstream skill and its resources from the vendor tree (immutable; never edit):
 
 - Skill: `.agents/vendor/ccfa-skills/ccf-common/SKILL.md`
-- Resources: sibling `references/`, `scripts/`, `resources/`, `templates/`, and `assets/` directories under `.agents/vendor/ccfa-skills/ccf-common`.
+- Resources: any existing sibling `references/`, `scripts/`, `resources/`, `templates/`, or `assets/` directories under `.agents/vendor/ccfa-skills/ccf-common`.
 
 ## Local precedence
 

@@ -47,7 +47,7 @@ The template ships the CCFA-Skills suite and writing-dna-skill as immutable snap
 
 - shared CCFA governance → `.agents/skills/ccf-common/SKILL.md`
 - experiment design, ablations, result-table semantics → `.agents/skills/ccf-experiment-designer/SKILL.md`
-- manuscript-facing humanization preflight → `.agents/skills/ccf-humanization/SKILL.md` (sidecar)
+- manuscript-facing humanization preflight → `.agents/skills/ccf-humanization/SKILL.md` (sidecar of section-writing)
 - idea optimization and research-direction shaping → `.agents/skills/ccf-idea-optimizer/SKILL.md`
 - idea scoring, ranking, triage → `.agents/skills/ccf-idea-reviewer/SKILL.md`
 - claim/evidence/citation integrity audit → `.agents/skills/ccf-integrity-auditor/SKILL.md` (sidecar)

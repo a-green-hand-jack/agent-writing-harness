@@ -11,7 +11,9 @@
     ],
     "README.md": [
       "The factory template is intentionally unresolved",
-      "The one-time initial publication uses `push --bootstrap`"
+      "The one-time initial publication uses `push --bootstrap`",
+      "ships the CCFA-Skills suite and writing-dna-skill as immutable snapshots under `.agents/vendor/`",
+      "All 17 `ccf-*` skills plus `writing-dna-skill` and `lieflat-less-ai-tone` are available as wrappers"
     ],
     "paper/figures/README.md": [
       "There is no separate figure registry",

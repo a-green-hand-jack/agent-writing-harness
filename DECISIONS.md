@@ -111,7 +111,7 @@ Ownership: `section-writing` remains the local text owner and runs
 `ccf-paper-writer` as its writing engine; `manuscript-consistency-review`
 remains Human-triggered and findings-only with `ccf-paper-reviewer` and
 `ccf-integrity-auditor` as sidecars; `style-alignment` governs approval of any
-Writing DNA distilled by `writing-dna-skill`. The vendor tree is never edited
+Writing DNA distilled by `writing-dna-skill`. `ccf-experiment-designer` is a sidecar of `EXPERIMENTS.md`/`section-writing` (proposals only). The vendor tree is never edited
 locally; upstream updates flow through template-sync after review. Human-facing
 contracts always take precedence over bundled guidance and exemplar defaults.
 

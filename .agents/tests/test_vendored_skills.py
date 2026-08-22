@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -39,12 +40,16 @@ def write(path: Path, text: str = "") -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def run(root: Path) -> subprocess.CompletedProcess[str]:
+def run(root: Path, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+    merged = os.environ.copy()
+    if env:
+        merged.update(env)
     return subprocess.run(
         [sys.executable, str(TOOL), "--root", str(root)],
         text=True,
         capture_output=True,
         check=False,
+        env=merged,
     )
 
 
@@ -53,6 +58,8 @@ def fixture(root: Path) -> None:
     vendor_files = {
         "ccfa-skills/LICENSE": "MIT\n",
         "ccfa-skills/ccf-common/SKILL.md": "# common\n",
+        "ccfa-skills/ccf-common/scripts/check_markdown_links.py": "#!/usr/bin/env python3\n",
+        "ccfa-skills/ccf-common/scripts/check_path_privacy.py": "#!/usr/bin/env python3\n",
         "ccfa-skills/ccf-experiment-designer/SKILL.md": "# experiment\n",
         "ccfa-skills/ccf-humanization/SKILL.md": "# humanization\n",
         "ccfa-skills/ccf-idea-optimizer/SKILL.md": "# idea optimizer\n",
@@ -129,7 +136,9 @@ def fixture(root: Path) -> None:
 
 class VendoredSkillsChecks(unittest.TestCase):
     def test_repository_vendor_tree_passes(self) -> None:
-        result = run(ROOT)
+        with tempfile.TemporaryDirectory() as directory:
+            env = {"PYTHONPYCACHEPREFIX": str(Path(directory) / "pycache")}
+            result = run(ROOT, env=env)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_fixture_passes(self) -> None:
@@ -187,6 +196,43 @@ class VendoredSkillsChecks(unittest.TestCase):
             result = run(root)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("violates exclusion boundary", result.stdout)
+
+    def test_vendor_pycache_tolerated(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            write(
+                root / ".agents/vendor/ccfa-skills/ccf-common/__pycache__/x.cpython-312.pyc",
+                "pyc",
+            )
+            result = run(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_required_vendor_script_missing_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            rel = "ccfa-skills/ccf-common/scripts/check_markdown_links.py"
+            (root / ".agents/vendor" / rel).unlink()
+            manifest = root / ".agents/dependencies/vendored-skills/provenance.json"
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+            data["files"]["ccfa-skills"].pop("ccf-common/scripts/check_markdown_links.py")
+            manifest.write_text(json.dumps(data) + "\n", encoding="utf-8")
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("verify.sh depends on vendored script", result.stdout)
+
+    def test_required_vendor_script_unrecorded_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            manifest = root / ".agents/dependencies/vendored-skills/provenance.json"
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+            data["files"]["ccfa-skills"].pop("ccf-common/scripts/check_path_privacy.py")
+            manifest.write_text(json.dumps(data) + "\n", encoding="utf-8")
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("verify.sh depends on vendored script", result.stdout)
 
     def test_missing_license_fails(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

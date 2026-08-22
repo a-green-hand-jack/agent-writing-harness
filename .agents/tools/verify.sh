@@ -11,6 +11,14 @@ python3 .agents/tools/paper-init.py status
 python3 .agents/tools/check-actions.py
 python3 .agents/tools/check-skills.py
 python3 .agents/tools/check-vendored-skills.py
+for vendor_script in \
+  .agents/vendor/ccfa-skills/ccf-common/scripts/check_markdown_links.py \
+  .agents/vendor/ccfa-skills/ccf-common/scripts/check_path_privacy.py; do
+  if [[ ! -f "$vendor_script" ]]; then
+    echo "ERROR vendor snapshot changed: missing $vendor_script (re-sync after review)" >&2
+    exit 1
+  fi
+done
 python3 .agents/vendor/ccfa-skills/ccf-common/scripts/check_markdown_links.py
 python3 .agents/vendor/ccfa-skills/ccf-common/scripts/check_path_privacy.py .agents/vendor/ccfa-skills
 python3 .agents/tools/check-documentation.py

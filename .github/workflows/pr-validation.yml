@@ -178,6 +178,8 @@ jobs:
         run: uv sync --project .agents/dependencies/vendored-skills --locked
 
       - name: Compile vendored scripts
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/pycache
         run: python3 -m compileall -q .agents/vendor
 
       - name: Run applicable upstream CCFA checks on the vendored subset

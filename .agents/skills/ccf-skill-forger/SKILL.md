@@ -12,7 +12,7 @@ Bundled from the CCFA-Skills suite (MIT). The canonical upstream skill lives in 
 Load the full upstream skill and its resources from the vendor tree (immutable; never edit):
 
 - Skill: `.agents/vendor/ccfa-skills/ccf-skill-forger/SKILL.md`
-- Resources: sibling `references/`, `scripts/`, `resources/`, `templates/`, and `assets/` directories under `.agents/vendor/ccfa-skills/ccf-skill-forger`.
+- Resources: any existing sibling `references/`, `scripts/`, `resources/`, `templates/`, or `assets/` directories under `.agents/vendor/ccfa-skills/ccf-skill-forger`.
 
 ## Local precedence
 
@@ -31,6 +31,8 @@ May create candidate skills, but cannot mutate the pinned vendor snapshots silen
 New skills live in `.agents/skills/` as first-party content after Human review; vendor files remain immutable.
 
 Vendored SVG/documentation-generation steps do not apply here (no CCFA diagram generator exists in this template); generated candidates go to ignored `.agents/runtime/`. Skill-authoring work complements `check-vendored-skills.py` (create/maintain vs validate).
+
+The upstream `ccf-common/scripts/check_v04.py` validator does not apply to this template (it validates the full upstream repository layout that this template intentionally excludes). Validate the skill layer with the local `.agents/tools/check-vendored-skills.py` and `.agents/tools/check-skills.py` instead.
 
 ## Provenance
 

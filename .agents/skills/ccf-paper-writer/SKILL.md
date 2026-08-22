@@ -12,7 +12,7 @@ Bundled from the CCFA-Skills suite (MIT). The canonical upstream skill lives in 
 Load the full upstream skill and its resources from the vendor tree (immutable; never edit):
 
 - Skill: `.agents/vendor/ccfa-skills/ccf-paper-writer/SKILL.md`
-- Resources: sibling `references/`, `scripts/`, `resources/`, `templates/`, and `assets/` directories under `.agents/vendor/ccfa-skills/ccf-paper-writer`.
+- Resources: any existing sibling `references/`, `scripts/`, `resources/`, `templates/`, or `assets/` directories under `.agents/vendor/ccfa-skills/ccf-paper-writer`.
 
 ## Local precedence
 
@@ -34,7 +34,7 @@ Manuscript edits go to canonical `paper/` only through the normal section-writin
 
 Vendored `venue-guides/` corpus is fallback only; the template's `.agents/knowledge/venues/` and official checked sources win. Vendored citation-density targets (e.g., 25-40 references) are advisory and never justify a citation that fails the `citation-support-review` Draft profile.
 
-Dead upstream references to `ccf-latex-templates/...` and `paper_ref/*.pdf` are excluded resources; from-scratch LaTeX drafting uses this repository's own `paper/` tree and Makefile variants instead.
+The vendored `exemplars/index.md` and `custom-format/default-user-format.md` files contain relative paths that are one level too deep for this vendor layout; when following them, resolve from the `ccf-paper-writer/references/` base (e.g., `custom-format/default-user-format.md`, `exemplars/cards/…`), or ask the Human to provide reference PDFs. Dead pointers to `ccf-latex-templates/…` and `paper_ref/*.pdf` are excluded resources; use this repository's `paper/` tree for from-scratch LaTeX drafting.
 
 ## Provenance
 

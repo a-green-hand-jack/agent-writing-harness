@@ -12,7 +12,9 @@ Checks the vendor tree against `.agents/dependencies/vendored-skills/provenance.
 - the vendor tree never ships full-text paper reproductions under
   `paper_ref/` or `references/exemplars/papers/`;
 - the excluded-content boundary holds (no paper PDFs or demo images shipped);
-- each source has its license file present.
+- each source has its license file present;
+- the vendored scripts verify.sh depends on are present and recorded.
+Bytecode caches (`.pyc`/`__pycache__`) are tolerated and skipped entirely.
 
 The vendor tree must never be edited locally; upstream updates flow through
 template-sync after review. This tool is standard-library only.
@@ -37,6 +39,13 @@ FORBIDDEN_SUFFIX_PYC = ".pyc"
 ALLOWED_VENDOR_PREFIXES = {"ccfa-skills", "writing-dna-skill"}
 FORBIDDEN_FULLTEXT_PARTS = {"paper_ref"}
 FORBIDDEN_FULLTEXT_SUBPATH = ("references", "exemplars", "papers")
+
+# Vendored scripts that verify.sh invokes directly; a missing or unrecorded
+# script means the upstream snapshot changed without a reviewed re-sync.
+REQUIRED_VENDOR_SCRIPTS = (
+    ".agents/vendor/ccfa-skills/ccf-common/scripts/check_markdown_links.py",
+    ".agents/vendor/ccfa-skills/ccf-common/scripts/check_path_privacy.py",
+)
 
 EXPECTED_WRAPPERS = (
     "ccf-common",
@@ -118,6 +127,8 @@ def check_manifest(root: Path, manifest: dict) -> int:
             continue
         actual: dict[str, str] = {}
         for path in sorted(base.rglob("*")):
+            if "__pycache__" in path.parts or path.name.endswith(FORBIDDEN_SUFFIX_PYC):
+                continue
             if path.is_symlink():
                 code |= error(f"vendor symlink is forbidden: {path.relative_to(root)}")
                 continue
@@ -127,7 +138,7 @@ def check_manifest(root: Path, manifest: dict) -> int:
             actual[rel] = hashlib.sha256(path.read_bytes()).hexdigest()
             if path.name in FORBIDDEN_NAMES:
                 code |= error(f"forbidden vendor entry: {path.relative_to(root)}")
-            if path.suffix.lower() in FORBIDDEN_SUFFIXES or path.name.endswith(FORBIDDEN_SUFFIX_PYC):
+            if path.suffix.lower() in FORBIDDEN_SUFFIXES:
                 code |= error(
                     f"vendored content violates exclusion boundary: {path.relative_to(root)}"
                 )
@@ -213,9 +224,33 @@ def check_wrappers(root: Path, manifest: dict) -> int:
     return code
 
 
+def check_required_vendor_scripts(root: Path, manifest: dict) -> int:
+    """Fail when a vendored script verify.sh depends on is missing or unrecorded."""
+    code = 0
+    vendor_prefix = f"{VENDOR_RELATIVE.as_posix()}/"
+    recorded = {
+        vendor_prefix + f"{prefix}/{inner}"
+        for prefix, entries in manifest["files"].items()
+        for inner in entries
+    }
+    for rel in REQUIRED_VENDOR_SCRIPTS:
+        if not (root / rel).is_file():
+            code |= error(
+                f"verify.sh depends on vendored script {rel} which is missing from the vendor"
+                " tree — upstream snapshot changed; review and re-sync"
+            )
+        elif rel not in recorded:
+            code |= error(
+                f"verify.sh depends on vendored script {rel} which is not recorded in the"
+                " manifest — upstream snapshot changed; review and re-sync"
+            )
+    return code
+
+
 def check(root: Path) -> int:
     manifest = load_manifest(root)
     code = check_manifest(root, manifest) | check_wrappers(root, manifest)
+    code |= check_required_vendor_scripts(root, manifest)
     if code == 0:
         print("OK vendored_skills")
     return code

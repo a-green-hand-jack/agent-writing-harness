@@ -112,6 +112,49 @@ class DocumentationChecks(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("references missing repository path", result.stdout)
 
+    def test_missing_vendor_path_reference_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            readme = root / "README.md"
+            readme.write_text(
+                readme.read_text(encoding="utf-8")
+                + "\nSee `.agents/vendor/ccfa-skills/ccf-common/removed-guide.md`.\n",
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("references missing repository path", result.stdout)
+
+    def test_existing_vendor_path_reference_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            existing = root / ".agents/vendor/ccfa-skills/ccf-common/SKILL.md"
+            existing.parent.mkdir(parents=True)
+            existing.write_text("# Common\n", encoding="utf-8")
+            readme = root / "README.md"
+            readme.write_text(
+                readme.read_text(encoding="utf-8")
+                + "\nSee `.agents/vendor/ccfa-skills/ccf-common/SKILL.md`.\n",
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_on_demand_knowledge_reference_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            readme = root / "README.md"
+            readme.write_text(
+                readme.read_text(encoding="utf-8")
+                + "\nSee `.agents/knowledge/writing/paper-writing-dna.md` when activated.\n",
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_stale_patterns_override_allows_downstream_venue_text(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

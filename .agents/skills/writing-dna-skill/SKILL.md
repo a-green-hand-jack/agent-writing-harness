@@ -12,7 +12,7 @@ Bundled from the writing-dna-skill (MIT). The canonical upstream skill lives in 
 Load the full upstream skill and its resources from the vendor tree (immutable; never edit):
 
 - Skill: `.agents/vendor/writing-dna-skill/SKILL.md`
-- Resources: sibling `references/`, `scripts/`, `resources/`, `templates/`, and `assets/` directories under `.agents/vendor/writing-dna-skill`.
+- Resources: any existing sibling `references/`, `scripts/`, `resources/`, `templates/`, or `assets/` directories under `.agents/vendor/writing-dna-skill`.
 
 ## Local precedence
 
@@ -21,7 +21,7 @@ Load the full upstream skill and its resources from the vendor tree (immutable; 
 3. Local owner skill or contract boundary (see below).
 4. Current official venue knowledge: `.agents/knowledge/venues/`.
 5. Human-approved Writing DNA: `.agents/knowledge/writing/paper-writing-dna.md` (only when the Human has activated it).
-6. Upstream CCFA guidance.
+6. Upstream writing-dna-skill guidance.
 7. Upstream exemplar defaults and generic quotas.
 
 ## Owner and boundary

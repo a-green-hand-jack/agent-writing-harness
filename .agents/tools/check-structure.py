@@ -43,6 +43,7 @@ REQUIRED = (
     "paper/variants/camera_ready.tex",
     "paper/variants/arxiv.tex",
     ".agents/knowledge/README.md",
+    ".agents/knowledge/writing/README.md",
     ".agents/knowledge/venues/README.md",
     ".agents/knowledge/venues/_template.md",
     ".agents/template-sync.json",

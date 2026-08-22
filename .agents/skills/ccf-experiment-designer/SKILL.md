@@ -12,7 +12,7 @@ Bundled from the CCFA-Skills suite (MIT). The canonical upstream skill lives in 
 Load the full upstream skill and its resources from the vendor tree (immutable; never edit):
 
 - Skill: `.agents/vendor/ccfa-skills/ccf-experiment-designer/SKILL.md`
-- Resources: sibling `references/`, `scripts/`, `resources/`, `templates/`, and `assets/` directories under `.agents/vendor/ccfa-skills/ccf-experiment-designer`.
+- Resources: any existing sibling `references/`, `scripts/`, `resources/`, `templates/`, or `assets/` directories under `.agents/vendor/ccfa-skills/ccf-experiment-designer`.
 
 ## Local precedence
 
@@ -27,6 +27,8 @@ Load the full upstream skill and its resources from the vendor tree (immutable; 
 ## Owner and boundary
 
 Governed by `EXPERIMENTS.md`; proposals only. Experiment fairness, primary metrics, baselines, and result interpretation remain Human decisions.
+
+Also owned with `section-writing` for experiment/result-interpretation drafting; proposals only, and `EXPERIMENTS.md` semantics never change without a Human decision.
 
 Candidate designs go to the active task and the Human decision process; never change `EXPERIMENTS.md` semantics without a Human decision.
 
