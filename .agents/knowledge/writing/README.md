@@ -18,7 +18,7 @@ overwrite.
    style-alignment boundary. Only an approved result may be promoted to
    `paper-writing-dna.md` here.
 5. **Activation.** The Writing DNA remains inactive until the Human records its
-   activation in the ARIS control plane. Until then it is reference material.
+   activation in `PAPER.md`. Until then it is reference material.
 
 ## Academic adaptation
 

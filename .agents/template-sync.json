@@ -1,9 +1,9 @@
 {
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Sync from 626ca34 to 7093603; preserve downstream contracts, integrate downstream anatomy and ignores, update protected Overleaf Actions refs, and complete the reviewed downstream reference-integrity adoption.",
-  "last_synced_at": "2026-08-09T09:25:58+00:00",
-  "last_synced_commit": "7093603dc1bb8243832b3da0f31874197bc7fc37",
+  "last_sync_note": "Reviewed ARIS paper-first migration; preserved downstream contracts, paper meaning, references, CI, venue state, and release boundaries.",
+  "last_synced_at": "2026-08-22T19:38:40+00:00",
+  "last_synced_commit": "1f5d4f1cb0450feca5f724158554f5d419bfb85d",
   "reference_integrity": {
     "adopted": true
   },

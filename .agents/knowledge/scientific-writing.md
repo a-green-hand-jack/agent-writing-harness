@@ -2,8 +2,8 @@
 
 Use this document only while drafting or revising one ARIS paper section. Load
 the guidance for the active surface, not as a manuscript-wide review checklist.
-The current Human instruction, ARIS evidence-first control plane, registered
-claims and numbers, publication contract, and durable decisions always take
+The current Human instruction, ARIS paper contracts, stable interfaces,
+reference ledger, publication contract, and durable decisions always take
 precedence.
 
 ## Core boundary
@@ -13,7 +13,7 @@ precedence.
 - Keep the paper's explicit observational and non-causal qualifications.
 - Do not turn a writing edit into a change to claim strength, experiment
   interpretation, limitations, terminology, or publication policy.
-- Retrieve the relevant state, ledger, section, and interface before drafting.
+- Retrieve the relevant contract, ledger, section, and interface before drafting.
 - Keep unresolved evidence visible rather than filling it with plausible prose.
 
 ## Before a section
