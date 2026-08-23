@@ -4,7 +4,7 @@
   "provenance_sha256": "630ff0f46e200caafcc7300cbe9a9316b0bdecaf9144ca2282d4ff4370d63b10",
   "fixture_bundle": {
     "path": ".agents/evals/vendored-skills/fixtures.json",
-    "sha256": "c590f5582952138f2ce0f52cd866c78f69021fa096d15be2f9a81760b4d12dc2"
+    "sha256": "1054a9c6ca31f11ef6ffbe09cb1a5a70589f24eccfa459baf8350bcc47b9d400"
   },
   "scenarios": [
     {
@@ -36,8 +36,8 @@
       "skill": "ccf-idea-optimizer",
       "mode": "positive",
       "task": "Develop problem-gap-insight-method-evidence routes from a rough multi-agent repair idea.",
-      "must": ["keep novelty status unsearched", "include a discriminating evidence sketch"],
-      "must_not": ["score or rank routes", "invent prior art or novelty"]
+      "must": ["keep novelty status unsearched", "include a discriminating evidence sketch", "apply the neutral peer protocol whenever output contains multiple candidates even from one seed", "use the same fields and comparable depth for every candidate", "route comparison or selection to ccf-idea-reviewer only on explicit Human request without authorizing optimizer selection", "keep the final choice as a Human decision through decision-packet"],
+      "must_not": ["identify or imply a strongest, best, preferred, winning, recommended, or fallback route", "emit a lead or primary route", "emit a pivot or recommended-next route", "order candidates by quality", "asymmetrically expand one candidate", "compare, rank, recommend, or select among routes", "emit Best development candidate or equivalent output", "invent prior art or novelty"]
     },
     {
       "id": "idea-ranking-no-prior-art",

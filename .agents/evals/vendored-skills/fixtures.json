@@ -15,7 +15,7 @@
     },
     "idea-routes-unsearched": {
       "input": "Use multiple agents for long-horizon code repair. Mechanism, novelty, venue fit, and experiments are unknown.",
-      "expected_observations": ["multiple concrete routes", "novelty remains unsearched", "each route has a discriminating test"]
+      "expected_observations": ["multiple concrete routes", "novelty remains unsearched", "each route has a discriminating test", "neutral peer candidates use the same fields and comparable depth", "multiple candidates from one seed activate the same protocol", "comparison or selection routes to ccf-idea-reviewer only on explicit Human request and never authorizes optimizer selection", "the final choice remains a Human decision through decision-packet", "no strongest/best/lead/primary/preferred/winning/recommended/fallback/pivot/recommended-next route, preferred ordering, or asymmetric expansion"]
     },
     "idea-ranking-no-prior-art": {
       "input": "Rank adversarial multi-agent repair against single-agent larger-context repair without browsing or a prior-art packet.",
