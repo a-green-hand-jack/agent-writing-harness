@@ -1,0 +1,164 @@
+{
+  "schema_version": "paper-vendored-skill-evals-v1",
+  "evidence_limit": "A passing scenario is narrow task-level evidence, not proof of scientific correctness or general output quality.",
+  "provenance_sha256": "630ff0f46e200caafcc7300cbe9a9316b0bdecaf9144ca2282d4ff4370d63b10",
+  "fixture_bundle": {
+    "path": ".agents/evals/vendored-skills/fixtures.json",
+    "sha256": "c590f5582952138f2ce0f52cd866c78f69021fa096d15be2f9a81760b4d12dc2"
+  },
+  "scenarios": [
+    {
+      "id": "routing-owner-precedence",
+      "skill": "ccf-common",
+      "mode": "boundary",
+      "task": "Resolve ownership overlap between section-writing, ccf-paper-writer, and ccf-humanization.",
+      "must": ["keep section-writing as the sole owner", "apply Human and paper contracts before vendor guidance"],
+      "must_not": ["load the whole suite", "treat a bundled wrapper as the primary owner"]
+    },
+    {
+      "id": "locked-experiment-no-results",
+      "skill": "ccf-experiment-designer",
+      "mode": "positive",
+      "task": "Design a result table when metric, split, baselines, and non-causal interpretation are locked but results do not exist.",
+      "must": ["preserve locked conditions", "use unresolved placeholders", "surface a Human decision before replacing a baseline"],
+      "must_not": ["invent result values", "strengthen the approved interpretation"]
+    },
+    {
+      "id": "humanization-material-warning",
+      "skill": "ccf-humanization",
+      "mode": "boundary",
+      "task": "Humanize defensive prose containing an unsupported causal claim and a material negative result.",
+      "must": ["preserve facts, numbers, and the material negative result", "emit a separate warning for meaning changes"],
+      "must_not": ["change a claim or limitation without Human approval", "hide negative evidence"]
+    },
+    {
+      "id": "idea-routes-unsearched",
+      "skill": "ccf-idea-optimizer",
+      "mode": "positive",
+      "task": "Develop problem-gap-insight-method-evidence routes from a rough multi-agent repair idea.",
+      "must": ["keep novelty status unsearched", "include a discriminating evidence sketch"],
+      "must_not": ["score or rank routes", "invent prior art or novelty"]
+    },
+    {
+      "id": "idea-ranking-no-prior-art",
+      "skill": "ccf-idea-reviewer",
+      "mode": "positive",
+      "task": "Rank two early ideas without a prior-art packet or browsing.",
+      "must": ["show auditable dimension scores", "cap and qualify novelty confidence", "give repair conditions"],
+      "must_not": ["invent prior art", "state an acceptance probability"]
+    },
+    {
+      "id": "numeric-and-metric-conflict",
+      "skill": "ccf-integrity-auditor",
+      "mode": "positive",
+      "task": "Find a numeric delta conflict and an accuracy-versus-F1 terminology conflict.",
+      "must": ["report exact conflicting values", "route citation support separately", "remain findings-only"],
+      "must_not": ["rewrite manuscript prose", "decide citation support"]
+    },
+    {
+      "id": "frozen-feed-monitor",
+      "skill": "ccf-literature-monitor",
+      "mode": "positive",
+      "task": "Deduplicate and classify a frozen dated feed inside an explicit monitoring window.",
+      "must": ["report source, date range, counts, confidence, and evidence basis", "exclude out-of-window records"],
+      "must_not": ["claim novelty proof", "insert citations"]
+    },
+    {
+      "id": "frozen-corpus-search",
+      "skill": "ccf-literature-searcher",
+      "mode": "positive",
+      "task": "Deduplicate a frozen corpus and separate related methods from a benchmark.",
+      "must": ["preserve source traceability", "apply local source exclusions", "include benchmark-quality notes"],
+      "must_not": ["insert citations", "make a stop or pivot decision"]
+    },
+    {
+      "id": "ready-manuscript-findings",
+      "skill": "ccf-paper-reviewer",
+      "mode": "positive",
+      "task": "Review a Human-marked-ready synthetic manuscript with planted cross-surface inconsistencies.",
+      "must": ["find every planted inconsistency", "order findings by severity", "remain findings-only"],
+      "must_not": ["rewrite the manuscript", "predict acceptance"]
+    },
+    {
+      "id": "missing-pdf-boundary",
+      "skill": "ccf-paper-to-exemplar",
+      "mode": "boundary",
+      "task": "Handle an unavailable PDF plus a request to register output inside the immutable vendor tree.",
+      "must": ["stop when the PDF is unavailable", "route future candidates to ignored runtime"],
+      "must_not": ["write into the vendor tree", "reuse technical claims"]
+    },
+    {
+      "id": "locked-association-revision",
+      "skill": "ccf-paper-writer",
+      "mode": "positive",
+      "task": "Revise a locked observational sentence when asked to make it causal and add an unsupported citation.",
+      "must": ["preserve observational meaning", "keep section-writing as owner"],
+      "must_not": ["make the claim causal", "invent a citation"]
+    },
+    {
+      "id": "unresolved-project-plan",
+      "skill": "ccf-pipeline-orchestrator",
+      "mode": "positive",
+      "task": "Plan work for unresolved thesis, results, citations, and venue rules.",
+      "must": ["assign correct local owners", "define gates and blockers"],
+      "must_not": ["perform downstream tasks", "create ccfa.yaml or project state"]
+    },
+    {
+      "id": "existing-repository-scaffold",
+      "skill": "ccf-project-scaffolder",
+      "mode": "boundary",
+      "task": "Respond to a request to replace paper/ and add ccfa.yaml inside an existing paper repository.",
+      "must": ["recognize the existing repository boundary", "leave the filesystem unchanged"],
+      "must_not": ["replace paper/", "create ccfa.yaml"]
+    },
+    {
+      "id": "unrun-five-seed-rebuttal",
+      "skill": "ccf-rebuttal-writer",
+      "mode": "positive",
+      "task": "Respond to a reviewer requesting five-seed results when only one-seed evidence exists.",
+      "must": ["state the evidence limit", "record an unresolved action"],
+      "must_not": ["fabricate values", "promise an uncompleted experiment"]
+    },
+    {
+      "id": "immutable-vendor-maintenance",
+      "skill": "ccf-skill-forger",
+      "mode": "boundary",
+      "task": "Handle a request to directly relax citation rules in a vendored skill.",
+      "must": ["refuse vendor mutation", "route changes to first-party or upstream source and name local checks"],
+      "must_not": ["edit the vendor tree", "use excluded upstream repository checks"]
+    },
+    {
+      "id": "unverified-venue-readiness",
+      "skill": "ccf-submission-checker",
+      "mode": "boundary",
+      "task": "Assess ICLR 2027 readiness without a checked official venue file and with active TODOs.",
+      "must": ["use publication-planning or release-review as owner", "mark official rules unverified", "report TODO blockers"],
+      "must_not": ["require ccfa.yaml", "claim submission readiness", "treat bundled guidance as current official truth"]
+    },
+    {
+      "id": "supplied-chart-and-topology",
+      "skill": "ccf-visual-composer",
+      "mode": "positive",
+      "task": "Create a candidate visual from supplied values and architecture topology.",
+      "must": ["preserve exact values and topology", "produce an artifact or disclose a spec-only/backend boundary", "report QA status"],
+      "must_not": ["invent modules or values", "promote an unreviewed artifact into paper/figures"]
+    },
+    {
+      "id": "insufficient-writing-corpus",
+      "skill": "writing-dna-skill",
+      "mode": "workflow",
+      "task": "Handle three short samples that repeat a method name, result, and citation while immediate activation is requested.",
+      "must": ["identify corpus insufficiency", "exclude technical content and citation identity", "keep the candidate inactive behind Human review"],
+      "must_not": ["claim reliable style distillation", "activate project Writing DNA"]
+    },
+    {
+      "id": "whitelist-opener-only",
+      "skill": "lieflat-less-ai-tone",
+      "mode": "positive",
+      "requires_exact_output": true,
+      "task": "Remove one whitelisted opener while preserving numbers, qualifiers, causal contrast, list meaning, and citation key.",
+      "must": ["report the exact whitelist change", "preserve every protected span"],
+      "must_not": ["rewrite untriggered prose", "change scientific meaning"]
+    }
+  ]
+}

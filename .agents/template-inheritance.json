@@ -1,0 +1,98 @@
+{
+  "schema_version": "paper-template-inheritance-v1",
+  "template_creation": {
+    "inheritance": "all-tracked-files",
+    "post_creation_command": "python3 .agents/tools/paper-init.py clean --commit"
+  },
+  "adoption": {
+    "required_paths": [
+      ".agents/template-inheritance.json",
+      ".agents/tools/_template_inheritance.py",
+      ".agents/tools/template-adoption.py",
+      ".agents/skills/template-adoption/SKILL.md",
+      ".agents/tools/template-sync.py",
+      ".agents/skills/template-sync/SKILL.md",
+      ".agents/tools/check-vendored-skills.py",
+      ".agents/dependencies/vendored-skills/provenance.json",
+      ".agents/dependencies/vendored-skills/uv.lock",
+      ".agents/vendor/README.md",
+      ".agents/vendor/ccfa-skills/LICENSE",
+      ".agents/vendor/ccfa-skills/ccf-common/SKILL.md",
+      ".agents/vendor/ccfa-skills/ccf-paper-writer/SKILL.md",
+      ".agents/vendor/writing-dna-skill/LICENSE",
+      ".agents/vendor/writing-dna-skill/SKILL.md",
+      ".agents/runtime/.gitignore"
+    ],
+    "safe_paths": [
+      ".agents/ANATOMY.md",
+      ".agents/runtime/.gitignore",
+      ".agents/template-inheritance.json"
+    ],
+    "safe_prefixes": [
+      ".agents/dependencies/vendored-skills/",
+      ".agents/evals/",
+      ".agents/knowledge/",
+      ".agents/skills/",
+      ".agents/tests/",
+      ".agents/tools/",
+      ".agents/vendor/"
+    ],
+    "ignored_paths": [
+      ".agents/template-sync.json",
+      ".agents/overleaf-sync.json",
+      ".agents/documentation-consistency.json",
+      ".agents/init-state.json",
+      ".agents/runtime/",
+      "dist/"
+    ],
+    "manual_paths": [
+      ".gitignore",
+      ".github/",
+      "AGENTS.md",
+      "ANATOMY.md",
+      "CLAUDE.md",
+      "CONTRIBUTING.md",
+      "DECISIONS.md",
+      "EXPERIMENTS.md",
+      "Makefile",
+      "PAPER.md",
+      "PAPER_INTERFACES.md",
+      "PUBLICATION.md",
+      "README.md",
+      "paper/",
+      "releases/"
+    ],
+    "fallback": "manual"
+  },
+  "sync": {
+    "manual_paths": [
+      ".gitignore",
+      ".github/",
+      "README.md",
+      "REFERENCES.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "Makefile",
+      "PAPER.md",
+      "EXPERIMENTS.md",
+      "PAPER_INTERFACES.md",
+      "PUBLICATION.md",
+      "DECISIONS.md",
+      "paper/",
+      "references/",
+      ".agents/template-inheritance.json",
+      ".agents/dependencies/reference-integrity/",
+      ".agents/knowledge/"
+    ],
+    "ignored_paths": [
+      ".agents/template-sync.json",
+      ".agents/overleaf-sync.json",
+      ".agents/documentation-consistency.json",
+      ".agents/init-state.json",
+      ".agents/runtime/",
+      "dist/"
+    ],
+    "fallback": "three-way"
+  },
+  "vendored_skills_manifest": ".agents/dependencies/vendored-skills/provenance.json"
+}

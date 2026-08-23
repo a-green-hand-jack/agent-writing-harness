@@ -101,14 +101,26 @@ class TemplateSyncTests(unittest.TestCase):
         self.upstream = base / 'upstream'
         self.downstream = base / 'downstream'
         init_repo(self.upstream)
+        for relative in (
+            '.agents/template-inheritance.json',
+            '.agents/tools/_template_inheritance.py',
+        ):
+            source = ROOT / relative
+            target = self.upstream / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
         write(self.upstream, '.agents/tools/base.txt', 'base-v1\n')
         write(self.upstream, '.agents/tools/deleted.txt', 'delete-v1\n')
         write(self.upstream, '.agents/tools/conflict.txt', 'conflict-v1\n')
+        write(self.upstream, '.agents/tools/mode-only.sh', '#!/bin/sh\nexit 0\n')
+        write(self.upstream, 'future/protected.txt', 'future-v1\n')
         write(self.upstream, 'PAPER.md', 'paper-v1\n')
         write(self.upstream, 'CONTRIBUTING.md', 'contributing-v1\n')
         write(self.upstream, 'PUBLICATION.md', 'publication-v1\n')
         write(self.upstream, '.agents/tools/verify.sh', '#!/usr/bin/env bash\nexit 0\n')
         write(self.upstream, 'Makefile', 'pdf:\n\t@true\n')
+        write(self.upstream, 'paper/variants/common.tex', 'variant-v1\n')
+        write(self.upstream, 'paper/custom-authored.tex', 'custom-v1\n')
         self.baseline = commit_all(self.upstream, 'template v1')
 
         init_repo(self.downstream)
@@ -127,11 +139,19 @@ class TemplateSyncTests(unittest.TestCase):
         write(self.upstream, '.agents/tools/base.txt', 'base-v2\n')
         write(self.upstream, '.agents/tools/conflict.txt', 'conflict-upstream-v2\n')
         write(self.upstream, '.agents/tools/new.txt', 'new-v2\n')
+        (self.upstream / '.agents/tools/mode-only.sh').chmod(0o755)
+        write(self.upstream, 'future/protected.txt', 'future-v2\n')
         (self.upstream / '.agents/tools/deleted.txt').unlink()
         write(self.upstream, 'PAPER.md', 'paper-upstream-v2\n')
         write(self.upstream, 'CONTRIBUTING.md', 'contributing-upstream-v2\n')
         write(self.upstream, 'PUBLICATION.md', 'publication-upstream-v2\n')
         write(self.upstream, 'Makefile', 'pdf:\n\t@true\n# template v2\n')
+        write(self.upstream, 'paper/variants/common.tex', 'variant-v2\n')
+        write(self.upstream, 'paper/custom-authored.tex', 'custom-v2\n')
+        policy_path = self.upstream / '.agents/template-inheritance.json'
+        policy = json.loads(policy_path.read_text(encoding='utf-8'))
+        policy['sync']['manual_paths'].append('future/')
+        policy_path.write_text(json.dumps(policy, indent=2) + '\n', encoding='utf-8')
         write(self.upstream, '.agents/tools/check-reference-integrity.py', 'sidecar checker\n')
         write(self.upstream, '.agents/dependencies/reference-integrity/uv.lock', 'locked dependency\n')
         write(self.upstream, '.agents/vendor/ccfa-skills/ccf-common/SKILL.md', '# common v2\n')
@@ -171,6 +191,13 @@ class TemplateSyncTests(unittest.TestCase):
         self.assertEqual(by_path['PAPER.md']['category'], 'manual')
         self.assertEqual(by_path['CONTRIBUTING.md']['category'], 'manual')
         self.assertEqual(by_path['PUBLICATION.md']['category'], 'manual')
+        self.assertEqual(by_path['paper/variants/common.tex']['category'], 'manual')
+        self.assertEqual(by_path['paper/custom-authored.tex']['category'], 'manual')
+        self.assertEqual(by_path['future/protected.txt']['category'], 'manual')
+        self.assertEqual(by_path['.agents/template-inheritance.json']['category'], 'manual')
+        self.assertEqual(by_path['.agents/tools/mode-only.sh']['category'], 'safe')
+        self.assertEqual(by_path['.agents/tools/mode-only.sh']['baseline_mode'], '100644')
+        self.assertEqual(by_path['.agents/tools/mode-only.sh']['target_mode'], '100755')
         self.assertEqual(by_path['.agents/tools/check-reference-integrity.py']['category'], 'safe')
         self.assertEqual(by_path['.agents/dependencies/reference-integrity/uv.lock']['category'], 'manual')
         self.assertEqual(by_path['.agents/vendor/README.md']['category'], 'safe')
@@ -192,6 +219,20 @@ class TemplateSyncTests(unittest.TestCase):
             'conflict',
         )
 
+    def test_downstream_ignore_cannot_override_paper_protection(self) -> None:
+        config_path = self.downstream / '.agents/template-sync.json'
+        data = json.loads(config_path.read_text(encoding='utf-8'))
+        data['ignored_paths'] = ['paper/']
+        config_path.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+        commit_all(self.downstream, 'attempt to ignore paper')
+
+        plan = self.tool('plan')
+
+        self.assertEqual(plan.returncode, 0, plan.stderr)
+        data = json.loads((self.downstream / '.agents/runtime/template-sync/plan.json').read_text())
+        by_path = {item['path']: item for item in data['items']}
+        self.assertEqual(by_path['paper/custom-authored.tex']['category'], 'manual')
+
     def test_apply_safe_and_export_review_bundle(self) -> None:
         plan = self.tool('plan')
         self.assertEqual(plan.returncode, 0, plan.stderr)
@@ -200,6 +241,7 @@ class TemplateSyncTests(unittest.TestCase):
         self.assertEqual((self.downstream / '.agents/tools/base.txt').read_text(), 'base-v2\n')
         self.assertEqual((self.downstream / '.agents/tools/new.txt').read_text(), 'new-v2\n')
         self.assertEqual((self.downstream / '.agents/tools/conflict.txt').read_text(), 'conflict-downstream\n')
+        self.assertTrue((self.downstream / '.agents/tools/mode-only.sh').stat().st_mode & 0o111)
         self.assertEqual((self.downstream / 'PAPER.md').read_text(), 'paper-v1\n')
         self.assertEqual((self.downstream / 'CONTRIBUTING.md').read_text(), 'contributing-v1\n')
         self.assertEqual((self.downstream / 'PUBLICATION.md').read_text(), 'publication-v1\n')
@@ -221,6 +263,18 @@ class TemplateSyncTests(unittest.TestCase):
             'inert until policy enables it\n',
         )
         self.assertEqual((bundle / 'upstream/references/ledger.json').read_text(), '{}\n')
+
+    def test_plan_refuses_non_regular_upstream_entry(self) -> None:
+        link = self.upstream / '.agents/tools/unsafe-link'
+        link.symlink_to('/tmp/template-sync-external-target')
+        commit_all(self.upstream, 'template symlink')
+        git(self.downstream, 'fetch', 'template', 'main')
+
+        refused = self.tool('plan')
+
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn('refuses non-regular upstream entry', refused.stderr)
+        self.assertFalse((self.downstream / '.agents/tools/unsafe-link').exists())
 
     def test_plan_refuses_symlinked_runtime_directory_without_touching_external_victim(self) -> None:
         runtime = self.downstream / '.agents/runtime/template-sync'

@@ -65,7 +65,7 @@ The factory template is intentionally unresolved, so strict release builds fail 
 bash .agents/tools/verify.sh
 ```
 
-`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, the offline reference ledger (including occurrence coverage and claim-support state), publication variants, release-record boundaries, template-adoption and template-sync configuration, regressions, and vendored-skill integrity. The separate `Reference validation` workflow installs hash-locked Pybtex format validation and the open-source metadata checker only after the protected publication policy enables them.
+`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, the offline reference ledger (including occurrence coverage and claim-support state), publication variants, release-record boundaries, template-adoption and template-sync configuration, regressions, vendored-skill integrity, and one registered task-level evaluation scenario per bundled wrapper. The deterministic scenario check does not invoke a model; live worker/reviewer sub-agent runs are explicit non-blocking evaluations. The separate `Reference validation` workflow installs hash-locked Pybtex format validation and the open-source metadata checker only after the protected publication policy enables them.
 
 ## Bundled Agent skills
 
@@ -93,6 +93,11 @@ PDFs, the venue LaTeX corpus, demo assets) are recorded in
 `.agents/dependencies/vendored-skills/provenance.json` and verified by
 `.agents/tools/check-vendored-skills.py`. Never edit the vendor tree; updates
 arrive through template-sync after review. See `.agents/vendor/README.md`.
+
+The task probes under `.agents/evals/vendored-skills/` distinguish installation
+evidence from live behavior. Every wrapper has one synthetic scenario with
+required and forbidden behavior; model-backed runs use separate worker and
+reviewer sub-agents and remain narrower than a general quality benchmark.
 
 ## Adopting the template in an existing repository
 
@@ -131,7 +136,7 @@ python3 .agents/tools/template-sync.py plan --bootstrap   # only when no trustwo
 python3 .agents/tools/template-sync.py apply
 ```
 
-The plan separates changes into `safe`, `already`, `manual`, `conflict`, and `ignored`. Safe infrastructure updates can be staged mechanically. Human contracts, paper content, references, macros, CI, build logic, dependency locks, venue configuration, style, and project knowledge remain protected and are exported to an ignored merge bundle for Agent review. Reference-integrity tooling received by an older sync engine remains inert until the protected `PUBLICATION.md` policy and `paper/refs.bib` activation marker are merged after ledger migration and downstream-local `.agents/template-sync.json` records `reference_integrity.adopted=true`.
+The shared path policy is registered in `.agents/template-inheritance.json`; downstream-local additions remain in `.agents/template-sync.json`. The plan separates changes into `safe`, `already`, `manual`, `conflict`, and `ignored`. Safe infrastructure updates can be staged mechanically. Human contracts, paper content, publication variants, references, macros, CI, build logic, dependency locks, venue configuration, style, and project knowledge remain protected and are exported to an ignored merge bundle for Agent review. Reference-integrity tooling received by an older sync engine remains inert until the protected `PUBLICATION.md` policy and `paper/refs.bib` activation marker are merged after ledger migration and downstream-local `.agents/template-sync.json` records `reference_integrity.adopted=true`.
 
 After manual merges and successful downstream validation:
 
