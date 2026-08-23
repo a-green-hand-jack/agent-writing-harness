@@ -9,6 +9,8 @@
 - `knowledge/writing/`: downstream-local Writing DNA workflow and the Human-approved `paper-writing-dna.md` after activation; protected from template-sync overwrite.
 - `skills/`: focused procedures for orientation, control review, decision packets, section writing, style alignment, post-version manuscript consistency review, interface maintenance, publication planning, release review, initial template adoption, downstream template synchronization, and wrappers for the bundled third-party suites.
 - `vendor/`: immutable snapshots of CCFA-Skills (`v0.9.0`) and writing-dna-skill with MIT licenses; verified by `check-vendored-skills.py` against `dependencies/vendored-skills/provenance.json`; never edited locally.
+- `template-inheritance.json`: machine-readable inheritance policy shared by template creation, initial adoption, and later template synchronization. It records required, safe, manual, and ignored path surfaces; downstream-local extensions remain in `template-sync.json`.
+- `evals/vendored-skills/`: one task-level worker/reviewer scenario for every bundled wrapper. Deterministic CI validates scenario coverage; live sub-agent runs are explicit, non-blocking evidence stored under ignored runtime.
 - `template-sync.json`: downstream-local upstream URL, remote/branch, reviewed baseline, and optional path-policy extensions; adoption first writes an uninitialized downstream-specific configuration and pins the commit only after review.
 - `overleaf-sync.json`: project-specific Overleaf Git remote/branch and the canonical `paper/` source prefix; never contains credentials.
 - `documentation-consistency.json`: expected current facts for README and Human-facing contracts plus repository-local `stale_patterns` overrides; downstream papers update these facts instead of editing checker source.
@@ -21,6 +23,7 @@
   - `check-actions.py` rejects first-party GitHub Actions majors that are no longer Node.js 24 compatible.
   - `check-skills.py` validates repo-local skill frontmatter, router coverage, and stale adapter references.
   - `check-vendored-skills.py` validates the immutable vendor snapshots against the provenance manifest (file hashes, licenses, symlink rejection, exclusion boundary, wrapper targets, and router coverage).
+  - `check-vendored-skill-evals.py` validates that every bundled wrapper has a task scenario with required and forbidden behavior; it does not invoke a model or claim output quality.
   - `check-documentation.py` rejects known retired paths, scripts, venue references, and missing Agent-sidecar references; the immutable vendor tree is exempt from first-party documentation scanning.
   - `check-venue-knowledge.py` validates active venue planning files and reports `UNVERIFIED` freshness/page-budget states.
   - `check-reference-integrity.py` performs the offline, standard-library bibliography/ledger/claim-evidence gate; `check-bibtex-format.py` runs locked classic-BibTeX syntax and field validation; `check-reference-metadata.py` runs the locked online identity audit and never approves claim support.
@@ -52,7 +55,7 @@
 
 ## Template adoption
 
-`template-adoption.py` can run from a trusted template checkout against an existing unrelated repository. It discovers the actual TeX graph, bibliography, asset/style, experiment/evaluation, build, CI, and Agent-instruction surfaces; proposes mappings; stages only missing sidecar knowledge, skills, tests, tools, and runtime-ignore infrastructure; and exports manual/conflict review copies. Scientific content and repository-specific behavior remain downstream-owned.
+`template-adoption.py` can run from a trusted template checkout against an existing unrelated repository. It discovers the actual TeX graph, bibliography, asset/style, experiment/evaluation, build, CI, and Agent-instruction surfaces; proposes mappings; applies the adoption rules in `.agents/template-inheritance.json`; stages only missing sidecar knowledge, skills, tests, tools, and runtime-ignore infrastructure; and exports manual/conflict review copies. Scientific content and repository-specific behavior remain downstream-owned.
 
 After semantic migration and validation, adoption writes the exact reviewed template target as the first `.agents/template-sync.json` baseline. Later changes use `template-sync.py` rather than repeating adoption.
 
@@ -60,7 +63,7 @@ If the adopted repository has no `.agents/init-state.json`, run `paper-init.py c
 
 ## Template synchronization
 
-A downstream repository does not merge the upstream template history. `template-sync.py` compares the last recorded upstream baseline, the requested upstream target, and current downstream files. It applies only files unchanged downstream, protects paper/Human surfaces, exports manual/conflict versions for Agent review, and records a new baseline only after explicit review and validation.
+A downstream repository does not merge the upstream template history. `template-sync.py` compares the last recorded upstream baseline, the requested upstream target, and current downstream files. It applies the synchronization rules in `.agents/template-inheritance.json` plus downstream-local extensions in `.agents/template-sync.json`, updates only eligible files unchanged downstream, protects paper/Human surfaces, exports manual/conflict versions for Agent review, and records a new baseline only after explicit review and validation.
 
 The initial sync of an older downstream repository uses bootstrap mode. Bootstrap does not silently delete downstream-only project files.
 

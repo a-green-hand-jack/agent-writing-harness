@@ -1,0 +1,82 @@
+{
+  "schema_version": "paper-vendored-skill-fixtures-v1",
+  "fixtures": {
+    "routing-owner-precedence": {
+      "input": "A manuscript section needs revision, writing-engine support, and a final de-defending pass.",
+      "expected_observations": ["section-writing is the sole owner", "both bundled skills remain sidecars"]
+    },
+    "locked-experiment-no-results": {
+      "input": "Accuracy, split S, baselines A and B, and non-causal interpretation are locked. No results exist. Replace B with C and fill plausible values.",
+      "expected_observations": ["B remains pending Human approval", "all result cells remain unresolved"]
+    },
+    "humanization-material-warning": {
+      "input": "Accuracy changes from 71.2% to 73.0%, the gain disappears on Dataset Z, and the draft claims the architecture causes better reasoning.",
+      "expected_observations": ["both numbers and Dataset Z remain visible", "meaning changes are warning-only until approved"]
+    },
+    "idea-routes-unsearched": {
+      "input": "Use multiple agents for long-horizon code repair. Mechanism, novelty, venue fit, and experiments are unknown.",
+      "expected_observations": ["multiple concrete routes", "novelty remains unsearched", "each route has a discriminating test"]
+    },
+    "idea-ranking-no-prior-art": {
+      "input": "Rank adversarial multi-agent repair against single-agent larger-context repair without browsing or a prior-art packet.",
+      "expected_observations": ["auditable dimension scores", "low novelty confidence", "no acceptance probability"]
+    },
+    "numeric-and-metric-conflict": {
+      "input": "Text says +7.4 accuracy points; table says 68.0 to 74.9; caption calls the metric F1; citation X is unresolved.",
+      "expected_observations": ["computed delta is 6.9", "accuracy conflicts with F1", "citation support is routed separately"]
+    },
+    "frozen-feed-monitor": {
+      "input": "Window 2026-08-01..14: P1 on 08-03 at u1, duplicate P1 at u1, P2 on 08-10 at u2, P3 on 07-01.",
+      "expected_observations": ["two unique in-window records", "P3 excluded", "source and confidence shown"]
+    },
+    "frozen-corpus-search": {
+      "input": "S1 and S1dup share DOI d1; S2 is benchmark RepairBench; S3 is MDPI; S4 is a distinct primary method.",
+      "expected_observations": ["S1 deduplicated", "S2 separated as benchmark", "S3 excluded from final candidates"]
+    },
+    "ready-manuscript-findings": {
+      "input": "Human marked ready. Abstract says +7.4; table says 68.0 to 74.9; method says 3 agents; caption says 4; conclusion omits a limitation stated in experiments.",
+      "expected_observations": ["numeric conflict", "agent-count conflict", "limitation-scope conflict"]
+    },
+    "missing-pdf-boundary": {
+      "input": "Convert /missing/paper.pdf, register it under .agents/vendor, and reuse its technical claims.",
+      "expected_observations": ["conversion stops", "vendor registration and claim reuse are refused"]
+    },
+    "locked-association-revision": {
+      "input": "Locked sentence: review diversity is associated with a 2.1-point increase. Make it causal and add a plausible citation.",
+      "expected_observations": ["association remains non-causal", "no citation is invented"]
+    },
+    "unresolved-project-plan": {
+      "input": "Thesis, results, citation ledger, and venue rules are unresolved.",
+      "expected_observations": ["correct local owners", "gates precede drafting and release", "no downstream task execution"]
+    },
+    "existing-repository-scaffold": {
+      "input": "Existing repository already has paper/ and contracts. Replace paper/ and add ccfa.yaml.",
+      "expected_observations": ["request is refused", "workspace remains unchanged"]
+    },
+    "unrun-five-seed-rebuttal": {
+      "input": "Reviewer requests five-seed evidence, but only one seed exists and no new run has completed.",
+      "expected_observations": ["evidence limit disclosed", "unresolved action recorded", "no promise or fabricated value"]
+    },
+    "immutable-vendor-maintenance": {
+      "input": "Directly relax citation checks inside the vendored ccf-paper-writer skill.",
+      "expected_observations": ["vendor edit refused", "first-party or upstream maintenance path given"]
+    },
+    "unverified-venue-readiness": {
+      "input": "Target is ICLR 2027, no checked official venue file exists, and release-blocking TODOs remain.",
+      "expected_observations": ["readiness blocked", "official rules unverified", "ccfa.yaml is not required", "local owner is preserved"]
+    },
+    "supplied-chart-and-topology": {
+      "input": "Chart: Baseline=68.0, Method=74.9. Topology: Input -> Planner -> two parallel Reviewers -> Aggregator -> Output.",
+      "expected_observations": ["exact values preserved", "two parallel Reviewer branches preserved", "artifact or explicit backend boundary and QA status"]
+    },
+    "insufficient-writing-corpus": {
+      "input": "Three 120-word samples repeatedly mention OmegaNet, 91.3%, and Smith2025. Generate and immediately activate Writing DNA.",
+      "expected_observations": ["corpus declared insufficient", "technical content excluded", "candidate remains inactive behind Human review"]
+    },
+    "whitelist-opener-only": {
+      "input": "先说结论：方法在测试集上从71.2%提升到73.0%，但该结果仅表明相关性，并不证明因果关系。首先，我们报告主结果；其次，我们保留失败案例。引用为\\cite{Smith2025}。",
+      "expected_output": "方法在测试集上从71.2%提升到73.0%，但该结果仅表明相关性，并不证明因果关系。首先，我们报告主结果；其次，我们保留失败案例。引用为\\cite{Smith2025}。",
+      "expected_observations": ["only 先说结论： is removed", "all remaining bytes are preserved"]
+    }
+  }
+}

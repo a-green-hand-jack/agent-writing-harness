@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path, PurePosixPath
 
@@ -79,14 +80,33 @@ def documentation_files(root: Path) -> list[Path]:
         for path in root.rglob(suffix)
         if ".git" not in path.parts
         and "dist" not in path.parts
+        and not path.relative_to(root).as_posix().startswith(".agents/runtime/")
         and path.relative_to(root).as_posix() != ".agents/vendor"
         and not path.relative_to(root).as_posix().startswith(".agents/vendor/")
     )
 
 
+def tracked_runtime_files(root: Path) -> list[str]:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "--", ".agents/runtime"],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return []
+    if result.returncode != 0:
+        return []
+    return [line for line in result.stdout.splitlines() if line]
+
+
 def check(root: Path) -> int:
     code = 0
     documents = documentation_files(root)
+    for relative in tracked_runtime_files(root):
+        if relative != ".agents/runtime/.gitignore":
+            code |= error(f"runtime output must not be tracked: {relative}")
 
     try:
         config = read_config(root)
