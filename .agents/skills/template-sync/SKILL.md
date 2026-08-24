@@ -104,6 +104,12 @@ A repository created before this skill has no trustworthy recorded baseline. Use
 
 Record the target only after the bootstrap migration has been reviewed and validated.
 
+## Template-development surface
+
+The upstream default branch contains only the paper-facing surface. Template-development-only machinery (`.agents/evals/`, `check-vendored-skills.py`, `check-vendored-skill-evals.py`, `check-skills.py`, `check-actions.py`, `.agents/dependencies/vendored-skills/`, development-only tests) lives on the upstream `template-dev` branch and never enters a writing repo through synchronization.
+
+If a generated plan proposes any dev-only path — for example from a misconfigured upstream target or a stale pre-split baseline — classify it as manual and do not apply it. A writing repo must never keep or create template-development-only files. Report them as residue if they appear.
+
 ## Safety boundary
 
 - Never merge the unrelated upstream and downstream repository histories merely to obtain template updates.

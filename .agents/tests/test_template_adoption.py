@@ -120,10 +120,6 @@ echo fixture-verify-ok
         for checker in (
             "check-structure.py",
             "paper-init.py",
-            "check-actions.py",
-            "check-skills.py",
-            "check-vendored-skills.py",
-            "check-vendored-skill-evals.py",
             "check-documentation.py",
             "check-venue-knowledge.py",
             "check-paper-contracts.py",
@@ -159,18 +155,6 @@ if __name__ == "__main__":
         write(self.upstream, ".agents/knowledge/README.md", "# Knowledge\n")
         write(self.upstream, ".agents/ANATOMY.md", "# Agent Sidecar Anatomy\n")
         write(self.upstream, ".agents/runtime/.gitignore", "*\n!.gitignore\n")
-        write(
-            self.upstream,
-            ".agents/dependencies/vendored-skills/provenance.json",
-            json.dumps(
-                {
-                    "schema_version": "paper-vendored-skills-v1",
-                    "sources": [],
-                    "files": {},
-                }
-            ),
-        )
-        write(self.upstream, ".agents/dependencies/vendored-skills/uv.lock", "version = 1\n")
         write(self.upstream, ".agents/vendor/README.md", "# Vendored skills\n")
         write(self.upstream, ".agents/vendor/ccfa-skills/LICENSE", "MIT\n")
         write(self.upstream, ".agents/vendor/ccfa-skills/ccf-common/SKILL.md", "# common\n")
@@ -778,7 +762,7 @@ if __name__ == "__main__":
         applied = self.tool("apply")
         self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
         self.complete_semantic_migration()
-        write(self.downstream, ".agents/tools/check-actions.py", "raise SystemExit(7)\n")
+        write(self.downstream, ".agents/tools/check-documentation.py", "raise SystemExit(7)\n")
         write(self.downstream, ".agents/tools/check-publication.py", "raise SystemExit(9)\n")
 
         assessed = self.tool("assess")
@@ -787,18 +771,14 @@ if __name__ == "__main__":
             (self.downstream / ".agents/runtime/template-adoption/assessment.json").read_text()
         )
         self.assertFalse(report["authorizes_finalize"])
-        self.assertEqual(len(report["checks"]), 22)
+        self.assertEqual(len(report["checks"]), 18)
         self.assertEqual(
             report["checks"][0]["command"],
             "python3 -m compileall -q .agents/tools .agents/tests",
         )
         failures = {check["command"]: check["returncode"] for check in report["checks"] if not check["success"]}
-        self.assertEqual(failures["python3 .agents/tools/check-actions.py"], 7)
+        self.assertEqual(failures["python3 .agents/tools/check-documentation.py"], 7)
         self.assertEqual(failures["python3 .agents/tools/check-publication.py"], 9)
-        checks = {check["command"]: check for check in report["checks"]}
-        eval_check = checks["python3 .agents/tools/check-vendored-skill-evals.py"]
-        self.assertTrue(eval_check["success"])
-        self.assertEqual(eval_check["returncode"], 0)
         self.assertTrue(report["checks"][-1]["command"].endswith("VARIANT=arxiv"))
         self.assertFalse(
             (self.downstream / ".agents/runtime/template-adoption/verification.json").exists()

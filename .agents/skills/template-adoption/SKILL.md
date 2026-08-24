@@ -108,6 +108,14 @@ The plan uses the same safety vocabulary as template synchronization:
 - Existing build and CI behavior is part of the downstream contract. Preserve successful commands, required checks, caching, artifact publication, and protected-branch semantics.
 - The first baseline means “reviewed against this exact template commit,” not “all downstream files are identical to the template.”
 
+## Template-development surface
+
+The template's default branch is the paper-facing surface only. Template-development-only machinery — `.agents/evals/`, the vendor and skill validation checkers (`check-vendored-skills.py`, `check-vendored-skill-evals.py`, `check-skills.py`, `check-actions.py`), the vendored-skills dependency lock (`.agents/dependencies/vendored-skills/`), and development-only tests — lives on the template's `template-dev` branch and is never part of a writing repo.
+
+Adoption must not install any of these dev-only paths. If an older template snapshot or an interrupted run stages them, treat them as template residue: do not keep them, do not treat them as required infrastructure, and remove or redirect them only after understanding their dependency impact, following the same discipline as other obsolete surfaces. If the generated plan contains a dev-only path, flag it for review instead of applying it.
+
+The paper-facing surface a writing repo should contain is documented in `.agents/ANATOMY.md` and `.agents/template-inheritance.json`.
+
 ## Safety boundary
 
 - Never merge unrelated template and downstream histories to perform adoption.

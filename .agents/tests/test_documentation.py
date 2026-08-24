@@ -155,6 +155,20 @@ class DocumentationChecks(unittest.TestCase):
             result = run(root)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_template_development_reference_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            readme = root / "README.md"
+            readme.write_text(
+                readme.read_text(encoding="utf-8")
+                + "\nDevelopment-only tools such as `.agents/tools/check-vendored-skills.py` "
+                "and `.agents/dependencies/vendored-skills` never appear in a writing repo.\n",
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_ignored_runtime_output_is_not_documentation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -1,5 +1,16 @@
 {
   "schema_version": "paper-template-inheritance-v1",
+  "template_development": {
+    "description": "Documentation-only. Template-development-only machinery lives on the template's template-dev branch and is never part of the default branch or a writing repo. Paths in this section must not be present in a writing repo.",
+    "dev_only_paths": [
+      ".agents/evals/",
+      ".agents/tools/check-actions.py",
+      ".agents/tools/check-skills.py",
+      ".agents/tools/check-vendored-skills.py",
+      ".agents/tools/check-vendored-skill-evals.py",
+      ".agents/dependencies/vendored-skills/"
+    ]
+  },
   "template_creation": {
     "inheritance": "all-tracked-files",
     "post_creation_command": "python3 .agents/tools/paper-init.py clean --commit"
@@ -12,9 +23,6 @@
       ".agents/skills/template-adoption/SKILL.md",
       ".agents/tools/template-sync.py",
       ".agents/skills/template-sync/SKILL.md",
-      ".agents/tools/check-vendored-skills.py",
-      ".agents/dependencies/vendored-skills/provenance.json",
-      ".agents/dependencies/vendored-skills/uv.lock",
       ".agents/vendor/README.md",
       ".agents/vendor/ccfa-skills/LICENSE",
       ".agents/vendor/ccfa-skills/ccf-common/SKILL.md",
@@ -29,8 +37,6 @@
       ".agents/template-inheritance.json"
     ],
     "safe_prefixes": [
-      ".agents/dependencies/vendored-skills/",
-      ".agents/evals/",
       ".agents/knowledge/",
       ".agents/skills/",
       ".agents/tests/",
