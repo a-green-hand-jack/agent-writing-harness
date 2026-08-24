@@ -28,6 +28,15 @@ LOCAL_AGENT_REFERENCE_RE = re.compile(
 ON_DEMAND_REFERENCES = frozenset(
     {
         ".agents/knowledge/writing/paper-writing-dna.md",
+        # Template-development-only paths: they live on the template's
+        # template-dev branch and intentionally never exist in a paper-facing
+        # repo. Documentation may reference them to explain the surface split.
+        ".agents/tools/check-actions.py",
+        ".agents/tools/check-skills.py",
+        ".agents/tools/check-vendored-skills.py",
+        ".agents/tools/check-vendored-skill-evals.py",
+        ".agents/dependencies/vendored-skills",
+        ".agents/dependencies/vendored-skills/provenance.json",
     }
 )
 

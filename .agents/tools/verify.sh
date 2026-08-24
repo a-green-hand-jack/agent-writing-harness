@@ -8,10 +8,6 @@ trap 'rm -rf "$pycache_dir"' EXIT
 PYTHONPYCACHEPREFIX="$pycache_dir" python3 -m compileall -q .agents/tools .agents/tests
 python3 .agents/tools/check-structure.py
 python3 .agents/tools/paper-init.py status
-python3 .agents/tools/check-actions.py
-python3 .agents/tools/check-skills.py
-python3 .agents/tools/check-vendored-skills.py
-python3 .agents/tools/check-vendored-skill-evals.py
 for vendor_script in \
   .agents/vendor/ccfa-skills/ccf-common/scripts/check_markdown_links.py \
   .agents/vendor/ccfa-skills/ccf-common/scripts/check_path_privacy.py; do
