@@ -1,5 +1,14 @@
 # Contributing
 
+## Template development workflow
+
+The template is developed on `template-dev` and released to `main`. This is a binding workflow principle, not a suggestion:
+
+1. **Develop on `template-dev`.** The local checkout defaults to `template-dev`. This branch contains the complete development surface: paper-facing infrastructure plus template-development-only machinery (`.agents/evals/`, `check-vendored-skills.py`, `check-vendored-skill-evals.py`, `check-skills.py`, `check-actions.py`, `.agents/dependencies/vendored-skills/`, and development-only tests). Run `bash .agents/tools/verify.sh` here, including the vendored-skill and evaluation checks, before releasing anything.
+2. **`main` is the release surface only.** It contains only paper-facing infrastructure and is the GitHub default branch, so GitHub Template creation copies exactly what a writing repo needs. Never commit template-development-only machinery to `main`.
+3. **Release paper-facing changes to `main`.** After development-surface validation on `template-dev`, move only the paper-facing changes to `main` (merge or cherry-pick the paper-facing commits), through the PR merge contract below. A writing repo must never receive the development surface.
+4. **Keep the surface split documented.** When the split changes, update `AGENT_GUIDE.md`, `.agents/ANATOMY.md`, `.agents/template-inheritance.json`, `README.md`, and this file together.
+
 ## Pull request merge contract
 
 A pull request is not ready merely because GitHub reports it as mergeable.
