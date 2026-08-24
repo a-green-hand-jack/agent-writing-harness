@@ -20,10 +20,99 @@ how do I compile them?” This template also answers:
 - Does each substantive citation support the sentence where it appears?
 - Which changes are safe to automate, which require review, and which remain
   unresolved?
+- Which specialized writing, literature, experiment, review, visual, and
+  submission workflow should help with the current task?
 - What exact source and checks produced a release candidate?
 
 The gain is not more automation for its own sake. The gain is a paper workflow
 where intent, evidence, authorship, variants, and delivery remain connected.
+
+## A Built-In Paper Skill Stack
+
+The template is not only a collection of LaTeX files and checks. A writing repo
+inherits a project-local skill stack that can support the paper from early idea
+work through rebuttal and release. The skills are stored in the repository, so
+the workflow does not depend on every Agent runtime having the same global
+installation.
+
+The stack has two layers:
+
+- **Local owner skills** decide how work enters this paper's contracts and
+  canonical source. They preserve project-specific intent and Human authority.
+- **Bundled sidecar skills** contribute specialized research and writing
+  methods. The template ships immutable snapshots of the CCFA-Skills suite and
+  writing-dna-skill under `.agents/vendor/`, with local wrappers under
+  `.agents/skills/` and verified provenance and hashes.
+
+Each task loads one local owner and only the relevant sidecars. A sidecar may
+help draft, search, analyze, review, or compose, but it cannot override the
+Human request, paper contracts, approved evidence, or the local owner. This
+combination matters: the writing repo gains specialist capability without
+turning generic skill guidance into authority over the paper.
+
+### Local owner skills
+
+These skills connect Agent work to the writing repo's current state:
+
+| Skill | How it helps the paper |
+|---|---|
+| `paper-orientation` | Recovers the minimum current context at the start of a session without loading the whole repository or stale history. |
+| `section-writing` | Owns drafting and substantial revision of a named section from the current claims, evidence, interfaces, references, and section responsibility. |
+| `style-alignment` | Governs positioning, narrative architecture, section responsibilities, writing policy, venue overlays, and adoption of a Human-approved Writing DNA. |
+| `control-review` | Retrieves impact and requires the right Human decision before a central claim, story choice, experiment condition, limitation, interpretation, or stable interface meaning changes. |
+| `decision-packet` | Turns a focused high-impact choice into comparable alternatives with effects, evidence, risks, and unresolved points for the Human. |
+| `paper-interface-maintenance` | Keeps recurring names, terms, symbols, results, claims, figures, tables, and macros consistent across every consumer. |
+| `reference-repair` | Investigates and repairs BibTeX identity, metadata, duplicates, and preprint or publication-version records without inventing entries. |
+| `citation-support-review` | Discovers sources, retrieves exact evidence passages, and checks whether a cited work supports the specific manuscript occurrence at Draft, Review, or Release strength. |
+| `manuscript-consistency-review` | Runs a findings-only consistency review after the Human declares a manuscript version ready; it does not silently rewrite the paper. |
+| `publication-planning` | Manages publication variants, venue planning, deadlines, official rules, and permitted differences without creating separate scientific copies. |
+| `release-review` | Builds and checks a Human-approved immutable submission, arXiv, or camera-ready release instance with provenance. |
+| `template-adoption` | Maps an existing paper repository into this workflow without mechanically overwriting scientific content or repository-specific behavior. |
+| `template-sync` | Brings reviewed infrastructure updates into a writing repo through a path-level plan while protecting downstream paper content and decisions. |
+
+### Bundled CCFA-Skills capabilities
+
+The template includes all 17 `ccf-*` skills from the CCFA-Skills suite. They
+cover more than prose generation:
+
+| Skill | How it can help |
+|---|---|
+| `ccf-idea-optimizer` | Develops a rough research direction into concrete problem, gap, insight, method, novelty, and evidence-plan candidates. Multiple candidates remain neutral peers until the Human chooses. |
+| `ccf-idea-reviewer` | Scores, ranks, compares, and triages early ideas on explicit request, including prior-art awareness and venue-fit risk as review dimensions. Scores remain diagnostic, and the Human chooses the direction. |
+| `ccf-literature-searcher` | Searches and screens related work, prior art, datasets, benchmarks, citation candidates, and research opportunities as an external-retrieval task. |
+| `ccf-literature-monitor` | Tracks new arXiv, OpenReview, conference, lab, and competitor work that may affect novelty, positioning, or the related-work surface. |
+| `ccf-experiment-designer` | Structures datasets, baselines, metrics, ablations, robustness tests, chart evidence, and result-table semantics; it never invents results, and consequential choices remain Human decisions. |
+| `ccf-paper-writer` | Supplies the drafting, revision, polishing, and compression engine used inside the local `section-writing` workflow. |
+| `ccf-humanization` | Runs a narrow post-draft sidecar for prose de-defending and warning-only concerns without changing claims, evidence, structure, terminology meaning, or limitations. Experiment-facing tasks may separately use its experiment-integrity policy, not that policy as a prose pass. |
+| `ccf-paper-to-exemplar` | Converts Human-provided paper PDFs into distilled section-level writing exemplar cards so rhetorical techniques can be reused without copying scientific content or wording. |
+| `ccf-visual-composer` | Composes and quality-checks figures, plots, visual tables, diagrams, icons, palettes, and editable visual assets from supplied content or values. |
+| `ccf-paper-reviewer` | Provides assessment-only scientific, writing, format, readiness, scoring, and cross-version review only after the Human marks a completed manuscript version ready and requests the findings-only `manuscript-consistency-review`; it does not edit the paper. |
+| `ccf-integrity-auditor` | Runs findings-only numeric audit and result-to-claim numeric consistency checks. Citation support and BibTeX repair stay with `citation-support-review` and `reference-repair`. |
+| `ccf-submission-checker` | Checks venue template, page limit, anonymity, camera-ready rules, LaTeX/PDF output, metadata, fonts, supplementary material, artifacts, licenses, and policy freshness. |
+| `ccf-rebuttal-writer` | Organizes rebuttals, author responses, response letters, reviewer-comment ledgers, revision summaries, and conservative resubmission plans. |
+| `ccf-pipeline-orchestrator` | Plans project stages, goals, constraints, gates, artifacts, and handoffs, then routes work to the responsible skill; it does not pretend to execute every specialty itself. |
+| `ccf-project-scaffolder` | Prepares external CCF paper project folders, templates, configuration, and artifact directories when project scaffolding outside the normal template-creation path is needed. |
+| `ccf-common` | Maintains shared CCFA routing, evidence, privacy, task-mode, handoff, and artifact contracts. It supports the capability layer but is not loaded for ordinary paper work. |
+| `ccf-skill-forger` | Maintains and audits skills, triggers, resources, scripts, privacy boundaries, and family governance. It improves the tool layer, not manuscript content directly. |
+
+### Writing DNA and final tone cleanup
+
+The writing-dna-skill family adds two more wrappers:
+
+| Skill | How it can help |
+|---|---|
+| `writing-dna-skill` | Distills a reviewed paper corpus into reusable academic writing rules: rhetorical and paragraph moves, section responsibilities, sentence density, voice, hedging, transitions, citation weaving, and caption or figure/table narration. A candidate becomes project knowledge only after Human review through `style-alignment` and explicit activation in `PAPER.md`. |
+| `lieflat-less-ai-tone` | Applies a whitelist-based final cleanup of recognized AI writing tells after writing is complete, leaving unmatched text and the article framework unchanged. |
+
+Writing DNA is not author imitation. Source papers contribute transferable
+rhetorical patterns, not their claims, terminology, citations, technical
+content, distinctive wording, or a named author's identity. The activated
+project DNA remains below Human decisions and paper contracts in precedence.
+
+**Practical gain:** the Agent can use task-specific research and writing
+procedures, learn a Human-approved project style, and carry those capabilities
+with the writing repo, while the owner/sidecar boundary keeps scientific meaning
+under local control.
 
 ## What It Improves
 
