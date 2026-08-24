@@ -61,6 +61,14 @@ def fixture(root: Path) -> None:
     write(root, "DECISIONS.md", DECISION_UPSTREAM)
     write(
         root,
+        "PUBLICATION.md",
+        "Venue planning.\n\n"
+        "This venue planning input is distinct from capability authenticity (#21) and "
+        "real environment availability (#31), but strict venue planning depends on the "
+        "same honest source and freshness rules.\n",
+    )
+    write(
+        root,
         ".agents/documentation-consistency.json",
         json.dumps(
             {
@@ -112,6 +120,45 @@ class PaperInitTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("upstream_template", result.stdout)
 
+    def test_upstream_template_origin_variants_are_recognized(self) -> None:
+        variants = (
+            "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git",
+            "https://github.com/A-Green-Hand-Jack/CCFA-Writing-Paper-Template.git",
+            "ssh://git@github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+        )
+        for origin in variants:
+            with self.subTest(origin=origin), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                fixture(root)
+                git(root, "remote", "add", "origin", origin)
+                result = run(
+                    [sys.executable, str(TOOL), "--root", str(root), "status"],
+                    root,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn("upstream_template", result.stdout)
+
+    def test_similar_writing_repo_origins_are_not_upstream_template(self) -> None:
+        variants = (
+            "git@github.com:a-green-hand-jack/ccfa-writing-paper-template-my-paper.git",
+            "https://github.com/a-green-hand-jack/my-ccfa-writing-paper-template.git",
+            "https://github.com/another-owner/ccfa-writing-paper-template.git",
+        )
+        for origin in variants:
+            with self.subTest(origin=origin), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                fixture(root)
+                git(root, "remote", "add", "origin", origin)
+                result = run(
+                    [sys.executable, str(TOOL), "--root", str(root), "status"],
+                    root,
+                    check=False,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("UNINITIALIZED", result.stdout)
+                self.assertNotIn("upstream_template", result.stdout)
+
     def test_clean_removes_template_governance_residue(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -133,6 +180,10 @@ class PaperInitTests(unittest.TestCase):
             decisions = (root / "DECISIONS.md").read_text(encoding="utf-8")
             self.assertIn(DECISION_DOWNSTREAM, decisions)
             self.assertNotIn("case/arxiv-2505-22954", decisions)
+            publication = (root / "PUBLICATION.md").read_text(encoding="utf-8")
+            self.assertNotIn("#21", publication)
+            self.assertNotIn("#31", publication)
+            self.assertIn("all three depend on honest source and freshness rules", publication)
             self.assertFalse((root / ".agents/overleaf-sync.json").exists())
 
             documentation = json.loads(
@@ -274,6 +325,7 @@ class PaperInitTests(unittest.TestCase):
                     for relative in (
                         "AGENTS.md",
                         "DECISIONS.md",
+                        "PUBLICATION.md",
                         ".agents/documentation-consistency.json",
                         ".agents/overleaf-sync.json",
                         ".agents/init-state.json",
@@ -332,6 +384,7 @@ class PaperInitTests(unittest.TestCase):
                 for relative in (
                     "AGENTS.md",
                     "DECISIONS.md",
+                    "PUBLICATION.md",
                     ".agents/documentation-consistency.json",
                     ".agents/overleaf-sync.json",
                     ".agents/init-state.json",

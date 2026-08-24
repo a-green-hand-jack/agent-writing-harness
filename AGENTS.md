@@ -2,6 +2,13 @@
 
 The paper project is primary. Start from the current Human-facing contract and load only the context required for the active task.
 
+## Starting from the template repo
+
+When the Human wants to start a paper from this GitHub Template, read
+`AGENT_GUIDE.md`, create a separate downstream **writing repo**, and initialize
+it before paper work. Do not draft a real paper in the upstream **template
+repo** or copy all template branches into the writing repo.
+
 ## First session in a downstream repository
 
 If this repository is not the upstream template and `.agents/init-state.json` does not exist, run:

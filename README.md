@@ -4,18 +4,24 @@
 
 A paper-first repository for Human–Agent collaborative scientific writing.
 
+Agents starting from this GitHub Template should read `AGENT_GUIDE.md` first.
+It defines the product-independent path from this **template repo** to a
+separate downstream **writing repo**, then indexes the writing, evidence,
+publication, adoption, synchronization, and release workflows.
+
 ## Start writing
 
-1. If this repository was created from the template and `.agents/init-state.json` does not exist, run `python3 .agents/tools/paper-init.py clean --commit` before editing paper content. This strips upstream template governance IDs and records the initialization.
-2. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
-2. Record paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
-3. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
-4. Record publication variants and allowed differences in `PUBLICATION.md`.
-5. Have the Agent construct and repair BibTeX from retrieved authoritative evidence, maintain `references/ledger.json` in the same change, and follow `REFERENCES.md`; never invent free-form metadata.
-6. For every substantive citation, have the Agent run the Draft citation-support check (`citation-support-review`): inventory the active occurrence, resolve or discover the source, retrieve exact passages, and record a passing result as provisional. Never insert a citation from title relevance or metadata existence alone.
-7. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
-8. Edit the one canonical LaTeX source under `paper/`.
-9. Build:
+1. If an Agent is currently in this template repo, follow `AGENT_GUIDE.md` to create a separate writing repo from the GitHub Template. Do not draft a real paper in the template repo.
+2. If this repository was created from the template and `.agents/init-state.json` does not exist, run `python3 .agents/tools/paper-init.py clean --commit` before editing paper content. This strips upstream template governance IDs and records the initialization.
+3. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
+4. Record paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
+5. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
+6. Record publication variants and allowed differences in `PUBLICATION.md`.
+7. Have the Agent construct and repair BibTeX from retrieved authoritative evidence, maintain `references/ledger.json` in the same change, and follow `REFERENCES.md`; never invent free-form metadata.
+8. For every substantive citation, have the Agent run the Draft citation-support check (`citation-support-review`): inventory the active occurrence, resolve or discover the source, retrieve exact passages, and record a passing result as provisional. Never insert a citation from title relevance or metadata existence alone.
+9. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
+10. Edit the one canonical LaTeX source under `paper/`.
+11. Build:
 
 ```bash
 make pdf
@@ -59,7 +65,9 @@ The factory template is intentionally unresolved, so strict release builds fail 
 
 ## Agent sidecar
 
-`AGENTS.md` is a thin router. Agents load current contracts and one focused skill or knowledge document.
+`AGENT_GUIDE.md` is the product-independent onboarding and lifecycle index.
+`AGENTS.md` remains the thin binding router: Agents load current contracts and
+one focused skill or knowledge document.
 
 ```bash
 bash .agents/tools/verify.sh
