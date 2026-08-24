@@ -155,6 +155,54 @@ class DocumentationChecks(unittest.TestCase):
             result = run(root)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_template_development_reference_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            readme = root / "README.md"
+            readme.write_text(
+                readme.read_text(encoding="utf-8")
+                + "\nDevelopment-only tools such as `.agents/tools/check-vendored-skills.py` "
+                "and `.agents/dependencies/vendored-skills` never appear in a writing repo.\n",
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_ignored_runtime_output_is_not_documentation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            response = root / ".agents/runtime/evals/response.md"
+            response.parent.mkdir(parents=True)
+            response.write_text(
+                "Raw output mentions ICLR 2026 and `.agents/tools/missing.py`.\n",
+                encoding="utf-8",
+            )
+
+            result = run(root)
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_tracked_runtime_output_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            response = root / ".agents/runtime/evals/response.md"
+            response.parent.mkdir(parents=True)
+            response.write_text("Tracked generated output.\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", "-f", ".agents/runtime/evals/response.md"],
+                cwd=root,
+                check=True,
+            )
+
+            result = run(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("runtime output must not be tracked", result.stdout)
+
     def test_stale_patterns_override_allows_downstream_venue_text(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

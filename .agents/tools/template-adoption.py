@@ -23,69 +23,22 @@ from collections import Counter
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 
+from _template_inheritance import (
+    POLICY_RELATIVE,
+    combine_inheritance_policies,
+    load_inheritance_policy,
+    parse_inheritance_policy,
+)
+
 RUNTIME_RELATIVE = Path(".agents/runtime/template-adoption")
 SYNC_CONFIG_RELATIVE = Path(".agents/template-sync.json")
 ADOPTION_SKILL_RELATIVE = Path(".agents/skills/template-adoption/SKILL.md")
 ADOPTION_TOOL_RELATIVE = Path(".agents/tools/template-adoption.py")
-REQUIRED_TARGET_PATHS = {
-    ADOPTION_TOOL_RELATIVE.as_posix(),
-    ADOPTION_SKILL_RELATIVE.as_posix(),
-    ".agents/tools/template-sync.py",
-    ".agents/skills/template-sync/SKILL.md",
-    ".agents/tools/check-vendored-skills.py",
-    ".agents/dependencies/vendored-skills/provenance.json",
-    ".agents/dependencies/vendored-skills/uv.lock",
-    ".agents/vendor/README.md",
-    ".agents/vendor/ccfa-skills/LICENSE",
-    ".agents/vendor/ccfa-skills/ccf-common/SKILL.md",
-    ".agents/vendor/ccfa-skills/ccf-paper-writer/SKILL.md",
-    ".agents/vendor/writing-dna-skill/LICENSE",
-    ".agents/vendor/writing-dna-skill/SKILL.md",
-    ".agents/runtime/.gitignore",
-}
 DEFAULT_UPSTREAM_URL = "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git"
 DEFAULT_REMOTE = "template"
 DEFAULT_UPSTREAM_BRANCH = "main"
 DEFAULT_BRANCHES = {"main", "master", "trunk"}
 REGULAR_FILE_MODES = {"100644", "100755"}
-
-SAFE_PATHS = (
-    ".agents/ANATOMY.md",
-    ".agents/runtime/.gitignore",
-)
-SAFE_PREFIXES = (
-    ".agents/dependencies/vendored-skills/",
-    ".agents/knowledge/",
-    ".agents/skills/",
-    ".agents/tests/",
-    ".agents/tools/",
-    ".agents/vendor/",
-)
-IGNORED_PATHS = (
-    ".agents/template-sync.json",
-    ".agents/overleaf-sync.json",
-    ".agents/documentation-consistency.json",
-    ".agents/init-state.json",
-    ".agents/runtime/",
-    "dist/",
-)
-MANUAL_PATHS = (
-    ".gitignore",
-    ".github/",
-    "AGENTS.md",
-    "ANATOMY.md",
-    "CLAUDE.md",
-    "CONTRIBUTING.md",
-    "DECISIONS.md",
-    "EXPERIMENTS.md",
-    "Makefile",
-    "PAPER.md",
-    "PAPER_INTERFACES.md",
-    "PUBLICATION.md",
-    "README.md",
-    "paper/",
-    "releases/",
-)
 SCAN_SKIP_PREFIXES = (
     ".git/",
     ".agents/runtime/",
@@ -125,9 +78,6 @@ ASSESSMENT_COMMANDS = (
     ("python3", "-m", "compileall", "-q", ".agents/tools", ".agents/tests"),
     ("python3", ".agents/tools/check-structure.py"),
     ("python3", ".agents/tools/paper-init.py", "status"),
-    ("python3", ".agents/tools/check-actions.py"),
-    ("python3", ".agents/tools/check-skills.py"),
-    ("python3", ".agents/tools/check-vendored-skills.py"),
     ("python3", ".agents/tools/check-documentation.py"),
     ("python3", ".agents/tools/check-venue-knowledge.py"),
     ("python3", ".agents/tools/check-paper-contracts.py", "--profile", "draft"),
@@ -193,6 +143,17 @@ TABLE_RE = re.compile(r"\\begin\{(?:table\*?|tabular\*?|longtable)\}")
 
 class AdoptionError(RuntimeError):
     pass
+
+
+def inheritance_policy(root: Path) -> dict[str, Any]:
+    try:
+        return load_inheritance_policy(root)
+    except ValueError as exc:
+        raise AdoptionError(str(exc)) from exc
+
+
+def tool_inheritance_policy() -> dict[str, Any]:
+    return inheritance_policy(Path(__file__).resolve().parents[2])
 
 
 def run(
@@ -479,6 +440,10 @@ def target_entries(root: Path, target: str) -> list[dict[str, str]]:
             raise AdoptionError(
                 f"unsupported non-file entry in template target: {normalized} ({kind})"
             )
+        if mode not in REGULAR_FILE_MODES:
+            raise AdoptionError(
+                f"unsupported non-regular entry in template target: {normalized} ({mode})"
+            )
         entries.append({"mode": mode, "sha": sha, "path": normalized})
     return entries
 
@@ -493,6 +458,19 @@ def blob_at(root: Path, ref: str, path: str) -> bytes | None:
     if result.returncode != 0:
         return None
     return result.stdout
+
+
+def target_inheritance_policy(root: Path, target: str) -> dict[str, Any]:
+    payload = blob_at(root, target, POLICY_RELATIVE.as_posix())
+    if payload is None:
+        raise AdoptionError(
+            f"selected template target is missing {POLICY_RELATIVE.as_posix()}"
+        )
+    try:
+        target_policy = parse_inheritance_policy(payload)
+    except ValueError as exc:
+        raise AdoptionError(f"invalid target template inheritance policy: {exc}") from exc
+    return combine_inheritance_policies(tool_inheritance_policy(), target_policy)
 
 
 def local_entry(root: Path, path: str) -> tuple[str, bytes | None, str | None]:
@@ -1182,9 +1160,13 @@ def classify_path(
     downstream_kind: str,
     downstream_blob: bytes | None,
     downstream_mode: str | None,
+    policy: dict[str, Any],
 ) -> tuple[str, str]:
-    safe_sidecar = path_matches(path, SAFE_PATHS) or path_matches(path, SAFE_PREFIXES)
-    if not path_matches(path, SAFE_PATHS) and path_matches(path, IGNORED_PATHS):
+    adoption = policy["adoption"]
+    safe_paths = adoption["safe_paths"]
+    safe_prefixes = adoption["safe_prefixes"]
+    safe_sidecar = path_matches(path, safe_paths) or path_matches(path, safe_prefixes)
+    if not path_matches(path, safe_paths) and path_matches(path, adoption["ignored_paths"]):
         return "ignored", "generated adoption/synchronization metadata or runtime output"
     if target_mode not in REGULAR_FILE_MODES:
         if safe_sidecar:
@@ -1207,7 +1189,7 @@ def classify_path(
             "conflict",
             "existing downstream Agent-sidecar content or executable mode differs from the template",
         )
-    if path_matches(path, MANUAL_PATHS):
+    if path_matches(path, adoption["manual_paths"]):
         if downstream_blob == target_blob:
             return "manual", "protected surface matches the template bytes but still requires downstream semantic review"
         return "manual", "Human-authored, scientific, build, CI, publication, or project-specific surface"
@@ -1229,9 +1211,10 @@ def plan_adoption(
         fetch_upstream(root, remote=remote, url=url, branch=branch)
     target_name = target_ref or f"{remote}/{branch}"
     target = resolve_commit(root, target_name)
+    policy = target_inheritance_policy(root, target)
     entries = target_entries(root, target)
     entry_paths = {entry["path"] for entry in entries}
-    missing_target_paths = sorted(REQUIRED_TARGET_PATHS - entry_paths)
+    missing_target_paths = sorted(set(policy["adoption"]["required_paths"]) - entry_paths)
     if missing_target_paths:
         raise AdoptionError(
             "selected template target does not contain adoption prerequisites: "
@@ -1252,6 +1235,7 @@ def plan_adoption(
             downstream_kind=downstream_kind,
             downstream_blob=downstream_blob,
             downstream_mode=downstream_mode,
+            policy=policy,
         )
         items.append(
             {
@@ -1407,6 +1391,7 @@ def validate_plan_upstream(root: Path, plan: dict[str, Any]) -> None:
 
 
 def validate_apply_plan_items(root: Path, plan: dict[str, Any], target: str) -> None:
+    policy = target_inheritance_policy(root, target)
     inspection = plan.get("inspection")
     if not isinstance(inspection, dict):
         raise AdoptionError("adoption plan requires an inspection object")
@@ -1418,7 +1403,9 @@ def validate_apply_plan_items(root: Path, plan: dict[str, Any], target: str) -> 
 
     entries = target_entries(root, target)
     entries_by_path = {entry["path"]: entry for entry in entries}
-    missing_target_paths = sorted(REQUIRED_TARGET_PATHS - set(entries_by_path))
+    missing_target_paths = sorted(
+        set(policy["adoption"]["required_paths"]) - set(entries_by_path)
+    )
     if missing_target_paths:
         raise AdoptionError(
             "selected template target does not contain adoption prerequisites: "
@@ -1453,6 +1440,7 @@ def validate_apply_plan_items(root: Path, plan: dict[str, Any], target: str) -> 
             downstream_kind=downstream_kind,
             downstream_blob=downstream_blob,
             downstream_mode=downstream_mode,
+            policy=policy,
         )
         action = "add" if downstream_kind == "missing" else "review"
         expected = {
@@ -1697,6 +1685,7 @@ def apply_plan(root: Path, plan_path: Path, *, recover_reviewed: bool) -> None:
 
 def validate_installation(root: Path) -> None:
     ensure_directory_path(root, Path(".agents"), create=False)
+    policy = inheritance_policy(root)
     required = (
         ADOPTION_TOOL_RELATIVE,
         ADOPTION_SKILL_RELATIVE,
@@ -1712,6 +1701,10 @@ def validate_installation(root: Path) -> None:
             or not path.is_file()
         ):
             raise AdoptionError(f"missing adoption prerequisite: {relative.as_posix()}")
+    for relative in policy["adoption"]["required_paths"]:
+        path = root / relative
+        if has_unsafe_parent(root, relative) or path.is_symlink() or not path.is_file():
+            raise AdoptionError(f"missing adoption prerequisite: {relative}")
     text = (root / ADOPTION_SKILL_RELATIVE).read_text(encoding="utf-8")
     for heading in ("## Trigger", "## Minimum context", "## Procedure", "## Safety boundary"):
         if heading not in text:
