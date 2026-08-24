@@ -5,6 +5,8 @@ This repository has two primary layers: one canonical authored paper and an opti
 ## Human and authored surface
 
 - `README.md`: direct starting point.
+- `WHY_THIS_TEMPLATE.md`: Human-facing explanation of the template's writing
+  benefits, risk boundaries, and limitations.
 - `Makefile`: Human build commands with `VARIANT=...`.
 - `PAPER.md`: positioning, thesis, claims, story, style, protected decisions, and unresolved work.
 - `EXPERIMENTS.md`: paper-facing experiment questions and interpretation boundaries.
