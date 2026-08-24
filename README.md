@@ -199,3 +199,18 @@ The repository protects its current and future real-paper case branches and the 
 The repository has no legacy harness, capability registry, Bridge layer, experiment ledger, product adapter mirror, or committed generated release tree. A clean copy of `paper/` compiles all variants without `.agents/`.
 
 Pull requests must pass `harness`, `references`, `vendored-skills`, four real-TeX variant jobs, `paper-only`, and `release-package`. See `CONTRIBUTING.md`.
+
+## Development surface (template-dev branch only)
+
+This branch (`template-dev`) is the template's development surface. It contains
+template-development-only machinery that must never appear in a writing repo:
+`.agents/evals/`, the vendor and skill validation checkers
+(`check-vendored-skills.py`, `check-vendored-skill-evals.py`, `check-skills.py`,
+`check-actions.py`), the vendored-skills dependency lock
+(`.agents/dependencies/vendored-skills/`), and development-only tests.
+
+The GitHub default branch is `main`, which contains only the paper-facing
+surface and is what GitHub Template creation copies. Template development
+happens on this branch; paper-facing changes are released to `main` after the
+development-surface validation passes here. A writing repo must never contain
+the paths listed above.
