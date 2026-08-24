@@ -20,6 +20,7 @@ FORBIDDEN = (
 )
 REQUIRED = (
     "README.md",
+    "AGENT_GUIDE.md",
     "Makefile",
     "PAPER.md",
     "EXPERIMENTS.md",

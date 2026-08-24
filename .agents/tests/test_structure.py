@@ -18,6 +18,7 @@ def write(path: Path, text: str = "") -> None:
 def fixture(root: Path) -> None:
     for relative in (
         "README.md",
+        "AGENT_GUIDE.md",
         "Makefile",
         "PAPER.md",
         "EXPERIMENTS.md",

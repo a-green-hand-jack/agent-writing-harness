@@ -48,6 +48,7 @@
     "manual_paths": [
       ".gitignore",
       ".github/",
+      "AGENT_GUIDE.md",
       "AGENTS.md",
       "ANATOMY.md",
       "CLAUDE.md",

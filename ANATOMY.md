@@ -25,6 +25,7 @@ Variants may control publication-facing presentation. They do not own copied sec
 
 ## Agent sidecar
 
+- `AGENT_GUIDE.md`: product-independent onboarding from the template repo to a separate writing repo, plus an index of the paper lifecycle.
 - `AGENTS.md`: thin routing entrypoint.
 - `.agents/knowledge/`: optional reference knowledge loaded only when relevant.
 - `.agents/skills/`: focused procedures for writing, publication planning, release review, initial template adoption, downstream template synchronization, and wrappers for the bundled third-party skill suites.
@@ -103,6 +104,8 @@ release.py build → ignored dist/<release-id>/ → delivery system
 optional immutable Markdown record in releases/records/
 
 Agent task
+        ↓
+AGENT_GUIDE.md for onboarding or lifecycle selection
         ↓
 AGENTS.md → one focused skill / knowledge document
         ↓
