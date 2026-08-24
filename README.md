@@ -11,7 +11,8 @@ publication, adoption, synchronization, and release workflows.
 
 For the rationale behind those contracts and tools, see
 `WHY_THIS_TEMPLATE.md`: it explains the writing risks the template is designed
-to reduce, its practical gains, and its limits.
+to reduce, the complete built-in paper skill stack, its practical gains, and its
+limits.
 
 ## Start writing
 
