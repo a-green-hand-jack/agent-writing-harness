@@ -71,6 +71,14 @@ class TemplateAdoptionTests(unittest.TestCase):
         skill_target = self.upstream / ".agents/skills/template-adoption/SKILL.md"
         skill_target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(SKILL, skill_target)
+        for relative in (
+            ".agents/template-inheritance.json",
+            ".agents/tools/_template_inheritance.py",
+        ):
+            source = ROOT / relative
+            target = self.upstream / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
         write(
             self.upstream,
             ".agents/tools/template-sync.py",
@@ -112,9 +120,6 @@ echo fixture-verify-ok
         for checker in (
             "check-structure.py",
             "paper-init.py",
-            "check-actions.py",
-            "check-skills.py",
-            "check-vendored-skills.py",
             "check-documentation.py",
             "check-venue-knowledge.py",
             "check-paper-contracts.py",
@@ -147,22 +152,9 @@ if __name__ == "__main__":
             "print('same content')\n",
             executable=True,
         )
-        (self.upstream / ".agents/tools/linked.py").symlink_to("helper.py")
         write(self.upstream, ".agents/knowledge/README.md", "# Knowledge\n")
         write(self.upstream, ".agents/ANATOMY.md", "# Agent Sidecar Anatomy\n")
         write(self.upstream, ".agents/runtime/.gitignore", "*\n!.gitignore\n")
-        write(
-            self.upstream,
-            ".agents/dependencies/vendored-skills/provenance.json",
-            json.dumps(
-                {
-                    "schema_version": "paper-vendored-skills-v1",
-                    "sources": [],
-                    "files": {},
-                }
-            ),
-        )
-        write(self.upstream, ".agents/dependencies/vendored-skills/uv.lock", "version = 1\n")
         write(self.upstream, ".agents/vendor/README.md", "# Vendored skills\n")
         write(self.upstream, ".agents/vendor/ccfa-skills/LICENSE", "MIT\n")
         write(self.upstream, ".agents/vendor/ccfa-skills/ccf-common/SKILL.md", "# common\n")
@@ -380,12 +372,11 @@ if __name__ == "__main__":
         by_path = {item["path"]: item for item in plan["items"]}
         self.assertEqual(by_path[".agents/tools/template-adoption.py"]["category"], "safe")
         self.assertEqual(by_path[".agents/tools/template-sync.py"]["category"], "safe")
+        self.assertEqual(by_path[".agents/template-inheritance.json"]["category"], "safe")
         self.assertEqual(by_path[".agents/tests/test_fixture.py"]["category"], "safe")
         self.assertEqual(by_path[".agents/tools/helper.py"]["category"], "conflict")
         self.assertEqual(by_path[".agents/tools/mode-sensitive.py"]["category"], "conflict")
         self.assertIn("executable mode", by_path[".agents/tools/mode-sensitive.py"]["reason"])
-        self.assertEqual(by_path[".agents/tools/linked.py"]["category"], "conflict")
-        self.assertIn("symlink", by_path[".agents/tools/linked.py"]["reason"])
         self.assertEqual(by_path["PAPER.md"]["category"], "manual")
         self.assertEqual(by_path["CONTRIBUTING.md"]["category"], "manual")
         self.assertEqual(by_path["README.md"]["category"], "manual")
@@ -400,6 +391,7 @@ if __name__ == "__main__":
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertTrue((self.downstream / ".agents/tools/template-adoption.py").is_file())
         self.assertTrue((self.downstream / ".agents/tools/template-sync.py").is_file())
+        self.assertTrue((self.downstream / ".agents/template-inheritance.json").is_file())
         self.assertTrue((self.downstream / ".agents/tests/test_fixture.py").is_file())
         self.assertEqual(
             (self.downstream / ".agents/tools/helper.py").read_text(),
@@ -408,7 +400,6 @@ if __name__ == "__main__":
         self.assertFalse(
             (self.downstream / ".agents/tools/mode-sensitive.py").stat().st_mode & 0o111
         )
-        self.assertFalse((self.downstream / ".agents/tools/linked.py").exists())
         self.assertFalse((self.downstream / "PAPER.md").exists())
         self.assertFalse((self.downstream / "CONTRIBUTING.md").exists())
         pending = json.loads(
@@ -431,6 +422,18 @@ if __name__ == "__main__":
             (bundle / "downstream/.agents/tools/helper.py").read_text(),
             "DOWNSTREAM = True\n",
         )
+
+    def test_plan_refuses_non_regular_template_entry(self) -> None:
+        link = self.upstream / ".agents/tools/unsafe-link"
+        link.symlink_to("/tmp/template-adoption-external-target")
+        commit_all(self.upstream, "template symlink")
+        git(self.downstream, "fetch", "template", "main")
+
+        refused = self.tool("plan")
+
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("unsupported non-regular entry", refused.stderr)
+        self.assertFalse((self.downstream / ".agents/tools/unsafe-link").exists())
 
     def test_apply_refuses_default_branch_and_dirty_worktree(self) -> None:
         self.plan()
@@ -759,7 +762,7 @@ if __name__ == "__main__":
         applied = self.tool("apply")
         self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
         self.complete_semantic_migration()
-        write(self.downstream, ".agents/tools/check-actions.py", "raise SystemExit(7)\n")
+        write(self.downstream, ".agents/tools/check-documentation.py", "raise SystemExit(7)\n")
         write(self.downstream, ".agents/tools/check-publication.py", "raise SystemExit(9)\n")
 
         assessed = self.tool("assess")
@@ -768,13 +771,13 @@ if __name__ == "__main__":
             (self.downstream / ".agents/runtime/template-adoption/assessment.json").read_text()
         )
         self.assertFalse(report["authorizes_finalize"])
-        self.assertEqual(len(report["checks"]), 21)
+        self.assertEqual(len(report["checks"]), 18)
         self.assertEqual(
             report["checks"][0]["command"],
             "python3 -m compileall -q .agents/tools .agents/tests",
         )
         failures = {check["command"]: check["returncode"] for check in report["checks"] if not check["success"]}
-        self.assertEqual(failures["python3 .agents/tools/check-actions.py"], 7)
+        self.assertEqual(failures["python3 .agents/tools/check-documentation.py"], 7)
         self.assertEqual(failures["python3 .agents/tools/check-publication.py"], 9)
         self.assertTrue(report["checks"][-1]["command"].endswith("VARIANT=arxiv"))
         self.assertFalse(
