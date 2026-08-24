@@ -19,6 +19,7 @@ def fixture(root: Path) -> None:
     for relative in (
         "README.md",
         "AGENT_GUIDE.md",
+        "WHY_THIS_TEMPLATE.md",
         "Makefile",
         "PAPER.md",
         "EXPERIMENTS.md",

@@ -21,6 +21,7 @@ FORBIDDEN = (
 REQUIRED = (
     "README.md",
     "AGENT_GUIDE.md",
+    "WHY_THIS_TEMPLATE.md",
     "Makefile",
     "PAPER.md",
     "EXPERIMENTS.md",

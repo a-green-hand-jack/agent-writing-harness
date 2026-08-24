@@ -9,6 +9,10 @@ It defines the product-independent path from this **template repo** to a
 separate downstream **writing repo**, then indexes the writing, evidence,
 publication, adoption, synchronization, and release workflows.
 
+For the rationale behind those contracts and tools, see
+`WHY_THIS_TEMPLATE.md`: it explains the writing risks the template is designed
+to reduce, its practical gains, and its limits.
+
 ## Start writing
 
 1. If an Agent is currently in this template repo, follow `AGENT_GUIDE.md` to create a separate writing repo from the GitHub Template. Do not draft a real paper in the template repo.
