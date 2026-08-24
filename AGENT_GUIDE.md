@@ -143,6 +143,12 @@ After initialization:
 - the worktree should be clean;
 - template-specific protected branch and issue IDs must no longer govern the
   writing repo;
+- the writing repo must not contain template-development-only paths
+  (`.agents/evals/`, `.agents/tools/check-vendored-skills.py`,
+  `.agents/tools/check-vendored-skill-evals.py`,
+  `.agents/tools/check-skills.py`, `.agents/tools/check-actions.py`,
+  `.agents/dependencies/vendored-skills/`); those belong to the template's
+  `template-dev` branch, not to a writing repo;
 - `.agents/template-sync.json` may still have an uninitialized baseline. Leave
   it that way until the first reviewed template-sync bootstrap.
 
