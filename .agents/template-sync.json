@@ -1,9 +1,9 @@
 {
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed ARIS paper-first migration; preserved downstream contracts, paper meaning, references, CI, venue state, and release boundaries.",
-  "last_synced_at": "2026-08-22T19:38:40+00:00",
-  "last_synced_commit": "1f5d4f1cb0450feca5f724158554f5d419bfb85d",
+  "last_sync_note": "Reviewed Agent-assisted template synchronization.",
+  "last_synced_at": "2026-08-24T19:12:04+00:00",
+  "last_synced_commit": "6fff56a2bad643040eb2c8555e286e50025f041a",
   "reference_integrity": {
     "adopted": true
   },
