@@ -185,9 +185,17 @@ def valid_marker(root: Path, **replacements: object) -> str:
 
 class PaperInitTests(unittest.TestCase):
     def test_upstream_template_status_passes(self) -> None:
-        result = run([sys.executable, str(TOOL), "--root", str(ROOT), "status"], ROOT, check=False)
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("upstream_template", result.stdout)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            set_upstream_origin(root)
+            result = run(
+                [sys.executable, str(TOOL), "--root", str(root), "status"],
+                root,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("upstream_template", result.stdout)
 
     def test_upstream_template_origin_variants_are_recognized(self) -> None:
         variants = (
