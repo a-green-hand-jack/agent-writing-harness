@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -24,8 +26,20 @@ Decision: upstream template-only text.
 DECISION_DOWNSTREAM = "## DEC-0014: Downstream paper initialization"
 
 
-def run(command: list[str], cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(command, cwd=cwd, text=True, capture_output=True, check=False)
+def run(
+    command: list[str],
+    cwd: Path,
+    check: bool = True,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
+        command,
+        cwd=cwd,
+        text=True,
+        capture_output=True,
+        check=False,
+        env=env,
+    )
     if check and result.returncode != 0:
         raise AssertionError(
             f"command failed: {command}\nstdout={result.stdout}\nstderr={result.stderr}"
@@ -53,6 +67,21 @@ def write(root: Path, relative: str, text: str) -> None:
 def commit_all(root: Path, message: str) -> None:
     git(root, "add", "-A")
     git(root, "commit", "-m", message)
+
+
+@contextmanager
+def fake_gh(template_repository: str = "a-green-hand-jack/ccfa-writing-paper-template"):
+    with tempfile.TemporaryDirectory() as directory:
+        executable = Path(directory) / "gh"
+        executable.write_text(
+            "#!/usr/bin/env sh\n"
+            f"printf '%s\\n' '{template_repository}'\n",
+            encoding="utf-8",
+        )
+        executable.chmod(0o755)
+        env = dict(os.environ)
+        env["PATH"] = f"{directory}:{env.get('PATH', '')}"
+        yield env
 
 
 def fixture(root: Path) -> None:
@@ -95,11 +124,51 @@ def fixture(root: Path) -> None:
         )
         + "\n",
     )
+    write(
+        root,
+        ".agents/template-sync.json",
+        json.dumps(
+            {
+                "always_manual": [],
+                "ignored_paths": [],
+                "last_synced_at": None,
+                "last_synced_commit": None,
+                "schema_version": "paper-template-sync-v1",
+                "upstream": {
+                    "branch": "main",
+                    "remote": "template",
+                    "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+                },
+            }
+        )
+        + "\n",
+    )
     commit_all(root, "template scaffold")
 
 
 def set_upstream_origin(root: Path) -> None:
     git(root, "remote", "add", "origin", "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git")
+
+
+def set_template_origin(root: Path) -> None:
+    repository = "a-green-hand-jack/example-paper"
+    git(root, "remote", "add", "origin", f"git@github.com:{repository}.git")
+    write(
+        root,
+        ".agents/template-origin.json",
+        json.dumps(
+            {
+                "downstream_repository": repository,
+                "git_head": git(root, "rev-parse", "HEAD").stdout.strip(),
+                "schema_version": "paper-template-origin-v1",
+                "template_repository": "a-green-hand-jack/ccfa-writing-paper-template",
+                "verification": "github_api_template_repository",
+                "verified_at": "2026-08-09T12:00:00+00:00",
+            }
+        )
+        + "\n",
+    )
+    commit_all(root, "record template provenance")
 
 
 def valid_marker(root: Path, **replacements: object) -> str:
@@ -163,6 +232,7 @@ class PaperInitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             fixture(root)
+            set_template_origin(root)
 
             before = run(
                 [sys.executable, str(TOOL), "--root", str(root), "status"],
@@ -172,7 +242,13 @@ class PaperInitTests(unittest.TestCase):
             self.assertNotEqual(before.returncode, 0)
             self.assertIn("UNINITIALIZED", before.stdout)
 
-            cleaned = run([sys.executable, str(TOOL), "--root", str(root), "clean"], root, check=False)
+            with fake_gh() as env:
+                cleaned = run(
+                    [sys.executable, str(TOOL), "--root", str(root), "clean", "--commit"],
+                    root,
+                    check=False,
+                    env=env,
+                )
             self.assertEqual(cleaned.returncode, 0, cleaned.stdout + cleaned.stderr)
 
             agents = (root / "AGENTS.md").read_text(encoding="utf-8")
@@ -204,11 +280,14 @@ class PaperInitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             fixture(root)
-            result = run(
-                [sys.executable, str(TOOL), "--root", str(root), "clean", "--commit"],
-                root,
-                check=False,
-            )
+            set_template_origin(root)
+            with fake_gh() as env:
+                result = run(
+                    [sys.executable, str(TOOL), "--root", str(root), "clean", "--commit"],
+                    root,
+                    check=False,
+                    env=env,
+                )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             message = git(root, "log", "-1", "--format=%s").stdout.strip()
             self.assertEqual(
@@ -216,7 +295,191 @@ class PaperInitTests(unittest.TestCase):
                 "chore: initialize paper repository and remove template governance residue",
             )
 
-    def test_same_origin_requires_explicit_downstream_override(self) -> None:
+    def test_status_recognizes_in_progress_adoption(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            write(
+                root,
+                ".agents/template-sync.json",
+                json.dumps(
+                    {
+                        "adoption": {
+                            "prior_sync_history": [],
+                            "status": "in_progress",
+                            "target_commit": "a" * 40,
+                        },
+                        "last_synced_at": None,
+                        "last_synced_commit": None,
+                        "schema_version": "paper-template-sync-v1",
+                        "upstream": {
+                            "branch": "main",
+                            "remote": "template",
+                            "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+                        },
+                    }
+                )
+                + "\n",
+            )
+            result = run(
+                [sys.executable, str(TOOL), "--root", str(root), "status"],
+                root,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("adoption_in_progress", result.stdout)
+
+    def test_status_rejects_malformed_in_progress_adoption(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            write(
+                root,
+                ".agents/template-sync.json",
+                json.dumps(
+                    {
+                        "adoption": {"status": "in_progress", "target_commit": "invalid"},
+                        "last_synced_commit": None,
+                        "schema_version": "paper-template-sync-v1",
+                    }
+                )
+                + "\n",
+            )
+            result = run(
+                [sys.executable, str(TOOL), "--root", str(root), "status"],
+                root,
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("malformed in-progress adoption", result.stdout)
+
+    def test_record_template_origin_uses_github_and_commits_attestation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            git(root, "remote", "add", "origin", "git@github.com:a-green-hand-jack/example-paper.git")
+            with fake_gh() as env:
+                result = run(
+                    [
+                        sys.executable,
+                        str(TOOL),
+                        "--root",
+                        str(root),
+                        "record-template-origin",
+                        "--commit",
+                    ],
+                    root,
+                    check=False,
+                    env=env,
+                )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("template_origin_committed", result.stdout)
+            self.assertEqual(
+                git(root, "ls-files", ".agents/template-origin.json").stdout.strip(),
+                ".agents/template-origin.json",
+            )
+
+    def test_clean_rechecks_committed_attestation_against_github(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            set_template_origin(root)
+            with fake_gh("another-owner/another-template") as env:
+                result = run(
+                    [sys.executable, str(TOOL), "--root", str(root), "clean", "--commit"],
+                    root,
+                    check=False,
+                    env=env,
+                )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("did not identify", result.stderr)
+            self.assertFalse((root / ".agents/init-state.json").exists())
+
+    def test_clean_rejects_untracked_template_attestation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            repository = "a-green-hand-jack/example-paper"
+            git(root, "remote", "add", "origin", f"git@github.com:{repository}.git")
+            write(
+                root,
+                ".agents/template-origin.json",
+                json.dumps(
+                    {
+                        "downstream_repository": repository,
+                        "git_head": git(root, "rev-parse", "HEAD").stdout.strip(),
+                        "schema_version": "paper-template-origin-v1",
+                        "template_repository": "a-green-hand-jack/ccfa-writing-paper-template",
+                        "verification": "github_api_template_repository",
+                        "verified_at": "2026-08-09T12:00:00+00:00",
+                    }
+                )
+                + "\n",
+            )
+            with fake_gh() as env:
+                result = run(
+                    [sys.executable, str(TOOL), "--root", str(root), "clean"],
+                    root,
+                    check=False,
+                    env=env,
+                )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("valid GitHub Template provenance", result.stderr)
+
+    def test_in_progress_adoption_takes_precedence_over_initialized_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            set_template_origin(root)
+            write(root, ".agents/init-state.json", valid_marker(root))
+            write(
+                root,
+                ".agents/template-sync.json",
+                json.dumps(
+                    {
+                        "adoption": {
+                            "prior_sync_history": [],
+                            "status": "in_progress",
+                            "target_commit": "a" * 40,
+                        },
+                        "last_synced_at": None,
+                        "last_synced_commit": None,
+                        "schema_version": "paper-template-sync-v1",
+                        "upstream": {
+                            "branch": "main",
+                            "remote": "template",
+                            "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+                        },
+                    }
+                )
+                + "\n",
+            )
+            commit_all(root, "record conflicting lifecycle state")
+            result = run(
+                [sys.executable, str(TOOL), "--root", str(root), "status"],
+                root,
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("adoption is in progress", result.stdout)
+
+    def test_initialized_marker_requires_template_sync_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            set_template_origin(root)
+            write(root, ".agents/init-state.json", valid_marker(root))
+            (root / ".agents/template-sync.json").unlink()
+            commit_all(root, "record incomplete initialized state")
+            result = run(
+                [sys.executable, str(TOOL), "--root", str(root), "status"],
+                root,
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("invalid template-sync metadata", result.stdout)
+
+    def test_same_origin_requires_template_provenance_even_with_override(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             fixture(root)
@@ -237,11 +500,11 @@ class PaperInitTests(unittest.TestCase):
                 root,
                 check=False,
             )
-            self.assertEqual(overridden.returncode, 0, overridden.stdout + overridden.stderr)
-            self.assertTrue((root / ".agents/init-state.json").is_file())
-            self.assertNotIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
+            self.assertNotEqual(overridden.returncode, 0)
+            self.assertIn("provenance", overridden.stderr)
+            self.assertFalse((root / ".agents/init-state.json").exists())
 
-    def test_same_origin_commit_downstream_creates_initialization_commit(self) -> None:
+    def test_same_origin_commit_downstream_requires_template_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             fixture(root)
@@ -260,20 +523,17 @@ class PaperInitTests(unittest.TestCase):
                 root,
                 check=False,
             )
-            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            self.assertIn("committed", result.stdout)
-            self.assertTrue((root / ".agents/init-state.json").is_file())
-            self.assertEqual(
-                git(root, "log", "-1", "--format=%s").stdout.strip(),
-                "chore: initialize paper repository and remove template governance residue",
-            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("provenance", result.stderr)
+            self.assertFalse((root / ".agents/init-state.json").exists())
 
     def test_initialized_marker_takes_precedence_over_same_origin(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             fixture(root)
-            set_upstream_origin(root)
+            set_template_origin(root)
             write(root, ".agents/init-state.json", valid_marker(root))
+            commit_all(root, "record initialization marker")
             marker = (root / ".agents/init-state.json").read_bytes()
 
             result = run(
@@ -295,7 +555,7 @@ class PaperInitTests(unittest.TestCase):
             self.assertEqual(marker, (root / ".agents/init-state.json").read_bytes())
             self.assertIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
 
-    def test_invalid_markers_fail_closed_on_same_origin(self) -> None:
+    def test_invalid_markers_fail_closed_without_template_provenance(self) -> None:
         marker_cases = {
             "empty object": "{}\n",
             "truncated JSON": '{"schema_version": "paper-init-v1"',
@@ -345,20 +605,13 @@ class PaperInitTests(unittest.TestCase):
                 )
 
                 overridden = run(
-                    [
-                        sys.executable,
-                        str(TOOL),
-                        "--root",
-                        str(root),
-                        "clean",
-                        "--downstream",
-                    ],
+                    [sys.executable, str(TOOL), "--root", str(root), "clean", "--downstream"],
                     root,
                     check=False,
                 )
-                self.assertEqual(overridden.returncode, 0, overridden.stdout + overridden.stderr)
-                self.assertNotIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
-                self.assertTrue((root / ".agents/init-state.json").is_file())
+                self.assertNotEqual(overridden.returncode, 0)
+                self.assertIn("provenance", overridden.stderr)
+                self.assertIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
 
     def test_marker_bound_to_another_repository_fails_closed_on_same_origin(self) -> None:
         with tempfile.TemporaryDirectory() as directory, tempfile.TemporaryDirectory() as other_directory:
@@ -403,19 +656,13 @@ class PaperInitTests(unittest.TestCase):
             )
 
             overridden = run(
-                [
-                    sys.executable,
-                    str(TOOL),
-                    "--root",
-                    str(root),
-                    "clean",
-                    "--downstream",
-                ],
+                [sys.executable, str(TOOL), "--root", str(root), "clean", "--downstream"],
                 root,
                 check=False,
             )
-            self.assertEqual(overridden.returncode, 0, overridden.stdout + overridden.stderr)
-            self.assertNotIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
+            self.assertNotEqual(overridden.returncode, 0)
+            self.assertIn("provenance", overridden.stderr)
+            self.assertIn("case/arxiv-2505-22954", (root / "AGENTS.md").read_text(encoding="utf-8"))
 
     def test_marker_commit_must_be_in_current_history(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -2,7 +2,7 @@
   "schema_version": "paper-documentation-consistency-v1",
   "required_facts": {
     "PAPER.md": [
-      "Target venue: ICLR 2027"
+      "Target venue: unresolved"
     ],
     "PUBLICATION.md": [
       "`make pdf` defaults to `draft`",
