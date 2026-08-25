@@ -23,10 +23,9 @@ python3 .agents/tools/paper-init.py clean --commit
 
 This removes template-specific governance IDs, resets downstream-local metadata, writes an initialization marker, and commits the cleanup before paper work begins. A downstream paper must not keep the upstream template's case-branch or issue IDs.
 
-If there is no positive template-creation evidence, do not run this initializer
-based only on a non-upstream origin, copied template files, or the generic
-`paper-init.py status` label. Use the template-adoption workflow for an
-unrelated or ambiguous existing paper repository.
+Without positive template-creation evidence, do not run this initializer based
+only on a non-upstream origin, copied files, or generic status. Use adoption;
+reviewed adoption reports `adoption_reviewed` without origin or init records.
 
 ## Orientation
 
