@@ -28,9 +28,9 @@ Variants may control publication-facing presentation. They do not own copied sec
 ## Agent sidecar
 
 - `AGENT_GUIDE.md`: product-independent onboarding from the template repo to a separate writing repo, plus an index of the paper lifecycle.
-- `AGENTS.md`: thin routing entrypoint.
+- `AGENTS.md`: thin routing entrypoint for paper work and the three downstream lifecycle variants.
 - `.agents/knowledge/`: optional reference knowledge loaded only when relevant.
-- `.agents/skills/`: focused procedures for writing, publication planning, release review, initial template adoption, downstream template synchronization, and wrappers for the bundled third-party skill suites.
+- `.agents/skills/`: focused procedures for writing, publication planning, release review, the shared repository-role gate, template creation through `ccf-project-scaffolder`, initial template adoption, downstream template synchronization, and wrappers for the bundled third-party skill suites.
 - `.agents/vendor/`: immutable snapshots of the bundled CCFA-Skills and writing-dna-skill suites with MIT licenses and a hash manifest; never edited locally.
 - `.agents/template-sync.json`: downstream-local upstream location and template baseline; adoption first creates an uninitialized downstream-specific configuration and records the exact commit only after review.
 - `.agents/tools/`: structure, contract, interface, publication, release-build, manifest, record, template-adoption, template-sync, and vendored-skill integrity tools.
