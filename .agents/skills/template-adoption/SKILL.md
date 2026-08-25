@@ -11,6 +11,10 @@ Use when an existing paper repository was not created from `a-green-hand-jack/cc
 
 Do not use this skill for ordinary upstream updates after adoption. Once `.agents/template-sync.json` records explicit `adoption.status: reviewed` state for the baseline, route future updates to `.agents/skills/template-sync/SKILL.md`. A non-null baseline alone is not evidence that adoption completed.
 
+Do not use this skill for a repository newly created from the GitHub Template.
+That path is owned by `ccf-project-scaffolder` in template-create mode and then
+uses `template-sync --bootstrap` for its first reviewed infrastructure update.
+
 ## Minimum context
 
 - the downstream repository root, current branch, status, and diff;
@@ -43,7 +47,12 @@ The plan uses the same safety vocabulary as template synchronization:
 
 ## Procedure
 
-1. Create a checkpoint commit and a dedicated branch such as `chore/template-adoption`. Do not work on `main`, `master`, or `trunk`.
+1. Read the repository role and lifecycle gate in
+   `.agents/skills/paper-orientation/SKILL.md`. Confirm that this is an
+   unrelated or ambiguous existing paper repository, not the upstream template
+   and not a GitHub Template-created downstream repository. Create a checkpoint
+   commit and a dedicated branch such as `chore/template-adoption`. Do not work
+   on `main`, `master`, or `trunk`.
 2. Run the adoption tool from a trusted template checkout. The target repository does not need to contain `.agents/` yet:
 
    ```bash
@@ -68,8 +77,7 @@ The plan uses the same safety vocabulary as template synchronization:
 
    The tool stages missing Agent-sidecar anatomy, knowledge, skills, tests, tools, and runtime-ignore infrastructure, creates a downstream-specific `.agents/template-sync.json` with an uninitialized baseline, and exports upstream/downstream review copies under `.agents/runtime/template-adoption/merge-bundle/`. It does not create Human contracts, move paper content, replace build logic, rewrite CI, or record the target as reviewed.
    If stale or prematurely recorded sync/adoption metadata remains from an incomplete attempt, review its provenance and explicitly resume with `apply --recover-reviewed`. Recovery preserves prior baseline metadata in the adoption audit history; it does not treat that baseline as reviewed or silently erase it.
-5. If `.agents/init-state.json` is missing, run `python3 .agents/tools/paper-init.py clean --commit` to remove upstream template-specific governance residue.
-6. Perform the semantic migration deliberately:
+5. Perform the semantic migration deliberately:
    - prefer a thin `paper/main.tex` compatibility wrapper before moving a working entrypoint;
    - preserve section identity and input order while paths are normalized;
    - map one authoritative bibliography rather than copying references into divergent files;
@@ -77,28 +85,28 @@ The plan uses the same safety vocabulary as template synchronization:
    - merge Make targets and CI jobs into the existing build and protection model instead of replacing it;
    - merge Agent routing and safety rules while retaining project-specific knowledge;
    - initialize `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, `PUBLICATION.md`, and `DECISIONS.md` only from repository evidence and Human decisions. Mark unknown claims, authorship, results, venue choices, and approval as unresolved.
-7. Inspect downstream-only files and obsolete surfaces. Do not delete them merely because the template lacks them. Remove or redirect a surface only after its replacement and dependency impact are understood.
-8. Run the explicit collect-all assessment after the repository has the intended template shape:
+6. Inspect downstream-only files and obsolete surfaces. Do not delete them merely because the template lacks them. Remove or redirect a surface only after its replacement and dependency impact are understood.
+7. Run the explicit collect-all assessment after the repository has the intended template shape:
 
    ```bash
    python3 .agents/tools/template-adoption.py assess
    ```
 
    Assessment executes every standard leaf check and all publication variants independently, records all outcomes in `.agents/runtime/template-adoption/assessment.json` and `assessment.md`, and does not stop at the first failure. It is diagnostic only: even a successful assessment cannot authorize finalization and is not a substitute for reviewed verification.
-9. Run focused reviewed verification:
+8. Run focused reviewed verification:
 
    ```bash
    python3 .agents/tools/template-adoption.py verify --variants
    ```
 
    The verification report records the exact template target, fresh inspection/mapping fingerprint, and a fingerprint of the reviewed downstream state. Finalization also requires a supported TeX entrypoint and all five Human contracts to be present. Also run any repository-specific experiment, artifact, or deployment checks that the generic template cannot know about. External venue portals, Overleaf import, and arXiv compilation remain unverified until actually exercised.
-10. After Human review and successful full-variant validation, record the exact template target as the first sync baseline. Finalization refuses a missing, failed, agent-only, wrong-target, stale, or assessment-only report:
+9. After Human review and successful full-variant validation, record the exact template target as the first sync baseline. Finalization refuses a missing, failed, agent-only, wrong-target, stale, or assessment-only report:
 
    ```bash
    python3 .agents/tools/template-adoption.py finalize --reviewed
    ```
 
-11. Review the staged `.agents/template-sync.json`, commit the migration, open a PR, and merge only after the downstream repository's exact-head CI succeeds. Future template updates use `template-sync.py plan`, not adoption.
+10. Review the staged `.agents/template-sync.json`, commit the migration, open a PR, and merge only after the downstream repository's exact-head CI succeeds. Future template updates use `template-sync.py plan`, not adoption.
 
 ## Mapping principles
 

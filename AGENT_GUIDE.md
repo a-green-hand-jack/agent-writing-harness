@@ -39,13 +39,15 @@ Route by the observed state:
 | State | What the Agent should do |
 |---|---|
 | The remote is `a-green-hand-jack/ccfa-writing-paper-template` and `paper-init.py status` reports `upstream_template` | This is the template repo. If the Human wants to start a paper, create a separate writing repo by following the happy path below. Do not write the paper here. |
-| The remote is a new paper repository and `.agents/init-state.json` is absent | This is an uninitialized writing repo. Run the downstream initialization before editing paper content. |
-| `.agents/init-state.json` is valid | This is an initialized writing repo. Follow `AGENTS.md` and the routine task workflow. |
-| An existing paper repository was not created from this template and has no reviewed adoption state | Use template adoption. Do not copy the template tree over the existing repository. |
+| A valid `.agents/template-origin.json` attestation confirms a separate GitHub-Template-created writing repo, its origin is not the upstream template, and `.agents/init-state.json` is absent | This is an uninitialized writing repo. Run the downstream initialization before editing paper content. |
+| `.agents/template-origin.json` and `.agents/init-state.json` are valid, and `.agents/template-sync.json` identifies the configured upstream template | This is an initialized writing repo. Follow `AGENTS.md` and the routine task workflow. |
+| An existing paper repository lacks positive template-creation evidence and has no reviewed adoption state | Use template adoption. Do not copy the template tree over the existing repository. |
 | An initialized or reviewed writing repo needs newer template infrastructure | Use template synchronization. Do not merge the template repo's Git history. |
 
 If the facts conflict, stop and report the exact conflict. Do not guess whether
-a repository is the template repo or a writing repo.
+a repository is the template repo or a writing repo. A non-upstream origin,
+copied template files, or a generic `paper-init.py status` result is not, by
+itself, evidence that the repository came from this GitHub Template.
 
 ## Happy Path: Create A Writing Repo
 
@@ -117,6 +119,7 @@ commit identity, then run:
 ```bash
 git var GIT_AUTHOR_IDENT >/dev/null
 git var GIT_COMMITTER_IDENT >/dev/null
+python3 .agents/tools/paper-init.py record-template-origin --commit
 python3 .agents/tools/paper-init.py clean --commit
 python3 .agents/tools/paper-init.py status
 git status --short --branch
@@ -132,9 +135,9 @@ initializer blindly. Inspect the staged initialization change, resolve the
 identity, signing, or hook failure, and create the initialization commit with
 the command's reported commit message. Stop if unrelated changes appeared.
 
-The `--downstream` escape hatch is only for a repository that has been
-independently confirmed as a writing repo even though its `origin` still looks
-like the template repo. It is not part of the normal GitHub Template path.
+The legacy `--downstream` flag cannot bypass the required
+`.agents/template-origin.json` provenance check and is not part of the normal
+GitHub Template path.
 
 After initialization:
 
@@ -184,6 +187,32 @@ Initialize the Human-facing contracts in this order:
 Do not preserve `TODO` text, the factory target venue, example release IDs, or
 template-local governance as if it were established paper fact. It is valid to
 keep genuine unknowns unresolved.
+
+### First-session Human input
+
+Once the writing repo exists, the Agent can inspect its repository identity,
+initialization state, contracts, and build surface itself. The Human does not
+need to provide routine Git commands or fill every contract before the first
+writing session. Provide the smallest useful packet below:
+
+```text
+Research seed: the problem, setting, and proposed idea or insight
+Evidence available: code, data, results, figures, prior draft, references, or "none yet"
+Target: venue/year/track and deadline, or "unresolved"
+Authors and identity: author list plus anonymity or disclosure constraints
+First deliverable: e.g. idea clarification, evidence plan, outline, or a named section draft from supplied claims/evidence
+Constraints: language, length, compute/data limits, style examples, and locked decisions
+```
+
+The research seed and evidence inventory are the minimum needed to begin
+substantive paper writing. `Evidence available: none yet` supports repository
+initialization, idea clarification, an evidence plan, or an outline. A section
+draft requires supplied or Human-approved claims and evidence for that section.
+If those inputs are missing, the Agent must not invent a method, result,
+contribution, citation, or venue choice. Missing target, authorship, style, and
+constraints remain explicitly `unresolved` until the Human decides them. The
+Agent should draft the five contracts from this packet and ask only for
+high-impact choices that cannot be safely left unresolved.
 
 ### 6. Establish a clean starting point
 
@@ -268,6 +297,7 @@ common routes without replacing it:
 | Task | Read in addition to `PAPER.md` | Primary owner or procedure |
 |---|---|---|
 | Recover context at the start of a writing session | Active section and current diff | `.agents/skills/paper-orientation/SKILL.md` |
+| Create and initialize a new writing repo from this GitHub Template | Repository role, GitHub creation inputs, and first-session packet | `.agents/skills/ccf-project-scaffolder/SKILL.md` in template-create mode |
 | Draft or substantially revise a paper section | Active section; relevant experiment, interface, and citation records only | `.agents/skills/section-writing/SKILL.md` |
 | Change positioning, story architecture, section responsibility, or writing policy | Relevant paper and decision contracts | `.agents/skills/style-alignment/SKILL.md` |
 | Change a central claim, experiment condition, limitation, result interpretation, or stable interface meaning | Every directly affected contract and consumer | `.agents/skills/control-review/SKILL.md` |

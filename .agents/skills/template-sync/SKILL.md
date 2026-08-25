@@ -11,6 +11,12 @@ Use when a downstream paper repository needs to inspect or adopt updates from `a
 
 Do not load this skill during ordinary writing, experiment discussion, or publication work. Template synchronization is a repository-maintenance task with a separate branch and review cycle.
 
+This is the third lifecycle variant. Read the shared repository role and
+initialization gate in `.agents/skills/paper-orientation/SKILL.md` first. A
+repository newly created from the GitHub Template uses this skill in
+`--bootstrap` mode after its initialization commit; an unrelated repository
+without a reviewed baseline uses `template-adoption` first.
+
 ## Minimum context
 
 - `.agents/template-sync.json`;
@@ -37,9 +43,19 @@ The classification is a review aid, not permission to alter scientific meaning.
 
 ## Procedure
 
-1. Create a checkpoint commit and a dedicated branch such as `chore/template-sync`. Do not work on `main`, `master`, or `trunk`.
-2. If `.agents/init-state.json` is missing, run `python3 .agents/tools/paper-init.py clean --commit` first to remove upstream template-specific governance residue.
-3. Run:
+1. Read the shared repository role and lifecycle gate. Confirm that the
+   current repository is a downstream writing repository and not the upstream
+   template checkout. Stop if it is the template repository or an unrelated
+   repository without a reviewed adoption state.
+2. Create a checkpoint commit and a dedicated branch such as
+   `chore/template-sync`. Do not work on `main`, `master`, or `trunk`.
+3. If the downstream repository's `.agents/init-state.json` is missing, stop
+   and resolve the repository role first. A template-created repository must
+   have a valid `.agents/template-origin.json` attestation from the
+   template-create workflow before `paper-init.py clean --commit` can run;
+   an unrelated adoption must finish its `adoption.status: in_progress` state.
+   Do not use `--downstream` as a provenance override.
+4. Run:
 
    ```bash
    python3 .agents/tools/template-sync.py validate
@@ -47,7 +63,7 @@ The classification is a review aid, not permission to alter scientific meaning.
    python3 .agents/tools/template-sync.py fetch
    ```
 
-4. Generate the plan:
+5. Generate the plan:
 
    ```bash
    python3 .agents/tools/template-sync.py plan
@@ -60,21 +76,21 @@ The classification is a review aid, not permission to alter scientific meaning.
    ```
 
 <!-- paper-skill-contract: F7-TS-001-v1 -->
-5. Read `.agents/runtime/template-sync/plan.md`. Before applying any safe
+6. Read `.agents/runtime/template-sync/plan.md`. Before applying any safe
    change, explain why paths were classified as safe, manual, or conflict and
    state the review boundary: only the safe set may be applied mechanically,
    while manual and conflict paths require deliberate review and no
    classification authorizes a semantic change.
-6. With a clean worktree on the dedicated branch, apply only the safe set:
+7. With a clean worktree on the dedicated branch, apply only the safe set:
 
    ```bash
    python3 .agents/tools/template-sync.py apply
    ```
 
    Safe changes are staged. Manual and conflict versions are exported under `.agents/runtime/template-sync/merge-bundle/` with `baseline/` and `upstream/` copies.
-7. Merge manual and conflict files deliberately. Preserve the downstream paper's scientific claims, story, experiments, interfaces, venue choices, authorship, and project-specific Agent knowledge. Do not copy the upstream skeleton over populated paper content.
-8. Inspect removed or renamed upstream infrastructure and remove obsolete downstream surfaces only when the replacement is understood.
-9. After reviewing all manual merges, create verification evidence bound to the current plan and repository state:
+8. Merge manual and conflict files deliberately. Preserve the downstream paper's scientific claims, story, experiments, interfaces, venue choices, authorship, and project-specific Agent knowledge. Do not copy the upstream skeleton over populated paper content.
+9. Inspect removed or renamed upstream infrastructure and remove obsolete downstream surfaces only when the replacement is understood.
+10. After reviewing all manual merges, create verification evidence bound to the current plan and repository state:
 
    ```bash
    python3 .agents/tools/template-sync.py verify --reviewed
@@ -82,7 +98,7 @@ The classification is a review aid, not permission to alter scientific meaning.
 
    This first establishes that every safe addition, modification, and deletion exactly matches the target in both the index and worktree, then runs repository verification and all four publication-variant builds. Any subsequent repository change makes the report stale.
 
-10. After manual review and successful validation, record the exact upstream target:
+11. After manual review and successful validation, record the exact upstream target:
 
    ```bash
    python3 .agents/tools/template-sync.py record --reviewed
@@ -90,7 +106,7 @@ The classification is a review aid, not permission to alter scientific meaning.
 
    Recording rechecks the applied safe state and reruns every mandatory verification command. Runtime receipts and reports are retained as evidence but cannot authorize recording by themselves.
 
-11. Commit the migration, open a PR, wait for the exact-head Actions run, and merge only after every applicable job succeeds.
+12. Commit the migration, open a PR, wait for the exact-head Actions run, and merge only after every applicable job succeeds.
 
 ## First synchronization
 
