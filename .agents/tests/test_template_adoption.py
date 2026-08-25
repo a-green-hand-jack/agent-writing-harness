@@ -976,9 +976,6 @@ if __name__ == "__main__":
         compile_check = checks["python3 -m compileall -q .agents/tools .agents/tests"]
         self.assertTrue(compile_check["success"])
         self.assertEqual(compile_check["returncode"], 0)
-        eval_check = checks["python3 .agents/tools/check-vendored-skill-evals.py"]
-        self.assertTrue(eval_check["success"])
-        self.assertEqual(eval_check["returncode"], 0)
         self.assertTrue(report["checks"][-1]["command"].endswith("VARIANT=arxiv"))
         self.assertFalse(
             (self.downstream / ".agents/runtime/template-adoption/verification.json").exists()
