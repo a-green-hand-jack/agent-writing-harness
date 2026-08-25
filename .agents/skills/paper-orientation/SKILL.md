@@ -26,6 +26,10 @@ Classify the observed state before editing or running initialization commands:
 - uninitialized template-created downstream: `.agents/template-origin.json` is a valid repository-bound attestation verified through GitHub's `template_repository` field, its origin is not the upstream template, and the initialization marker is absent. Run downstream initialization before paper work.
 - initialized downstream: the provenance attestation and initialization marker are valid, and `.agents/template-sync.json` identifies the configured upstream template. Use ordinary paper workflows; use `template-sync` for later upstream infrastructure updates.
 - adoption in progress: `.agents/template-sync.json` exists with `adoption.status: in_progress`. Resume `template-adoption`; do not route to ordinary writing or `template-sync` until reviewed finalization.
+- reviewed adopted downstream: `.agents/template-sync.json` has
+  `adoption.status: reviewed` and a reviewed baseline, while
+  `.agents/template-origin.json` and `.agents/init-state.json` are absent. Use
+  ordinary paper workflows; use `template-sync` for later upstream updates.
 - unrelated or ambiguous existing paper repository: there is no positive GitHub Template provenance or reviewed adoption state. Use `template-adoption`, not template creation or ordinary sync.
 
 If the remote, marker, and repository contents disagree, stop and report the

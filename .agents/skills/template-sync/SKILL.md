@@ -49,12 +49,13 @@ The classification is a review aid, not permission to alter scientific meaning.
    repository without a reviewed adoption state.
 2. Create a checkpoint commit and a dedicated branch such as
    `chore/template-sync`. Do not work on `main`, `master`, or `trunk`.
-3. If the downstream repository's `.agents/init-state.json` is missing, stop
-   and resolve the repository role first. A template-created repository must
-   have a valid `.agents/template-origin.json` attestation from the
-   template-create workflow before `paper-init.py clean --commit` can run;
-   an unrelated adoption must finish its `adoption.status: in_progress` state.
-   Do not use `--downstream` as a provenance override.
+3. Confirm one valid downstream lifecycle before synchronization. A
+   template-created repository must have matching `.agents/template-origin.json`
+   and `.agents/init-state.json` records. An unrelated adopted repository must
+   instead have `adoption.status: reviewed`; it intentionally has neither of
+   those template-creation records. If adoption is `in_progress`, resume
+   `template-adoption`. Do not run `paper-init.py clean` for an adoption or use
+   `--downstream` as a provenance override.
 4. Run:
 
    ```bash

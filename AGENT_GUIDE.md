@@ -41,6 +41,7 @@ Route by the observed state:
 | The remote is `a-green-hand-jack/ccfa-writing-paper-template` and `paper-init.py status` reports `upstream_template` | This is the template repo. If the Human wants to start a paper, create a separate writing repo by following the happy path below. Do not write the paper here. |
 | A valid `.agents/template-origin.json` attestation confirms a separate GitHub-Template-created writing repo, its origin is not the upstream template, and `.agents/init-state.json` is absent | This is an uninitialized writing repo. Run the downstream initialization before editing paper content. |
 | `.agents/template-origin.json` and `.agents/init-state.json` are valid, and `.agents/template-sync.json` identifies the configured upstream template | This is an initialized writing repo. Follow `AGENTS.md` and the routine task workflow. |
+| `.agents/template-sync.json` records `adoption.status: reviewed`, while template-origin and init-state records are absent | This is a reviewed adopted writing repo. Follow `AGENTS.md`; use template synchronization for later upstream updates. |
 | An existing paper repository lacks positive template-creation evidence and has no reviewed adoption state | Use template adoption. Do not copy the template tree over the existing repository. |
 | An initialized or reviewed writing repo needs newer template infrastructure | Use template synchronization. Do not merge the template repo's Git history. |
 
@@ -464,6 +465,9 @@ safe missing sidecar infrastructure. Never mechanically overwrite or move
 scientific prose, results, references, figures, tables, macros, venue files,
 build logic, CI, Human contracts, or downstream-only files. Follow
 `.agents/skills/template-adoption/SKILL.md` for the complete review contract.
+An adoption never creates GitHub Template provenance or an initialization
+marker: `paper-init.py status` transitions from `adoption_in_progress` to
+`adoption_reviewed` when finalization succeeds.
 
 ## Template Synchronization
 

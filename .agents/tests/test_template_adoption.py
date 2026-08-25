@@ -10,6 +10,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOL = ROOT / ".agents/tools/template-adoption.py"
+PAPER_INIT_TOOL = ROOT / ".agents/tools/paper-init.py"
+TEMPLATE_SYNC_TOOL = ROOT / ".agents/tools/template-sync.py"
 SKILL = ROOT / ".agents/skills/template-adoption/SKILL.md"
 
 
@@ -553,7 +555,55 @@ if __name__ == "__main__":
         pending = json.loads(
             (self.downstream / ".agents/template-sync.json").read_text(encoding="utf-8")
         )
-        self.assertEqual(pending["adoption"]["prior_sync_history"][-1], prior)
+        history_entry = pending["adoption"]["prior_sync_history"][-1]
+        self.assertEqual(history_entry["last_synced_commit"], prior["last_synced_commit"])
+        self.assertEqual(history_entry["last_sync_note"], prior["last_sync_note"])
+        self.assertEqual(history_entry["reference_integrity"], prior["reference_integrity"])
+        self.assertEqual(history_entry["upstream"], prior["upstream"])
+        self.assertEqual(history_entry["adoption"], prior["adoption"])
+
+    def test_apply_recovers_reachable_reviewed_baseline_with_invalid_local_metadata(self) -> None:
+        prior = {
+            "schema_version": "paper-template-sync-v1",
+            "upstream": {
+                "url": str(self.upstream),
+                "remote": "template",
+                "branch": "main",
+            },
+            "last_synced_commit": self.target,
+            "last_synced_at": "invalid",
+            "last_sync_note": "Malformed reviewed state.",
+            "adoption": {
+                "status": "reviewed",
+                "target_commit": self.target,
+                "reviewed_at": "2026-08-03T00:00:00+00:00",
+                "verification_repository_fingerprint": "a" * 64,
+                "prior_sync_history": [],
+            },
+            "reference_integrity": {"adopted": True},
+            "always_manual": [],
+            "ignored_paths": [],
+        }
+        write(
+            self.downstream,
+            ".agents/template-sync.json",
+            json.dumps(prior, indent=2, sort_keys=True) + "\n",
+        )
+        commit_all(self.downstream, "record malformed reachable reviewed baseline")
+        self.plan()
+
+        refused = self.tool("apply")
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("--recover-reviewed", refused.stderr)
+        recovered = self.tool("apply", "--recover-reviewed")
+        self.assertEqual(recovered.returncode, 0, recovered.stdout + recovered.stderr)
+        pending = json.loads(
+            (self.downstream / ".agents/template-sync.json").read_text(encoding="utf-8")
+        )
+        history = pending["adoption"]["prior_sync_history"][-1]
+        self.assertIsNone(history["last_synced_commit"])
+        self.assertIsNone(history["last_synced_at"])
+        self.assertEqual(history["recovery_original_fields"]["last_synced_at"], "invalid")
 
     def test_apply_requires_reviewed_recovery_for_stale_baseline_metadata(self) -> None:
         write(
@@ -570,6 +620,18 @@ if __name__ == "__main__":
                     "last_synced_commit": self.start_head,
                     "last_synced_at": "2026-08-01T00:00:00+00:00",
                     "last_sync_note": "Premature baseline.",
+                    "adoption": {
+                        "status": "in_progress",
+                        "target_commit": self.target,
+                        "prior_sync_history": [
+                            {
+                                "last_synced_at": "invalid",
+                                "recovery_original_fields": {"older": "evidence"},
+                                "reference_integrity": {"adopted": "unknown"},
+                                "upstream": {},
+                            }
+                        ],
+                    },
                     "always_manual": [],
                     "ignored_paths": [],
                 },
@@ -594,6 +656,46 @@ if __name__ == "__main__":
             pending["adoption"]["prior_sync_history"][-1]["last_synced_commit"],
             self.start_head,
         )
+        self.assertTrue(
+            {
+                "adoption",
+                "last_synced_commit",
+                "last_synced_at",
+                "last_sync_note",
+                "reference_integrity",
+                "upstream",
+            }.issubset(pending["adoption"]["prior_sync_history"][-1])
+        )
+        repaired_history = pending["adoption"]["prior_sync_history"][0]
+        self.assertIsNone(repaired_history["last_synced_at"])
+        self.assertIsNone(repaired_history["reference_integrity"])
+        self.assertEqual(repaired_history["upstream"]["remote"], "another-template")
+        self.assertEqual(
+            repaired_history["recovery_original_fields"]["previous"],
+            {"older": "evidence"},
+        )
+        self.assertEqual(
+            repaired_history["recovery_original_fields"]["current"]["upstream"],
+            {},
+        )
+        self.complete_semantic_migration()
+        verified = self.tool("verify", "--variants")
+        self.assertEqual(verified.returncode, 0, verified.stdout + verified.stderr)
+        finalized = self.tool("finalize", "--reviewed")
+        self.assertEqual(finalized.returncode, 0, finalized.stdout + finalized.stderr)
+        paper_status = run(
+            [sys.executable, str(PAPER_INIT_TOOL), "--root", str(self.downstream), "status"],
+            self.downstream,
+            check=False,
+        )
+        self.assertEqual(paper_status.returncode, 0, paper_status.stdout + paper_status.stderr)
+        self.assertIn("adoption_reviewed", paper_status.stdout)
+        sync_status = run(
+            [sys.executable, str(TEMPLATE_SYNC_TOOL), "--root", str(self.downstream), "validate"],
+            self.downstream,
+            check=False,
+        )
+        self.assertEqual(sync_status.returncode, 0, sync_status.stdout + sync_status.stderr)
 
     def test_in_progress_contradictions_require_recovery_and_preserve_adoption(self) -> None:
         contradictions = (
@@ -644,6 +746,95 @@ if __name__ == "__main__":
                 history = pending["adoption"]["prior_sync_history"]
                 self.assertEqual(history[-1]["adoption"], adoption)
                 git(self.downstream, "reset", "--hard", "HEAD")
+
+    def test_invalid_pending_metadata_requires_explicit_recovery(self) -> None:
+        config = {
+            "schema_version": "paper-template-sync-v1",
+            "upstream": {
+                "url": str(self.upstream),
+                "remote": "template",
+                "branch": "main",
+            },
+            "last_synced_commit": None,
+            "last_synced_at": None,
+            "last_sync_note": 123,
+            "adoption": {
+                "status": "in_progress",
+                "target_commit": "invalid",
+                "prior_sync_history": [{}],
+            },
+            "reference_integrity": {"adopted": "unknown"},
+            "always_manual": [],
+            "ignored_paths": [],
+        }
+        config.pop("upstream")
+        write(
+            self.downstream,
+            ".agents/template-sync.json",
+            json.dumps(config, indent=2, sort_keys=True) + "\n",
+        )
+        commit_all(self.downstream, "record malformed pending adoption")
+        self.plan()
+
+        refused = self.tool("apply")
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("--recover-reviewed", refused.stderr)
+        recovered = self.tool("apply", "--recover-reviewed")
+        self.assertEqual(recovered.returncode, 0, recovered.stdout + recovered.stderr)
+        pending = json.loads(
+            (self.downstream / ".agents/template-sync.json").read_text(encoding="utf-8")
+        )
+        history = pending["adoption"]["prior_sync_history"]
+        self.assertEqual(history[-1]["recovery_original_fields"]["last_sync_note"], 123)
+        self.assertIsNone(history[-1]["recovery_original_fields"]["upstream"])
+        self.assertEqual(
+            history[-1]["recovery_original_fields"]["reference_integrity"],
+            {"adopted": "unknown"},
+        )
+
+    def test_recovery_preserves_non_object_history_entries(self) -> None:
+        config = {
+            "schema_version": "paper-template-sync-v1",
+            "upstream": {
+                "url": str(self.upstream),
+                "remote": "template",
+                "branch": "main",
+            },
+            "last_synced_commit": None,
+            "last_synced_at": None,
+            "adoption": {
+                "status": "in_progress",
+                "target_commit": self.target,
+                "prior_sync_history": ["raw legacy history"],
+            },
+            "always_manual": [],
+            "ignored_paths": [],
+        }
+        write(
+            self.downstream,
+            ".agents/template-sync.json",
+            json.dumps(config, indent=2, sort_keys=True) + "\n",
+        )
+        commit_all(self.downstream, "record non-object history entry")
+        self.plan()
+        recovered = self.tool("apply", "--recover-reviewed")
+        self.assertEqual(recovered.returncode, 0, recovered.stdout + recovered.stderr)
+        pending = json.loads(
+            (self.downstream / ".agents/template-sync.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            pending["adoption"]["prior_sync_history"][0]["recovery_original_fields"]["raw_entry"],
+            "raw legacy history",
+        )
+
+    def test_apply_refuses_template_created_marker_before_writing_adoption_state(self) -> None:
+        write(self.downstream, ".agents/template-origin.json", "{}\n")
+        commit_all(self.downstream, "record template-created marker")
+        self.plan()
+        refused = self.tool("apply")
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("template adoption must not carry", refused.stderr)
+        self.assertFalse((self.downstream / ".agents/template-sync.json").exists())
 
     def test_reviewed_adoption_remains_valid_after_sync_baseline_advances(self) -> None:
         config = {
@@ -767,6 +958,8 @@ if __name__ == "__main__":
 
         assessed = self.tool("assess")
         self.assertNotEqual(assessed.returncode, 0)
+        self.assertFalse(any(self.downstream.rglob("__pycache__")))
+        self.assertFalse(any(self.downstream.rglob("*.pyc")))
         report = json.loads(
             (self.downstream / ".agents/runtime/template-adoption/assessment.json").read_text()
         )
@@ -779,6 +972,13 @@ if __name__ == "__main__":
         failures = {check["command"]: check["returncode"] for check in report["checks"] if not check["success"]}
         self.assertEqual(failures["python3 .agents/tools/check-documentation.py"], 7)
         self.assertEqual(failures["python3 .agents/tools/check-publication.py"], 9)
+        checks = {check["command"]: check for check in report["checks"]}
+        compile_check = checks["python3 -m compileall -q .agents/tools .agents/tests"]
+        self.assertTrue(compile_check["success"])
+        self.assertEqual(compile_check["returncode"], 0)
+        eval_check = checks["python3 .agents/tools/check-vendored-skill-evals.py"]
+        self.assertTrue(eval_check["success"])
+        self.assertEqual(eval_check["returncode"], 0)
         self.assertTrue(report["checks"][-1]["command"].endswith("VARIANT=arxiv"))
         self.assertFalse(
             (self.downstream / ".agents/runtime/template-adoption/verification.json").exists()
