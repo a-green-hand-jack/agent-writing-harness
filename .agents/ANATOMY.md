@@ -65,7 +65,9 @@ Adoption does not run `paper-init.py`: unrelated repositories have no
 template-create provenance attestation and must not be relabeled as
 template-created. The adoption tool writes `adoption.status: in_progress` in
 `.agents/template-sync.json`, which is the resumable state until
-`finalize --reviewed` records the first reviewed baseline.
+`finalize --reviewed` records the first reviewed baseline. A reviewed adoption
+is reported as `adoption_reviewed`; it intentionally has no template-origin or
+init-state record.
 
 ## Template synchronization
 

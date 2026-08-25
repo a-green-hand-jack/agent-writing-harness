@@ -77,12 +77,20 @@ The plan uses the same safety vocabulary as template synchronization:
 
    The tool stages missing Agent-sidecar anatomy, knowledge, skills, tests, tools, and runtime-ignore infrastructure, creates a downstream-specific `.agents/template-sync.json` with an uninitialized baseline, and exports upstream/downstream review copies under `.agents/runtime/template-adoption/merge-bundle/`. It does not create Human contracts, move paper content, replace build logic, rewrite CI, or record the target as reviewed.
    If stale or prematurely recorded sync/adoption metadata remains from an incomplete attempt, review its provenance and explicitly resume with `apply --recover-reviewed`. Recovery preserves prior baseline metadata in the adoption audit history; it does not treat that baseline as reviewed or silently erase it.
+   Do not run `paper-init.py clean` and do not create
+   `.agents/template-origin.json` or `.agents/init-state.json`. Those records
+   prove the separate GitHub Template-created lifecycle. During adoption,
+   `paper-init.py status` reports `adoption_in_progress`; after reviewed
+   finalization it reports `adoption_reviewed`.
 5. Perform the semantic migration deliberately:
    - prefer a thin `paper/main.tex` compatibility wrapper before moving a working entrypoint;
    - preserve section identity and input order while paths are normalized;
    - map one authoritative bibliography rather than copying references into divergent files;
    - preserve figure source assets, wrappers, generated-table provenance, venue classes, styles, and bibliography styles;
-   - merge Make targets and CI jobs into the existing build and protection model instead of replacing it;
+    - merge Make targets and CI jobs into the existing build and protection model instead of replacing it;
+    - merge the template's runtime ignore rules into the existing `.gitignore`
+      without replacing downstream patterns, so verification does not leave
+      bytecode or generated output untracked;
    - merge Agent routing and safety rules while retaining project-specific knowledge;
    - initialize `PAPER.md`, `EXPERIMENTS.md`, `PAPER_INTERFACES.md`, `PUBLICATION.md`, and `DECISIONS.md` only from repository evidence and Human decisions. Mark unknown claims, authorship, results, venue choices, and approval as unresolved.
 6. Inspect downstream-only files and obsolete surfaces. Do not delete them merely because the template lacks them. Remove or redirect a surface only after its replacement and dependency impact are understood.
@@ -125,6 +133,8 @@ The plan uses the same safety vocabulary as template synchronization:
 - Never delete downstream-only files solely because the template does not contain them.
 - Never finalize a baseline before the manual mapping set has been reviewed and the downstream repository has been validated.
 - Never infer completed adoption from a non-null or target-equal baseline; require explicit reviewed adoption state produced from current full verification.
+- Never fabricate GitHub Template provenance or an initialization marker for an
+  unrelated adopted repository.
 - Never treat a successful template harness as proof that external submission systems or project-specific workflows succeeded.
 
 ## Handoff
