@@ -185,6 +185,32 @@ Do not preserve `TODO` text, the factory target venue, example release IDs, or
 template-local governance as if it were established paper fact. It is valid to
 keep genuine unknowns unresolved.
 
+### First-session Human input
+
+Once the writing repo exists, the Agent can inspect its repository identity,
+initialization state, contracts, and build surface itself. The Human does not
+need to provide routine Git commands or fill every contract before the first
+writing session. Provide the smallest useful packet below:
+
+```text
+Research seed: the problem, setting, and proposed idea or insight
+Evidence available: code, data, results, figures, prior draft, references, or "none yet"
+Target: venue/year/track and deadline, or "unresolved"
+Authors and identity: author list plus anonymity or disclosure constraints
+First deliverable: e.g. idea clarification, evidence plan, outline, or a named section draft from supplied claims/evidence
+Constraints: language, length, compute/data limits, style examples, and locked decisions
+```
+
+The research seed and evidence inventory are the minimum needed to begin
+substantive paper writing. `Evidence available: none yet` supports repository
+initialization, idea clarification, an evidence plan, or an outline. A section
+draft requires supplied or Human-approved claims and evidence for that section.
+If those inputs are missing, the Agent must not invent a method, result,
+contribution, citation, or venue choice. Missing target, authorship, style, and
+constraints remain explicitly `unresolved` until the Human decides them. The
+Agent should draft the five contracts from this packet and ask only for
+high-impact choices that cannot be safely left unresolved.
+
 ### 6. Establish a clean starting point
 
 Run the repository verification after project-specific initialization:

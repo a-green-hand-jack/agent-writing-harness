@@ -18,15 +18,16 @@ limits.
 
 1. If an Agent is currently in this template repo, follow `AGENT_GUIDE.md` to create a separate writing repo from the GitHub Template. Do not draft a real paper in the template repo.
 2. If this repository was created from the template and `.agents/init-state.json` does not exist, run `python3 .agents/tools/paper-init.py clean --commit` before editing paper content. This strips upstream template governance IDs and records the initialization.
-3. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
-4. Record paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
-5. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
-6. Record publication variants and allowed differences in `PUBLICATION.md`.
-7. Have the Agent construct and repair BibTeX from retrieved authoritative evidence, maintain `references/ledger.json` in the same change, and follow `REFERENCES.md`; never invent free-form metadata.
-8. For every substantive citation, have the Agent run the Draft citation-support check (`citation-support-review`): inventory the active occurrence, resolve or discover the source, retrieve exact passages, and record a passing result as provisional. Never insert a citation from title relevance or metadata existence alone.
-9. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
-10. Edit the one canonical LaTeX source under `paper/`.
-11. Build:
+3. Give the Agent the first-session packet in `AGENT_GUIDE.md`: research seed, evidence inventory, target or `unresolved`, authorship constraints, first deliverable, and hard constraints. This packet is enough to begin onboarding and contract setup; section drafting requires supplied or Human-approved claims and evidence for that section.
+4. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
+5. Record only real paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
+6. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
+7. Record publication variants and allowed differences in `PUBLICATION.md`.
+8. Have the Agent construct and repair BibTeX from retrieved authoritative evidence, maintain `references/ledger.json` in the same change, and follow `REFERENCES.md`; never invent free-form metadata.
+9. For every substantive citation, have the Agent run the Draft citation-support check (`citation-support-review`): inventory the active occurrence, resolve or discover the source, retrieve exact passages, and record a passing result as provisional. Never insert a citation from title relevance or metadata existence alone.
+10. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
+11. Edit the one canonical LaTeX source under `paper/`.
+12. Build:
 
 ```bash
 make pdf

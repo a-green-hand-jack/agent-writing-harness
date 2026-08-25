@@ -13,8 +13,8 @@ The control words below are collaboration cues, not a rigid permission system:
 ## Paper identity
 
 - Working title: TODO Paper Title
-- Target venue: ICLR 2027 (verify current official rules before submission work)
-- Paper type: method
+- Target venue: unresolved (verify current official rules before submission work)
+- Paper type: unresolved
 - Intended readers: TODO
 - One-sentence positioning: TODO
 
@@ -26,9 +26,8 @@ TODO: state the single most important conclusion the paper wants readers to acce
 
 ### Contributions
 
-1. **C1 — unresolved:** TODO
-2. **C2 — unresolved:** TODO
-3. **C3 — unresolved:** TODO
+No contributions have been approved yet. Add one entry per contribution that
+the current paper can defend; there is no required number of contributions.
 
 For each contribution, record whether it is central, supporting, or optional and whether it may be weakened or removed if the evidence changes.
 

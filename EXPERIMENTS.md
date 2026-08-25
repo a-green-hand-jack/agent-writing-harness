@@ -9,15 +9,16 @@ Use the same flexible collaboration cues as `PAPER.md`: **locked**, **bounded**,
 
 | ID | Paper question | Supports | Current state |
 |---|---|---|---|
-| E1 | TODO: primary comparison question | C1 | unresolved |
-| E2 | TODO: ablation or mechanism question | C2 | unresolved |
-| E3 | TODO: robustness or limitation question | C3 | unresolved |
+| — | No paper-facing evidence question recorded yet | — | unresolved |
 
-## E1 — Primary comparison
+## Evidence-question template
+
+Copy this structure only when a real paper-facing question exists, then assign
+the next available ID. Do not assume that the question is a comparison.
 
 ### Paper role
 
-- Supports: C1
+- Supports: TODO: approved claim or decision, if any
 - Reader question: TODO
 - Maximum paper-facing interpretation: unresolved
 
@@ -75,25 +76,11 @@ The Agent must prepare context and request a Human decision before:
 - hiding a negative or inconclusive result that constrains a core claim;
 - weakening, strengthening, or replacing the paper claim supported by this experiment.
 
-## E2 — Ablation or mechanism
+## Additional experiments
 
-Copy the E1 structure only when the experiment is real. Do not add a large empty registry in advance.
-
-- Paper role: TODO
-- Locked: TODO
-- Bounded: TODO
-- Free: TODO
-- Unresolved: TODO
-- Human decision triggers: TODO
-
-## E3 — Robustness or limitation
-
-- Paper role: TODO
-- Locked: TODO
-- Bounded: TODO
-- Free: TODO
-- Unresolved: TODO
-- Human decision triggers: TODO
+Add one section per real paper-facing question, copying this structure only
+when that question exists. Do not assume that every paper needs an ablation,
+mechanism study, robustness test, or a fixed number of experiments.
 
 ## Result interpretation
 
