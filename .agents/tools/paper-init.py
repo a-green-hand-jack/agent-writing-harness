@@ -10,14 +10,14 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 INIT_STATE_RELATIVE = Path(".agents/init-state.json")
 DOCUMENTATION_CONFIG_RELATIVE = Path(".agents/documentation-consistency.json")
 OVERLEAF_CONFIG_RELATIVE = Path(".agents/overleaf-sync.json")
+PUBLICATION_RELATIVE = Path("PUBLICATION.md")
 COMMIT_MESSAGE = "chore: initialize paper repository and remove template governance residue"
-UPSTREAM_ORIGIN_MARKERS = (
-    "a-green-hand-jack/ccfa-writing-paper-template",
-)
+UPSTREAM_REPOSITORY = "a-green-hand-jack/ccfa-writing-paper-template"
 TEMPLATE_OVERLEAF_PROJECT = "6a71e37eeb498fef8922f370"
 AGENTS_PROTECTED_BRANCHES_LINE = (
     "- Never propose or perform deletion of the protected case branches "
@@ -35,6 +35,15 @@ DOWNSTREAM_DECISION = (
     "Upstream template-specific governance IDs were removed during initialization. "
     "This repository owns its own protected case branches and verification issues.\n"
     "\n"
+)
+PUBLICATION_UPSTREAM_TRACKERS = (
+    "This venue planning input is distinct from capability authenticity (#21) and "
+    "real environment availability (#31), but strict venue planning depends on the "
+    "same honest source and freshness rules."
+)
+PUBLICATION_DOWNSTREAM_TEXT = (
+    "Venue planning is distinct from capability authenticity and real environment "
+    "availability, but all three depend on honest source and freshness rules."
 )
 
 
@@ -64,9 +73,31 @@ def origin_url(root: Path) -> str:
     return result.stdout.strip()
 
 
+def github_repository_identity(url: str) -> str | None:
+    value = url.strip()
+    if not value:
+        return None
+
+    scp_match = re.fullmatch(r"[^/@\s]+@github\.com:(?P<path>.+)", value, flags=re.IGNORECASE)
+    if scp_match:
+        path = scp_match.group("path")
+    else:
+        parsed = urlparse(value)
+        if (parsed.hostname or "").lower() != "github.com":
+            return None
+        path = parsed.path.lstrip("/")
+
+    path = path.rstrip("/")
+    if path.lower().endswith(".git"):
+        path = path[:-4]
+    parts = path.split("/")
+    if len(parts) != 2 or not all(parts):
+        return None
+    return "/".join(parts).lower()
+
+
 def is_upstream_template(root: Path) -> bool:
-    url = origin_url(root)
-    return any(marker in url for marker in UPSTREAM_ORIGIN_MARKERS)
+    return github_repository_identity(origin_url(root)) == UPSTREAM_REPOSITORY.lower()
 
 
 def init_state(root: Path) -> Path:
@@ -179,6 +210,16 @@ def reset_documentation_config(root: Path, changes: list[str]) -> None:
     changes.append(DOCUMENTATION_CONFIG_RELATIVE.as_posix())
 
 
+def clean_publication(root: Path, changes: list[str]) -> None:
+    path = root / PUBLICATION_RELATIVE
+    if not path.is_file():
+        return
+    text = path.read_text(encoding="utf-8")
+    if PUBLICATION_UPSTREAM_TRACKERS in text:
+        write_text(path, text.replace(PUBLICATION_UPSTREAM_TRACKERS, PUBLICATION_DOWNSTREAM_TEXT))
+        changes.append(PUBLICATION_RELATIVE.as_posix())
+
+
 def delete_template_overleaf_config(root: Path, changes: list[str]) -> None:
     path = root / OVERLEAF_CONFIG_RELATIVE
     if not path.is_file():
@@ -224,6 +265,7 @@ def clean(root: Path, commit: bool, downstream: bool) -> int:
     clean_agents(root, changes)
     clean_decisions(root, changes)
     reset_documentation_config(root, changes)
+    clean_publication(root, changes)
     delete_template_overleaf_config(root, changes)
     write_init_state(root, changes)
 

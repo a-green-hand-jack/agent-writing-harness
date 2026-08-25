@@ -18,6 +18,8 @@ def write(path: Path, text: str = "") -> None:
 def fixture(root: Path) -> None:
     for relative in (
         "README.md",
+        "AGENT_GUIDE.md",
+        "WHY_THIS_TEMPLATE.md",
         "Makefile",
         "PAPER.md",
         "EXPERIMENTS.md",
@@ -41,6 +43,7 @@ def fixture(root: Path) -> None:
         ".agents/knowledge/venues/README.md",
         ".agents/knowledge/venues/_template.md",
         ".agents/template-sync.json",
+        ".agents/template-inheritance.json",
         ".agents/overleaf-sync.json",
         ".agents/skills/paper-orientation/SKILL.md",
         ".agents/skills/template-adoption/SKILL.md",
@@ -51,14 +54,8 @@ def fixture(root: Path) -> None:
         ".agents/vendor/ccfa-skills/ccf-paper-writer/SKILL.md",
         ".agents/vendor/writing-dna-skill/LICENSE",
         ".agents/vendor/writing-dna-skill/SKILL.md",
-        ".agents/dependencies/vendored-skills/provenance.json",
-        ".agents/dependencies/vendored-skills/pyproject.toml",
-        ".agents/dependencies/vendored-skills/uv.lock",
-        ".agents/dependencies/vendored-skills/uv.toml",
-        ".agents/tools/check-vendored-skills.py",
+        ".agents/tools/_template_inheritance.py",
         ".agents/tools/verify.sh",
-        ".agents/tools/check-actions.py",
-        ".agents/tools/check-skills.py",
         ".agents/tools/check-documentation.py",
         ".agents/tools/check-venue-knowledge.py",
         ".agents/tools/check-publication.py",
@@ -113,6 +110,17 @@ class StructureChecks(unittest.TestCase):
             root = Path(directory)
             fixture(root)
             (root / "release").mkdir()
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("must be removed", result.stdout)
+
+    def test_template_development_surface_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            evals_dir = root / ".agents/evals" / "vendored-skills"
+            evals_dir.mkdir(parents=True)
+            write(evals_dir / "README.md", "# dev-only\n")
             result = run(root)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("must be removed", result.stdout)

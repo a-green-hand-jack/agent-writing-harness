@@ -19,6 +19,13 @@ import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from _template_inheritance import (
+    POLICY_RELATIVE,
+    combine_inheritance_policies,
+    load_inheritance_policy,
+    parse_inheritance_policy,
+)
+
 CONFIG_RELATIVE = Path(".agents/template-sync.json")
 RUNTIME_RELATIVE = Path(".agents/runtime/template-sync")
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
@@ -26,45 +33,18 @@ DEFAULT_BRANCHES = {"main", "master", "trunk"}
 PLAN_SCHEMA = "paper-template-sync-plan-v2"
 APPLICATION_SCHEMA = "paper-template-sync-application-v1"
 VERIFICATION_SCHEMA = "paper-template-sync-verification-v1"
-DEFAULT_MANUAL_PATHS = (
-    ".gitignore",
-    ".github/",
-    "README.md",
-    "REFERENCES.md",
-    "AGENTS.md",
-    "CONTRIBUTING.md",
-    "Makefile",
-    "PAPER.md",
-    "EXPERIMENTS.md",
-    "PAPER_INTERFACES.md",
-    "PUBLICATION.md",
-    "DECISIONS.md",
-    "paper/main.tex",
-    "paper/macros.tex",
-    "paper/venue_preamble.tex",
-    "paper/refs.bib",
-    "paper/sections/",
-    "paper/figures/",
-    "paper/tables/",
-    "paper/generated/",
-    "paper/supplementary/",
-    "paper/style/",
-    "references/",
-    ".agents/dependencies/reference-integrity/",
-    ".agents/knowledge/",
-)
-DEFAULT_IGNORED_PATHS = (
-    ".agents/template-sync.json",
-    ".agents/overleaf-sync.json",
-    ".agents/documentation-consistency.json",
-    ".agents/init-state.json",
-    ".agents/runtime/",
-    "dist/",
-)
+REGULAR_FILE_MODES = {"100644", "100755"}
 
 
 class SyncError(RuntimeError):
     pass
+
+
+def inheritance_policy(root: Path) -> dict[str, Any]:
+    try:
+        return load_inheritance_policy(root)
+    except ValueError as exc:
+        raise SyncError(str(exc)) from exc
 
 
 def ensure_directory_path(root: Path, relative: Path, *, create: bool) -> Path:
@@ -285,6 +265,7 @@ def validate_reviewed_adoption_shape(adoption: dict[str, Any]) -> None:
 
 
 def validate_repository(root: Path) -> None:
+    inheritance_policy(root)
     data = read_config(root)
     validate_config_data(data)
     validate_reviewed_adoption_provenance(root, data)
@@ -532,25 +513,51 @@ def blob_at(root: Path, ref: str, path: str) -> bytes | None:
     return result.stdout
 
 
-def local_entry(root: Path, path: str) -> tuple[str, bytes | None]:
+def local_entry(root: Path, path: str) -> tuple[str, bytes | None, str | None]:
     target = root / path
     if has_unsafe_parent(root, path) or target.is_symlink():
-        return "other", None
+        return "other", None, None
     if target.is_file():
-        return "file", target.read_bytes()
+        mode = "100755" if target.stat().st_mode & 0o111 else "100644"
+        return "file", target.read_bytes(), mode
     if target.exists():
-        return "other", None
-    return "missing", None
+        return "other", None, None
+    return "missing", None, None
 
 
-def entry_at(root: Path, ref: str, path: str) -> tuple[str, bytes | None]:
-    result = git(root, "ls-tree", ref, "--", path, check=False)
+def entry_at(root: Path, ref: str, path: str) -> tuple[str, bytes | None, str | None]:
+    if ref == EMPTY_TREE:
+        return "missing", None, None
+    result = subprocess.run(
+        ["git", "ls-tree", "-z", ref, "--", path],
+        cwd=root,
+        capture_output=True,
+        check=False,
+    )
     if result.returncode != 0 or not result.stdout:
-        return "missing", None
-    mode = result.stdout.split(maxsplit=1)[0]
-    if mode.startswith("100"):
-        return "file", blob_at(root, ref, path)
-    return "other", None
+        return "missing", None, None
+    record = result.stdout.split(b"\0", 1)[0]
+    try:
+        metadata, _ = record.split(b"\t", 1)
+        mode, kind, _ = metadata.decode("ascii").split()
+    except (ValueError, UnicodeDecodeError) as exc:
+        raise SyncError(f"cannot parse template entry metadata for {path}") from exc
+    if kind != "blob" or mode not in REGULAR_FILE_MODES:
+        return "other", None, mode
+    return "file", blob_at(root, ref, path), mode
+
+
+def target_inheritance_policy(root: Path, target: str) -> dict[str, Any]:
+    kind, payload, _ = entry_at(root, target, POLICY_RELATIVE.as_posix())
+    if kind != "file" or payload is None:
+        raise SyncError(
+            f"template target requires a regular {POLICY_RELATIVE.as_posix()}"
+        )
+    try:
+        target_policy = parse_inheritance_policy(payload)
+    except ValueError as exc:
+        raise SyncError(f"invalid target template inheritance policy: {exc}") from exc
+    return combine_inheritance_policies(inheritance_policy(root), target_policy)
 
 
 def changed_paths(root: Path, baseline: str, target: str) -> list[tuple[str, str]]:
@@ -586,21 +593,24 @@ def classify_path(
     path: str,
     upstream_status: str,
     baseline_blob: bytes | None,
+    baseline_mode: str | None,
     target_blob: bytes | None,
+    target_mode: str | None,
     downstream_blob: bytes | None,
+    downstream_mode: str | None,
     downstream_kind: str,
     manual_paths: list[str],
     ignored_paths: list[str],
 ) -> tuple[str, str]:
-    if path_matches(path, ignored_paths):
-        return "ignored", "downstream-local metadata or generated runtime"
     if downstream_kind == "other":
         return "conflict", "downstream path is a symlink or non-file entry"
-    if downstream_blob == target_blob:
+    if downstream_blob == target_blob and downstream_mode == target_mode:
         return "already", "downstream already matches upstream target"
     if path_matches(path, manual_paths):
         return "manual", "protected Human-authored or project-specific surface"
-    if downstream_blob == baseline_blob:
+    if path_matches(path, ignored_paths):
+        return "ignored", "downstream-local metadata or generated runtime"
+    if downstream_blob == baseline_blob and downstream_mode == baseline_mode:
         return "safe", "downstream did not modify the upstream baseline"
     if baseline_blob is None and downstream_blob is None and target_blob is not None:
         return "safe", "new upstream file does not exist downstream"
@@ -621,6 +631,7 @@ def plan_sync(
     target_name = target_ref or f"{upstream['remote']}/{upstream['branch']}"
     target = resolve_commit(root, target_name)
     require_configured_upstream_target(root, config, target)
+    policy = target_inheritance_policy(root, target)
     configured_baseline = config.get("last_synced_commit")
     if configured_baseline is None:
         if not bootstrap:
@@ -635,19 +646,30 @@ def plan_sync(
                 f"recorded baseline commit is not available locally: {baseline}; fetch upstream history first"
             )
 
-    manual_paths = list(DEFAULT_MANUAL_PATHS) + list(config.get("always_manual", []))
-    ignored_paths = list(DEFAULT_IGNORED_PATHS) + list(config.get("ignored_paths", []))
+    manual_paths = list(policy["sync"]["manual_paths"]) + list(
+        config.get("always_manual", [])
+    )
+    ignored_paths = list(policy["sync"]["ignored_paths"]) + list(
+        config.get("ignored_paths", [])
+    )
     items: list[dict[str, Any]] = []
     for upstream_status, path in changed_paths(root, baseline, target):
-        baseline_value = blob_at(root, baseline, path) if baseline != EMPTY_TREE else None
-        target_value = blob_at(root, target, path)
-        downstream_kind, downstream_value = local_entry(root, path)
+        baseline_kind, baseline_value, baseline_mode = entry_at(root, baseline, path)
+        target_kind, target_value, target_mode = entry_at(root, target, path)
+        if baseline_kind == "other" or target_kind == "other":
+            raise SyncError(
+                f"template sync refuses non-regular upstream entry: {path}"
+            )
+        downstream_kind, downstream_value, downstream_mode = local_entry(root, path)
         category, reason = classify_path(
             path=path,
             upstream_status=upstream_status,
             baseline_blob=baseline_value,
+            baseline_mode=baseline_mode,
             target_blob=target_value,
+            target_mode=target_mode,
             downstream_blob=downstream_value,
+            downstream_mode=downstream_mode,
             downstream_kind=downstream_kind,
             manual_paths=manual_paths,
             ignored_paths=ignored_paths,
@@ -658,6 +680,8 @@ def plan_sync(
                 "path": path,
                 "upstream_status": upstream_status,
                 "action": action,
+                "baseline_mode": baseline_mode,
+                "target_mode": target_mode,
                 "category": category,
                 "reason": reason,
             }
@@ -771,20 +795,34 @@ def require_untampered_plan(root: Path, config: dict[str, Any], plan: dict[str, 
 def require_original_plan_policy(root: Path, config: dict[str, Any], plan: dict[str, Any]) -> None:
     baseline = str(plan["baseline"])
     target = str(plan["target_commit"])
+    policy = target_inheritance_policy(root, target)
     downstream_head = str(plan["downstream_head"])
-    manual_paths = list(DEFAULT_MANUAL_PATHS) + list(config.get("always_manual", []))
-    ignored_paths = list(DEFAULT_IGNORED_PATHS) + list(config.get("ignored_paths", []))
+    manual_paths = list(policy["sync"]["manual_paths"]) + list(
+        config.get("always_manual", [])
+    )
+    ignored_paths = list(policy["sync"]["ignored_paths"]) + list(
+        config.get("ignored_paths", [])
+    )
     expected_items: list[dict[str, Any]] = []
     for upstream_status, path in changed_paths(root, baseline, target):
-        baseline_value = blob_at(root, baseline, path) if baseline != EMPTY_TREE else None
-        target_value = blob_at(root, target, path)
-        downstream_kind, downstream_value = entry_at(root, downstream_head, path)
+        baseline_kind, baseline_value, baseline_mode = entry_at(root, baseline, path)
+        target_kind, target_value, target_mode = entry_at(root, target, path)
+        if baseline_kind == "other" or target_kind == "other":
+            raise SyncError(
+                f"template sync refuses non-regular upstream entry: {path}"
+            )
+        downstream_kind, downstream_value, downstream_mode = entry_at(
+            root, downstream_head, path
+        )
         category, reason = classify_path(
             path=path,
             upstream_status=upstream_status,
             baseline_blob=baseline_value,
+            baseline_mode=baseline_mode,
             target_blob=target_value,
+            target_mode=target_mode,
             downstream_blob=downstream_value,
+            downstream_mode=downstream_mode,
             downstream_kind=downstream_kind,
             manual_paths=manual_paths,
             ignored_paths=ignored_paths,
@@ -793,6 +831,8 @@ def require_original_plan_policy(root: Path, config: dict[str, Any], plan: dict[
             "path": path,
             "upstream_status": upstream_status,
             "action": "delete" if target_value is None else ("add" if baseline_value is None else "update"),
+            "baseline_mode": baseline_mode,
+            "target_mode": target_mode,
             "category": category,
             "reason": reason,
         })
