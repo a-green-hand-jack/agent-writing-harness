@@ -32,7 +32,7 @@
   "schema_version": "paper-template-sync-v1",
   "upstream": {
     "branch": "main",
-    "remote": "origin",
-    "url": "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git"
+    "remote": "template",
+    "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git"
   }
 }
