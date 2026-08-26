@@ -53,6 +53,7 @@ def config(upstream: Path, baseline: str | None) -> str:
                 'branch': 'main',
             },
             'last_synced_commit': baseline,
+            'last_synced_at': '2026-08-09T00:00:00+00:00' if baseline is not None else None,
             'always_manual': [],
             'ignored_paths': [],
         },
@@ -109,6 +110,7 @@ class TemplateSyncTests(unittest.TestCase):
             target = self.upstream / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
+        shutil.copy2(ROOT / '.agents/tools/paper-init.py', self.upstream / '.agents/tools/paper-init.py')
         write(self.upstream, '.agents/tools/base.txt', 'base-v1\n')
         write(self.upstream, '.agents/tools/deleted.txt', 'delete-v1\n')
         write(self.upstream, '.agents/tools/conflict.txt', 'conflict-v1\n')
@@ -132,6 +134,36 @@ class TemplateSyncTests(unittest.TestCase):
         write(self.downstream, '.agents/template-sync.json', config(self.upstream, self.baseline))
         write(self.downstream, '.agents/skills/template-sync/SKILL.md', skill())
         commit_all(self.downstream, 'paper from template v1')
+        git(self.downstream, 'remote', 'add', 'origin', 'git@github.com:a-green-hand-jack/example-paper.git')
+        initial_head = git(self.downstream, 'rev-parse', 'HEAD').stdout.strip()
+        write(
+            self.downstream,
+            '.agents/template-origin.json',
+            json.dumps(
+                {
+                    'downstream_repository': 'a-green-hand-jack/example-paper',
+                    'git_head': initial_head,
+                    'schema_version': 'paper-template-origin-v1',
+                    'template_repository': 'a-green-hand-jack/ccfa-writing-paper-template',
+                    'verification': 'github_api_template_repository',
+                    'verified_at': '2026-08-09T00:00:00+00:00',
+                }
+            ) + '\n',
+        )
+        write(
+            self.downstream,
+            '.agents/init-state.json',
+            json.dumps(
+                {
+                    'schema_version': 'paper-init-v1',
+                    'initialized_at': '2026-08-09T00:00:00+00:00',
+                    'mode': 'downstream',
+                    'template_cleanup': True,
+                    'git_head': initial_head,
+                }
+            ) + '\n',
+        )
+        commit_all(self.downstream, 'record template lifecycle')
         git(self.downstream, 'switch', '-c', 'chore/template-sync')
         git(self.downstream, 'remote', 'add', 'template', str(self.upstream))
         git(self.downstream, 'fetch', 'template', 'main')
@@ -171,6 +203,12 @@ class TemplateSyncTests(unittest.TestCase):
 
     def tool(self, *args: str, check: bool = False) -> subprocess.CompletedProcess[str]:
         return run([sys.executable, str(TOOL), '--root', str(self.downstream), *args], self.downstream, check=check)
+
+    def remove_lifecycle_markers(self) -> None:
+        for relative in ('.agents/template-origin.json', '.agents/init-state.json'):
+            path = self.downstream / relative
+            if path.is_symlink() or path.exists():
+                path.unlink()
 
     def apply_and_verify(self) -> None:
         self.assertEqual(self.tool('plan').returncode, 0)
@@ -419,7 +457,14 @@ class TemplateSyncTests(unittest.TestCase):
     def test_sync_commands_refuse_in_progress_adoption(self) -> None:
         path = self.downstream / '.agents/template-sync.json'
         cfg = json.loads(path.read_text())
-        cfg['adoption'] = {'status': 'in_progress', 'target_commit': self.target}
+        cfg['adoption'] = {
+            'status': 'in_progress',
+            'target_commit': self.target,
+            'prior_sync_history': [],
+        }
+        cfg['last_synced_commit'] = None
+        cfg['last_synced_at'] = None
+        self.remove_lifecycle_markers()
         path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
 
         for command in ('plan', 'apply', 'verify', 'record'):
@@ -427,6 +472,77 @@ class TemplateSyncTests(unittest.TestCase):
                 result = self.tool(command, '--reviewed') if command in {'verify', 'record'} else self.tool(command)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn('adoption is in_progress', result.stderr)
+
+    def test_incomplete_in_progress_adoption_is_rejected(self) -> None:
+        path = self.downstream / '.agents/template-sync.json'
+        original = json.loads(path.read_text())
+        invalid = (
+            {'status': 'in_progress'},
+            {
+                'status': 'in_progress',
+                'target_commit': self.target,
+                'prior_sync_history': [],
+                'reviewed_at': '2026-08-09T00:00:00+00:00',
+            },
+        )
+        for adoption in invalid:
+            with self.subTest(adoption=adoption):
+                cfg = dict(original)
+                cfg['adoption'] = adoption
+                self.remove_lifecycle_markers()
+                path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
+                refused = self.tool('validate')
+                self.assertNotEqual(refused.returncode, 0)
+                self.assertIn('in-progress adoption', refused.stderr)
+
+    def test_local_metadata_rejects_note_and_blank_upstream(self) -> None:
+        path = self.downstream / '.agents/template-sync.json'
+        original = json.loads(path.read_text())
+        invalid = (
+            {'last_sync_note': 123},
+            {'upstream': {**original['upstream'], 'remote': ' '}},
+        )
+        for fields in invalid:
+            with self.subTest(fields=fields):
+                cfg = {**original, **fields}
+                path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
+                refused = self.tool('validate')
+                self.assertNotEqual(refused.returncode, 0)
+
+    def test_read_only_provenance_checks_do_not_add_missing_remote(self) -> None:
+        git(self.downstream, 'remote', 'remove', 'template')
+        before = git(self.downstream, 'config', '--local', '--list').stdout
+        for command in ('status', 'validate'):
+            with self.subTest(command=command):
+                refused = self.tool(command)
+                self.assertNotEqual(refused.returncode, 0)
+                self.assertIn('remote template is missing', refused.stderr)
+                self.assertEqual(
+                    git(self.downstream, 'config', '--local', '--list').stdout,
+                    before,
+                )
+
+    def test_adoption_lifecycle_rejects_template_markers(self) -> None:
+        config_path = self.downstream / '.agents/template-sync.json'
+        cfg = json.loads(config_path.read_text())
+        cfg['adoption'] = reviewed_adoption(self.baseline)
+        config_path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
+        for marker in ('.agents/template-origin.json', '.agents/init-state.json'):
+            (self.downstream / marker).unlink()
+        for relative, dangling in (
+            ('.agents/template-origin.json', False),
+            ('.agents/init-state.json', True),
+        ):
+            with self.subTest(relative=relative, dangling=dangling):
+                path = self.downstream / relative
+                if dangling:
+                    path.symlink_to('missing-marker.json')
+                else:
+                    path.write_text('{}\n')
+                refused = self.tool('validate')
+                self.assertNotEqual(refused.returncode, 0)
+                self.assertIn('template adoption must not carry', refused.stderr)
+                path.unlink()
 
     def test_incomplete_reviewed_adoption_is_rejected(self) -> None:
         path = self.downstream / '.agents/template-sync.json'
@@ -437,20 +553,52 @@ class TemplateSyncTests(unittest.TestCase):
             {**reviewed_adoption(self.baseline), 'verification_repository_fingerprint': 'A' * 64},
             {key: value for key, value in reviewed_adoption(self.baseline).items() if key != 'prior_sync_history'},
             {**reviewed_adoption(self.baseline), 'prior_sync_history': [{}]},
+            {
+                **reviewed_adoption(self.baseline),
+                'prior_sync_history': [{
+                    'adoption': None,
+                    'last_synced_commit': self.baseline,
+                    'last_synced_at': None,
+                    'last_sync_note': None,
+                    'reference_integrity': None,
+                    'upstream': {
+                        'url': str(self.upstream),
+                        'remote': 'template',
+                        'branch': 'main',
+                    },
+                }],
+            },
         )
         for adoption in invalid:
             with self.subTest(adoption=adoption):
                 cfg = dict(original)
                 cfg['adoption'] = adoption
+                self.remove_lifecycle_markers()
                 path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
                 refused = self.tool('validate')
                 self.assertNotEqual(refused.returncode, 0)
                 self.assertIn('reviewed adoption', refused.stderr)
 
+    def test_reviewed_adoption_requires_valid_top_level_sync_timestamp(self) -> None:
+        path = self.downstream / '.agents/template-sync.json'
+        original = json.loads(path.read_text())
+        for synced_at in ('not-a-timestamp', None):
+            with self.subTest(synced_at=synced_at):
+                cfg = dict(original)
+                cfg['adoption'] = reviewed_adoption(self.baseline)
+                self.remove_lifecycle_markers()
+                cfg['last_synced_commit'] = self.baseline
+                cfg['last_synced_at'] = synced_at
+                path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
+                refused = self.tool('validate')
+                self.assertNotEqual(refused.returncode, 0)
+                self.assertIn('last_synced', refused.stderr)
+
     def test_reviewed_adoption_target_cannot_be_newer_than_current_baseline(self) -> None:
         path = self.downstream / '.agents/template-sync.json'
         cfg = json.loads(path.read_text())
         cfg['adoption'] = reviewed_adoption(self.target)
+        self.remove_lifecycle_markers()
         path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
 
         refused = self.tool('validate')
@@ -463,6 +611,7 @@ class TemplateSyncTests(unittest.TestCase):
         cfg = json.loads(path.read_text())
         cfg['last_synced_commit'] = git(self.downstream, 'rev-parse', 'HEAD').stdout.strip()
         cfg['adoption'] = reviewed_adoption(self.baseline)
+        self.remove_lifecycle_markers()
         path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
 
         refused = self.tool('validate')
@@ -475,6 +624,7 @@ class TemplateSyncTests(unittest.TestCase):
         cfg = json.loads(path.read_text())
         unrelated = git(self.downstream, 'rev-parse', 'HEAD').stdout.strip()
         cfg['adoption'] = reviewed_adoption(unrelated)
+        self.remove_lifecycle_markers()
         path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
 
         refused = self.tool('validate')
@@ -486,6 +636,7 @@ class TemplateSyncTests(unittest.TestCase):
         path = self.downstream / '.agents/template-sync.json'
         cfg = json.loads(path.read_text())
         cfg['adoption'] = reviewed_adoption(git(self.downstream, 'rev-parse', 'HEAD').stdout.strip())
+        self.remove_lifecycle_markers()
         path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
 
         commands = (('plan',), ('apply',), ('verify', '--reviewed'), ('record', '--reviewed'))
@@ -499,6 +650,7 @@ class TemplateSyncTests(unittest.TestCase):
         path = self.downstream / '.agents/template-sync.json'
         cfg = json.loads(path.read_text())
         cfg['adoption'] = reviewed_adoption(self.baseline)
+        self.remove_lifecycle_markers()
         path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
         git(self.downstream, 'update-ref', '-d', 'refs/remotes/template/main')
 
@@ -509,6 +661,22 @@ class TemplateSyncTests(unittest.TestCase):
         fetched = self.tool('fetch')
         self.assertEqual(fetched.returncode, 0, fetched.stdout + fetched.stderr)
         self.assertEqual(self.tool('validate').returncode, 0)
+
+    def test_plan_fetch_restores_missing_remote_and_remote_ref(self) -> None:
+        git(self.downstream, 'update-ref', '-d', 'refs/remotes/template/main')
+        git(self.downstream, 'remote', 'remove', 'template')
+
+        planned = self.tool('plan', '--fetch')
+
+        self.assertEqual(planned.returncode, 0, planned.stdout + planned.stderr)
+        self.assertEqual(
+            git(self.downstream, 'remote', 'get-url', 'template').stdout.strip(),
+            str(self.upstream),
+        )
+        self.assertEqual(
+            git(self.downstream, 'rev-parse', 'refs/remotes/template/main').returncode,
+            0,
+        )
 
     def test_plan_rejects_remote_url_mismatch(self) -> None:
         git(self.downstream, 'remote', 'set-url', 'template', str(self.downstream))
@@ -715,6 +883,7 @@ class TemplateSyncTests(unittest.TestCase):
         path = self.downstream / '.agents/template-sync.json'
         cfg = json.loads(path.read_text())
         cfg['adoption'] = reviewed_adoption(self.baseline)
+        self.remove_lifecycle_markers()
         path.write_text(json.dumps(cfg, indent=2, sort_keys=True) + '\n')
         commit_all(self.downstream, 'record reviewed adoption metadata')
 
@@ -730,6 +899,7 @@ class TemplateSyncTests(unittest.TestCase):
         cfg_path = self.downstream / '.agents/template-sync.json'
         cfg = json.loads(cfg_path.read_text())
         cfg['last_synced_commit'] = None
+        cfg['last_synced_at'] = None
         cfg_path.write_text(json.dumps(cfg, indent=2) + '\n')
         commit_all(self.downstream, 'remove baseline')
         no_bootstrap = self.tool('plan')

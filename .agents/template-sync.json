@@ -1,16 +1,38 @@
 {
+  "adoption": {
+    "prior_sync_history": [
+      {
+        "adoption": null,
+        "last_sync_note": "Template adoption is in progress against 626ca3459e450ac1117a314857087de92d9b7fdc; finalize only after semantic review and validation.",
+        "last_synced_at": null,
+        "last_synced_commit": null,
+        "reference_integrity": {
+          "adopted": false
+        },
+        "upstream": {
+          "branch": "main",
+          "remote": "origin",
+          "url": "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git"
+        }
+      }
+    ],
+    "reviewed_at": "2026-08-09T08:10:47+00:00",
+    "status": "reviewed",
+    "target_commit": "626ca3459e450ac1117a314857087de92d9b7fdc",
+    "verification_repository_fingerprint": "64dd184094894f7a2185e6fd34e0749ea0cf0806957304461f9371d9652dbdd3"
+  },
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed Agent-assisted template synchronization.",
-  "last_synced_at": "2026-08-24T19:12:04+00:00",
-  "last_synced_commit": "6fff56a2bad643040eb2c8555e286e50025f041a",
+  "last_sync_note": "Reviewed template sync from 6fff56a to c135f32; preserved ARIS paper contracts, observational evidence scope, and hosted-case lifecycle.",
+  "last_synced_at": "2026-08-26T09:11:58+00:00",
+  "last_synced_commit": "c135f3261693042a2ba61c487af3f23ce6fdbebe",
   "reference_integrity": {
     "adopted": true
   },
   "schema_version": "paper-template-sync-v1",
   "upstream": {
     "branch": "main",
-    "remote": "origin",
-    "url": "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git"
+    "remote": "template",
+    "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git"
   }
 }

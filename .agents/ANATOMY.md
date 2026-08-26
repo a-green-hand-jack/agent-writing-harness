@@ -15,10 +15,10 @@ ARIS paper without becoming a Human work surface or paper dependency.
 - `tools/`: paper-first checks, release tooling, Overleaf, adoption, and template synchronization.
 - `tests/`: standard-library positive and negative regressions.
 - `runtime/`: ignored short-lived coordination and verification evidence.
-- `template-sync.json`: downstream-local reviewed upstream baseline.
+- `template-sync.json`: downstream-local reviewed upstream baseline and hosted-case lifecycle record.
 - `overleaf-sync.json`: project-specific paper-only Overleaf mapping.
 - `documentation-consistency.json`: downstream documentation facts.
-- `init-state.json`: downstream initialization marker.
+- `template-origin.json` and `init-state.json`: template-created repository lifecycle records; absent from this reviewed hosted-case paper surface.
 
 ## Boundary
 
@@ -26,5 +26,6 @@ ARIS paper without becoming a Human work surface or paper dependency.
 - Publication variants contain only approved presentation switches.
 - Generated instances live in ignored `dist/`; durable records are Markdown.
 - Agents load one relevant skill and minimum context.
+- The shared `paper-orientation` gate distinguishes template creation, unrelated-repository adoption, and reviewed template synchronization; ARIS is a reviewed hosted-case paper surface.
 - `paper/` compiles without `.agents/`.
 - Generic sidecar guidance never overrides ARIS contracts or Human decisions.
