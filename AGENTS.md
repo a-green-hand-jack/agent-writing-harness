@@ -2,15 +2,30 @@
 
 The paper project is primary. Start from the current Human-facing contract and load only the context required for the active task.
 
+## Starting from the template repo
+
+When the Human wants to start a paper from this GitHub Template, read
+`AGENT_GUIDE.md` and load `ccf-project-scaffolder` in template-create mode. It
+creates a separate downstream **writing repo** and initializes it before paper
+work. Do not draft a real paper in the upstream **template repo** or copy all
+template branches into the writing repo.
+
 ## First session in a downstream repository
 
-If this repository is not the upstream template and `.agents/init-state.json` does not exist, run:
+If independent repository-creation evidence confirms that this is a separate
+GitHub-Template-created writing repository, its origin is not the upstream
+template, and `.agents/init-state.json` does not exist, run:
 
 ```bash
+python3 .agents/tools/paper-init.py record-template-origin --commit
 python3 .agents/tools/paper-init.py clean --commit
 ```
 
 This removes template-specific governance IDs, resets downstream-local metadata, writes an initialization marker, and commits the cleanup before paper work begins. A downstream paper must not keep the upstream template's case-branch or issue IDs.
+
+Without positive template-creation evidence, do not run this initializer based
+only on a non-upstream origin, copied files, or generic status. Use adoption;
+reviewed adoption reports `adoption_reviewed` without origin or init records.
 
 ## Orientation
 
@@ -37,6 +52,7 @@ This removes template-specific governance IDs, resets downstream-local metadata,
 - publication variant, venue planning, deadlines, official submission rules, or allowed differences → `.agents/skills/publication-planning/SKILL.md` and `.agents/knowledge/venues/README.md`
 - template, page-limit, or anonymity compliance checks → `.agents/skills/ccf-submission-checker/SKILL.md` (sidecar of publication-planning/release-review)
 - immutable release candidate → `.agents/skills/release-review/SKILL.md`
+- create a new writing repo from this GitHub Template → `.agents/skills/ccf-project-scaffolder/SKILL.md` in template-create mode (shared gate: `paper-orientation`)
 - adapt an existing paper repository to this template → `.agents/skills/template-adoption/SKILL.md`
 - synchronize an adopted downstream repository with the upstream template → `.agents/skills/template-sync/SKILL.md`
 - repository tooling, build, or CI fixes → `.agents/tools/` (no skill; follow `CONTRIBUTING.md` and `verify.sh`)
@@ -57,7 +73,7 @@ The template ships the CCFA-Skills suite and writing-dna-skill as immutable snap
 - paper PDF → writing exemplar cards → `.agents/skills/ccf-paper-to-exemplar/SKILL.md`
 - drafting, revision, polishing, compression → `.agents/skills/ccf-paper-writer/SKILL.md` (sidecar)
 - full-project stage planning and routing → `.agents/skills/ccf-pipeline-orchestrator/SKILL.md` (sidecar)
-- external project scaffolding → `.agents/skills/ccf-project-scaffolder/SKILL.md`
+- external project scaffolding → `.agents/skills/ccf-project-scaffolder/SKILL.md` generic scaffold mode
 - rebuttal and reviewer-response drafting → `.agents/skills/ccf-rebuttal-writer/SKILL.md`
 - skill maintenance and auditing → `.agents/skills/ccf-skill-forger/SKILL.md`
 - submission-readiness checking → `.agents/skills/ccf-submission-checker/SKILL.md` (sidecar)
@@ -79,7 +95,7 @@ Do not inject manuscript-wide reviewer passes into section drafting. Version-lev
 
 The Human decides central claims, claim degradation, the main story, experiment fairness, important result interpretation, ambiguous citation identity/version choices that affect meaning, stable interface meaning, active variants, permitted cross-version differences, release approval, and external publication.
 
-The Agent performs retrieval, evidence-backed BibTeX and ledger repair, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, template-adoption inspection and mapping, template-sync planning, and focused validation.
+The Agent performs retrieval, evidence-backed BibTeX and ledger repair, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, writing-repo creation, template-adoption inspection and mapping, template-sync planning, and focused validation.
 
 ## Strong rules
 

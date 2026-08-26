@@ -8,9 +8,9 @@
   },
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed Agent-assisted template synchronization.",
-  "last_synced_at": "2026-08-24T19:16:02+00:00",
-  "last_synced_commit": "6fff56a2bad643040eb2c8555e286e50025f041a",
+  "last_sync_note": "Reviewed hosted-case routing sync from ad45718 to c135f32; preserved CORAL paper contracts and manual CI behavior.",
+  "last_synced_at": "2026-08-26T09:18:40+00:00",
+  "last_synced_commit": "c135f3261693042a2ba61c487af3f23ce6fdbebe",
   "reference_integrity": {
     "adopted": false
   },

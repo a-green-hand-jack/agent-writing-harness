@@ -19,6 +19,7 @@ import re
 import shlex
 import subprocess
 import sys
+import tempfile
 from collections import Counter
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
@@ -162,6 +163,7 @@ def run(
     cwd: Path,
     capture: bool = True,
     check: bool = True,
+    env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
         command,
@@ -169,6 +171,7 @@ def run(
         text=True,
         capture_output=capture,
         check=False,
+        env=env,
     )
     if check and result.returncode != 0:
         detail = ""
@@ -1472,11 +1475,268 @@ def export_bytes(destination: Path, data: bytes | None, *, deleted_message: str)
     destination.write_bytes(data)
 
 
-def sync_provenance(config: dict[str, Any]) -> dict[str, Any]:
-    return copy.deepcopy(config)
+def sync_provenance(
+    config: dict[str, Any], *, default_upstream: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    snapshot = copy.deepcopy(config)
+    repaired: dict[str, Any] = {}
+
+    def replace_invalid(key: str, valid: bool, replacement: Any = None) -> None:
+        if key in snapshot and valid:
+            return
+        if key in snapshot:
+            repaired[key] = copy.deepcopy(snapshot[key])
+        snapshot[key] = copy.deepcopy(replacement)
+
+    adoption = snapshot.get("adoption")
+    replace_invalid("adoption", adoption is None or isinstance(adoption, dict))
+    commit = snapshot.get("last_synced_commit")
+    replace_invalid(
+        "last_synced_commit",
+        commit is None
+        or (
+            isinstance(commit, str)
+            and len(commit) == 40
+            and all(character in "0123456789abcdef" for character in commit)
+        ),
+    )
+    synced_at = snapshot.get("last_synced_at")
+    valid_synced_at = synced_at is None
+    if isinstance(synced_at, str):
+        try:
+            parsed = dt.datetime.fromisoformat(synced_at)
+            valid_synced_at = parsed.tzinfo is not None and parsed.utcoffset() is not None
+        except ValueError:
+            valid_synced_at = False
+    replace_invalid("last_synced_at", valid_synced_at)
+    normalized_commit = snapshot.get("last_synced_commit")
+    normalized_synced_at = snapshot.get("last_synced_at")
+    if (normalized_commit is None) != (normalized_synced_at is None):
+        repaired.setdefault("last_synced_commit", copy.deepcopy(commit))
+        repaired.setdefault("last_synced_at", copy.deepcopy(synced_at))
+        snapshot["last_synced_commit"] = None
+        snapshot["last_synced_at"] = None
+    note = snapshot.get("last_sync_note")
+    replace_invalid("last_sync_note", note is None or isinstance(note, str))
+    integrity = snapshot.get("reference_integrity")
+    replace_invalid(
+        "reference_integrity",
+        integrity is None
+        or (
+            isinstance(integrity, dict)
+            and isinstance(integrity.get("adopted"), bool)
+        ),
+    )
+    upstream = snapshot.get("upstream")
+    valid_upstream = isinstance(upstream, dict) and all(
+        isinstance(upstream.get(key), str) and upstream[key].strip()
+        for key in ("url", "remote", "branch")
+    )
+    if not valid_upstream and "upstream" not in snapshot and default_upstream is not None:
+        repaired["upstream"] = None
+    replace_invalid("upstream", valid_upstream, default_upstream)
+    if repaired:
+        previous_recovery = snapshot.get("recovery_original_fields")
+        if previous_recovery is None:
+            snapshot["recovery_original_fields"] = repaired
+        else:
+            snapshot["recovery_original_fields"] = {
+                "previous": copy.deepcopy(previous_recovery),
+                "current": repaired,
+            }
+    return snapshot
+
+
+def raw_recovery_history_entry(raw: Any, upstream: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "adoption": None,
+        "last_synced_at": None,
+        "last_synced_commit": None,
+        "last_sync_note": None,
+        "recovery_original_fields": {"raw_entry": copy.deepcopy(raw)},
+        "reference_integrity": None,
+        "upstream": copy.deepcopy(upstream),
+    }
+
+
+def valid_local_timestamp(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        parsed = dt.datetime.fromisoformat(value)
+    except ValueError:
+        return False
+    return parsed.tzinfo is not None and parsed.utcoffset() is not None
+
+
+def valid_local_sha(value: Any) -> bool:
+    return bool(
+        isinstance(value, str)
+        and len(value) == 40
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def valid_local_history(history: Any) -> bool:
+    required = {
+        "adoption",
+        "last_synced_commit",
+        "last_synced_at",
+        "last_sync_note",
+        "reference_integrity",
+        "upstream",
+    }
+    if not isinstance(history, list):
+        return False
+    for entry in history:
+        if not isinstance(entry, dict) or not required.issubset(entry):
+            return False
+        if entry["last_synced_commit"] is not None and not valid_local_sha(
+            entry["last_synced_commit"]
+        ):
+            return False
+        if entry["last_synced_at"] is not None and not valid_local_timestamp(
+            entry["last_synced_at"]
+        ):
+            return False
+        if (entry["last_synced_commit"] is None) != (entry["last_synced_at"] is None):
+            return False
+        if entry["last_sync_note"] is not None and not isinstance(entry["last_sync_note"], str):
+            return False
+        if entry["adoption"] is not None and not isinstance(entry["adoption"], dict):
+            return False
+        integrity = entry["reference_integrity"]
+        if integrity is not None and (
+            not isinstance(integrity, dict) or not isinstance(integrity.get("adopted"), bool)
+        ):
+            return False
+        upstream = entry["upstream"]
+        if not isinstance(upstream, dict) or not all(
+            isinstance(upstream.get(key), str) and upstream[key].strip()
+            for key in ("url", "remote", "branch")
+        ):
+            return False
+    return True
+
+
+def valid_local_path_list(values: Any) -> bool:
+    if not isinstance(values, list) or not all(
+        isinstance(value, str) and value for value in values
+    ):
+        return False
+    return all(
+        not PurePosixPath(value).is_absolute() and ".." not in PurePosixPath(value).parts
+        for value in values
+    )
+
+
+def valid_local_upstream(value: Any) -> bool:
+    return isinstance(value, dict) and all(
+        isinstance(value.get(key), str) and value[key].strip()
+        for key in ("url", "remote", "branch")
+    )
+
+
+def valid_local_reviewed_metadata(data: dict[str, Any]) -> bool:
+    adoption = data.get("adoption")
+    if not isinstance(adoption, dict) or adoption.get("status") != "reviewed":
+        return False
+    upstream = data.get("upstream")
+    if data.get("schema_version") != "paper-template-sync-v1" or not isinstance(upstream, dict):
+        return False
+    if not valid_local_upstream(upstream):
+        return False
+    if not valid_local_sha(data.get("last_synced_commit")):
+        return False
+    if not valid_local_timestamp(data.get("last_synced_at")):
+        return False
+    if data.get("last_sync_note") is not None and not isinstance(
+        data.get("last_sync_note"), str
+    ):
+        return False
+    integrity = data.get("reference_integrity")
+    if integrity is not None and (
+        not isinstance(integrity, dict) or not isinstance(integrity.get("adopted"), bool)
+    ):
+        return False
+    if not valid_local_path_list(data.get("always_manual", [])) or not valid_local_path_list(
+        data.get("ignored_paths", [])
+    ):
+        return False
+    if not valid_local_sha(adoption.get("target_commit")):
+        return False
+    if not valid_local_timestamp(adoption.get("reviewed_at")):
+        return False
+    fingerprint = adoption.get("verification_repository_fingerprint")
+    if not isinstance(fingerprint, str) or len(fingerprint) != 64 or any(
+        character not in "0123456789abcdef" for character in fingerprint
+    ):
+        return False
+    return valid_local_history(adoption.get("prior_sync_history"))
+
+
+def valid_local_in_progress_metadata(data: dict[str, Any]) -> bool:
+    adoption = data.get("adoption")
+    if not isinstance(adoption, dict) or adoption.get("status") != "in_progress":
+        return False
+    upstream = data.get("upstream")
+    if data.get("schema_version") != "paper-template-sync-v1" or not isinstance(upstream, dict):
+        return False
+    if not valid_local_upstream(upstream):
+        return False
+    if data.get("last_synced_commit") is not None or data.get("last_synced_at") is not None:
+        return False
+    if data.get("last_sync_note") is not None and not isinstance(
+        data.get("last_sync_note"), str
+    ):
+        return False
+    integrity = data.get("reference_integrity")
+    if integrity is not None and (
+        not isinstance(integrity, dict) or not isinstance(integrity.get("adopted"), bool)
+    ):
+        return False
+    if not valid_local_path_list(data.get("always_manual", [])) or not valid_local_path_list(
+        data.get("ignored_paths", [])
+    ):
+        return False
+    if not valid_local_sha(adoption.get("target_commit")):
+        return False
+    if "reviewed_at" in adoption or "verification_repository_fingerprint" in adoption:
+        return False
+    return "prior_sync_history" in adoption and valid_local_history(
+        adoption["prior_sync_history"]
+    )
+
+
+def valid_local_uninitialized_metadata(data: dict[str, Any]) -> bool:
+    if data.get("adoption") is not None:
+        return False
+    upstream = data.get("upstream")
+    if data.get("schema_version") != "paper-template-sync-v1" or not isinstance(upstream, dict):
+        return False
+    if not all(
+        isinstance(upstream.get(key), str) and upstream[key].strip()
+        for key in ("url", "remote", "branch")
+    ):
+        return False
+    if data.get("last_synced_commit") is not None or data.get("last_synced_at") is not None:
+        return False
+    note = data.get("last_sync_note")
+    if note is not None and not isinstance(note, str):
+        return False
+    integrity = data.get("reference_integrity")
+    if integrity is not None and (
+        not isinstance(integrity, dict) or not isinstance(integrity.get("adopted"), bool)
+    ):
+        return False
+    return valid_local_path_list(data.get("always_manual", [])) and valid_local_path_list(
+        data.get("ignored_paths", [])
+    )
 
 
 def reviewed_provenance_is_compatible(root: Path, config: dict[str, Any]) -> bool:
+    if not valid_local_reviewed_metadata(config):
+        return False
     adoption = config["adoption"]
     upstream = config["upstream"]
     baseline = config.get("last_synced_commit")
@@ -1516,7 +1776,8 @@ def consistent_pending_adoption(
     target: str,
 ) -> bool:
     return bool(
-        isinstance(adoption, dict)
+        valid_local_in_progress_metadata(existing)
+        and isinstance(adoption, dict)
         and adoption.get("status") == "in_progress"
         and adoption.get("target_commit") == target
         and existing.get("last_synced_commit") is None
@@ -1554,27 +1815,59 @@ def pending_sync_config(
     upstream = plan["upstream"]
     recovering = False
     if existing is not None:
-        existing_upstream = existing["upstream"]
+        existing_upstream = (
+            existing.get("upstream")
+            if valid_local_upstream(existing.get("upstream"))
+            else upstream
+        )
         same_pending = consistent_pending_adoption(
             existing, adoption, upstream, str(plan["target_commit"])
         )
         recovering = not same_pending and (
             existing.get("last_synced_commit") is not None
             or isinstance(adoption, dict)
-            or any(existing_upstream[key] != upstream[key] for key in ("url", "remote", "branch"))
+            or not valid_local_uninitialized_metadata(existing)
+            or any(
+                existing_upstream[key] != upstream[key]
+                for key in ("url", "remote", "branch")
+            )
         )
         if recovering and not recover_reviewed:
             raise AdoptionError(
                 "existing baseline or adoption metadata is not trustworthy evidence of completed adoption; "
                 "review its provenance and rerun apply with --recover-reviewed"
             )
-    always_manual = list(existing.get("always_manual", [])) if existing else []
-    ignored_paths = list(existing.get("ignored_paths", [])) if existing else []
+    always_manual = (
+        list(existing.get("always_manual", []))
+        if existing and valid_local_path_list(existing.get("always_manual", []))
+        else []
+    )
+    ignored_paths = (
+        list(existing.get("ignored_paths", []))
+        if existing and valid_local_path_list(existing.get("ignored_paths", []))
+        else []
+    )
+    existing_upstream = (
+        existing.get("upstream")
+        if existing and valid_local_upstream(existing.get("upstream"))
+        else plan["upstream"]
+    )
     prior_sync_history = []
     if isinstance(adoption, dict):
-        prior_sync_history = list(adoption.get("prior_sync_history", []))
+        history = adoption.get("prior_sync_history", [])
+        if isinstance(history, list):
+            prior_sync_history = [
+                (
+                    sync_provenance(entry, default_upstream=existing_upstream)
+                    if isinstance(entry, dict)
+                    else raw_recovery_history_entry(entry, existing_upstream)
+                )
+                for entry in history
+            ]
+        else:
+            prior_sync_history = [raw_recovery_history_entry(history, existing_upstream)]
     if existing is not None and recovering:
-        prior_sync_history.append(sync_provenance(existing))
+        prior_sync_history.append(sync_provenance(existing, default_upstream=plan["upstream"]))
     return {
         "adoption": {
             "prior_sync_history": prior_sync_history,
@@ -1612,8 +1905,19 @@ def write_pending_sync_config(
     git(root, "add", "--", SYNC_CONFIG_RELATIVE.as_posix())
 
 
+def validate_adoption_lifecycle_markers(root: Path) -> None:
+    for relative in (Path(".agents/template-origin.json"), Path(".agents/init-state.json")):
+        path = root / relative
+        if path.is_symlink() or path.exists():
+            raise AdoptionError(
+                "template adoption must not carry GitHub Template provenance or an "
+                f"initialization marker: {relative.as_posix()}"
+            )
+
+
 def apply_plan(root: Path, plan_path: Path, *, recover_reviewed: bool) -> None:
     ensure_safe_apply_context(root)
+    validate_adoption_lifecycle_markers(root)
     plan = read_json(plan_path, "paper-template-adoption-plan-v1")
     validate_plan_upstream(root, plan)
     if current_branch(root) != plan.get("downstream_branch"):
@@ -1798,14 +2102,17 @@ def assess_adoption(root: Path, *, plan_path: Path) -> int:
     plan = read_json(plan_path, "paper-template-adoption-plan-v1")
     validate_plan_upstream(root, plan)
     checks: list[dict[str, Any]] = []
-    for raw_command in ASSESSMENT_COMMANDS:
-        command = list(raw_command)
-        result = run(command, cwd=root, check=False)
-        checks.append(command_record(command, result))
-        print(
-            f"{'OK' if result.returncode == 0 else 'FAILED'} "
-            f"template_adoption assess: {shlex.join(command)}"
-        )
+    with tempfile.TemporaryDirectory(prefix="paper-template-adoption-pycache-") as pycache:
+        env = dict(os.environ)
+        env["PYTHONPYCACHEPREFIX"] = pycache
+        for raw_command in ASSESSMENT_COMMANDS:
+            command = list(raw_command)
+            result = run(command, cwd=root, check=False, env=env)
+            checks.append(command_record(command, result))
+            print(
+                f"{'OK' if result.returncode == 0 else 'FAILED'} "
+                f"template_adoption assess: {shlex.join(command)}"
+            )
     report = {
         "schema_version": "paper-template-adoption-assessment-v1",
         "created_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
@@ -1914,53 +2221,20 @@ def read_existing_sync_config(root: Path) -> dict[str, Any] | None:
     if not isinstance(data, dict) or data.get("schema_version") != "paper-template-sync-v1":
         raise AdoptionError("existing .agents/template-sync.json has an unsupported schema")
     baseline = data.get("last_synced_commit")
-    if baseline is not None and (
-        not isinstance(baseline, str)
-        or len(baseline) != 40
-        or any(character not in "0123456789abcdef" for character in baseline)
-    ):
-        raise AdoptionError("existing template sync baseline must be null or a lowercase 40-character SHA")
+    if baseline is not None and not valid_local_sha(baseline):
+        if "adoption" not in data:
+            raise AdoptionError("existing template sync baseline is malformed")
     for key in ("always_manual", "ignored_paths"):
         values = data.get(key, [])
-        if not isinstance(values, list) or not all(
-            isinstance(value, str) and value for value in values
-        ):
+        if not valid_local_path_list(values) and "adoption" not in data:
             raise AdoptionError(f"existing template sync {key} must be a list of path strings")
-        for value in values:
-            candidate = PurePosixPath(value)
-            if candidate.is_absolute() or ".." in candidate.parts:
-                raise AdoptionError(f"unsafe path in existing template sync {key}: {value}")
     upstream = data.get("upstream")
-    if not isinstance(upstream, dict):
+    if not isinstance(upstream, dict) and "adoption" not in data:
         raise AdoptionError("existing template sync configuration requires an upstream object")
     for key in ("url", "remote", "branch"):
-        value = upstream.get(key)
-        if not isinstance(value, str) or not value.strip():
+        value = upstream.get(key) if isinstance(upstream, dict) else None
+        if (not isinstance(value, str) or not value.strip()) and "adoption" not in data:
             raise AdoptionError(f"existing template sync upstream.{key} must be a non-empty string")
-    adoption = data.get("adoption")
-    if adoption is not None:
-        if not isinstance(adoption, dict) or adoption.get("status") not in {
-            "in_progress",
-            "reviewed",
-        }:
-            raise AdoptionError("existing template sync adoption.status is invalid")
-        target = adoption.get("target_commit")
-        if not isinstance(target, str) or len(target) != 40 or any(
-            character not in "0123456789abcdef" for character in target
-        ):
-            raise AdoptionError("existing template sync adoption target must be a lowercase 40-character SHA")
-        history = adoption.get("prior_sync_history", [])
-        if not isinstance(history, list) or not all(isinstance(item, dict) for item in history):
-            raise AdoptionError("existing template sync adoption prior_sync_history must be a list of objects")
-        if adoption["status"] == "reviewed":
-            fingerprint = adoption.get("verification_repository_fingerprint")
-            if (
-                not isinstance(adoption.get("reviewed_at"), str)
-                or not isinstance(fingerprint, str)
-                or len(fingerprint) != 64
-                or any(character not in "0123456789abcdef" for character in fingerprint)
-            ):
-                raise AdoptionError("existing reviewed adoption state is incomplete or inconsistent")
     return data
 
 
@@ -1974,6 +2248,7 @@ def finalize_adoption(
     if not reviewed:
         raise AdoptionError("finalize requires --reviewed after semantic migration and validation")
     ensure_non_default_branch(root)
+    validate_adoption_lifecycle_markers(root)
     validate_installation(root)
     plan = read_json(plan_path, "paper-template-adoption-plan-v1")
     validate_plan_upstream(root, plan)

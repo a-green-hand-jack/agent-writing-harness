@@ -170,6 +170,14 @@ def validate_config_data(data: dict[str, Any]) -> None:
         not isinstance(baseline, str) or len(baseline) != 40 or any(ch not in "0123456789abcdef" for ch in baseline)
     ):
         raise SyncError("last_synced_commit must be null or a 40-character lowercase Git SHA")
+    synced_at = data.get("last_synced_at")
+    if synced_at is not None:
+        require_timestamp(synced_at, "last_synced_at")
+    if (baseline is None) != (synced_at is None):
+        raise SyncError("last_synced_commit and last_synced_at must be both null or both recorded")
+    note = data.get("last_sync_note")
+    if note is not None and not isinstance(note, str):
+        raise SyncError("last_sync_note must be null or a string")
     reference_integrity = data.get("reference_integrity")
     if reference_integrity is not None and (
         not isinstance(reference_integrity, dict)
@@ -185,6 +193,10 @@ def validate_config_data(data: dict[str, Any]) -> None:
             raise SyncError("template sync adoption.status must be in_progress or reviewed")
         if adoption["status"] == "reviewed":
             validate_reviewed_adoption_shape(adoption)
+            if synced_at is None:
+                raise SyncError("reviewed adoption requires a recorded last_synced_at")
+        else:
+            validate_in_progress_adoption_shape(data, adoption)
     for key in ("always_manual", "ignored_paths"):
         values = data.get(key, [])
         if not isinstance(values, list) or not all(isinstance(value, str) and value for value in values):
@@ -214,9 +226,9 @@ def require_timestamp(value: Any, label: str) -> None:
         raise SyncError(f"{label} must be a timezone-aware ISO timestamp")
 
 
-def validate_prior_sync_history(history: Any) -> None:
+def validate_prior_sync_history(history: Any, *, label: str = "reviewed adoption") -> None:
     if not isinstance(history, list):
-        raise SyncError("reviewed adoption prior_sync_history must be a list")
+        raise SyncError(f"{label} prior_sync_history must be a list")
     required = {
         "adoption",
         "last_synced_commit",
@@ -227,28 +239,30 @@ def validate_prior_sync_history(history: Any) -> None:
     }
     for index, entry in enumerate(history):
         if not isinstance(entry, dict) or not required.issubset(entry):
-            raise SyncError(f"reviewed adoption history entry {index} is incomplete")
+            raise SyncError(f"{label} history entry {index} is incomplete")
         commit = entry["last_synced_commit"]
         if commit is not None and not is_lower_sha(commit, 40):
-            raise SyncError(f"reviewed adoption history entry {index} has an invalid baseline")
+            raise SyncError(f"{label} history entry {index} has an invalid baseline")
         synced_at = entry["last_synced_at"]
         if synced_at is not None:
-            require_timestamp(synced_at, f"reviewed adoption history entry {index} last_synced_at")
+            require_timestamp(synced_at, f"{label} history entry {index} last_synced_at")
+        if (commit is None) != (synced_at is None):
+            raise SyncError(f"{label} history entry {index} has an inconsistent baseline pair")
         if entry["last_sync_note"] is not None and not isinstance(entry["last_sync_note"], str):
-            raise SyncError(f"reviewed adoption history entry {index} has an invalid note")
+            raise SyncError(f"{label} history entry {index} has an invalid note")
         if entry["adoption"] is not None and not isinstance(entry["adoption"], dict):
-            raise SyncError(f"reviewed adoption history entry {index} has invalid adoption metadata")
+            raise SyncError(f"{label} history entry {index} has invalid adoption metadata")
         integrity = entry["reference_integrity"]
         if integrity is not None and (
             not isinstance(integrity, dict) or not isinstance(integrity.get("adopted"), bool)
         ):
-            raise SyncError(f"reviewed adoption history entry {index} has invalid reference integrity")
+            raise SyncError(f"{label} history entry {index} has invalid reference integrity")
         upstream = entry["upstream"]
         if not isinstance(upstream, dict) or not all(
             isinstance(upstream.get(key), str) and upstream[key].strip()
             for key in ("url", "remote", "branch")
         ):
-            raise SyncError(f"reviewed adoption history entry {index} has invalid upstream metadata")
+            raise SyncError(f"{label} history entry {index} has invalid upstream metadata")
 
 
 def validate_reviewed_adoption_shape(adoption: dict[str, Any]) -> None:
@@ -264,6 +278,20 @@ def validate_reviewed_adoption_shape(adoption: dict[str, Any]) -> None:
     validate_prior_sync_history(adoption["prior_sync_history"])
 
 
+def validate_in_progress_adoption_shape(data: dict[str, Any], adoption: dict[str, Any]) -> None:
+    if not is_lower_sha(adoption.get("target_commit"), 40):
+        raise SyncError("in-progress adoption target_commit must be a lowercase 40-character SHA")
+    if "prior_sync_history" not in adoption:
+        raise SyncError("in-progress adoption prior_sync_history is required")
+    validate_prior_sync_history(
+        adoption["prior_sync_history"], label="in-progress adoption"
+    )
+    if data.get("last_synced_commit") is not None or data.get("last_synced_at") is not None:
+        raise SyncError("in-progress adoption must not have a recorded template baseline")
+    if "reviewed_at" in adoption or "verification_repository_fingerprint" in adoption:
+        raise SyncError("in-progress adoption must not contain reviewed metadata")
+
+
 def validate_repository(root: Path) -> None:
     inheritance_policy(root)
     data = read_config(root)
@@ -277,6 +305,48 @@ def validate_repository(root: Path) -> None:
         if heading not in text:
             raise SyncError(f"template sync skill missing heading: {heading}")
     print("OK template_sync configuration")
+
+
+def validate_lifecycle_markers(root: Path, config: dict[str, Any]) -> None:
+    adoption = config.get("adoption")
+    if not isinstance(adoption, dict) or adoption.get("status") not in {
+        "in_progress",
+        "reviewed",
+    }:
+        return
+    for relative in (Path(".agents/template-origin.json"), Path(".agents/init-state.json")):
+        path = root / relative
+        if path.is_symlink() or path.exists():
+            raise SyncError(
+                "template adoption must not carry GitHub Template provenance or an "
+                f"initialization marker: {relative.as_posix()}"
+            )
+
+
+def require_operation_lifecycle(root: Path, config: dict[str, Any], command: str) -> None:
+    adoption = config.get("adoption")
+    if isinstance(adoption, dict) and adoption.get("status") in {"in_progress", "reviewed"}:
+        return
+    paper_init = root / ".agents/tools/paper-init.py"
+    if paper_init.is_symlink() or not paper_init.is_file():
+        raise SyncError(
+            f"refusing template sync {command} without reviewed adoption or template-created provenance"
+        )
+    result = subprocess.run(
+        [sys.executable, str(paper_init), "--root", str(root), "status"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0 or not any(
+        line in result.stdout
+        for line in ("OK paper_init initialized",)
+    ):
+        detail = result.stdout.strip() or result.stderr.strip()
+        raise SyncError(
+            f"refusing template sync {command} without valid template-created provenance: {detail}"
+        )
 
 
 def normalize_path(path: str) -> str:
@@ -451,12 +521,29 @@ def ensure_remote(root: Path, config: dict[str, Any]) -> tuple[str, str, str]:
     return remote, url, branch
 
 
+def configured_remote(root: Path, config: dict[str, Any]) -> tuple[str, str, str]:
+    upstream = config["upstream"]
+    remote = upstream["remote"]
+    url = upstream["url"]
+    branch = upstream["branch"]
+    existing = git(root, "remote", "get-url", remote, check=False)
+    if existing.returncode != 0:
+        raise SyncError(
+            f"configured upstream remote {remote} is missing; run template sync fetch first"
+        )
+    if existing.stdout.strip() != url:
+        raise SyncError(
+            f"remote {remote} points to {existing.stdout.strip()}, expected {url}; review before changing it"
+        )
+    return remote, url, branch
+
+
 def require_configured_upstream_target(
     root: Path,
     config: dict[str, Any],
     target: str,
 ) -> None:
-    remote, _, branch = ensure_remote(root, config)
+    remote, _, branch = configured_remote(root, config)
     branch_ref = f"refs/remotes/{remote}/{branch}"
     branch_tip = resolve_commit(root, branch_ref)
     result = git(root, "merge-base", "--is-ancestor", target, branch_tip, check=False)
@@ -469,6 +556,9 @@ def require_configured_upstream_target(
 def validate_reviewed_adoption_provenance(root: Path, config: dict[str, Any]) -> None:
     adoption = config.get("adoption")
     if not isinstance(adoption, dict) or adoption.get("status") != "reviewed":
+        baseline = config.get("last_synced_commit")
+        if baseline is not None:
+            require_configured_upstream_target(root, config, str(baseline))
         return
     baseline = config.get("last_synced_commit")
     if not is_lower_sha(baseline, 40):
@@ -1152,10 +1242,13 @@ def main() -> int:
         ensure_git_repository(root)
         config = read_config(root)
         validate_config_data(config)
-        if args.command != "fetch":
+        validate_lifecycle_markers(root, config)
+        if args.command != "fetch" and not (args.command == "plan" and args.fetch):
             validate_reviewed_adoption_provenance(root, config)
-        if args.command in {"plan", "apply", "verify", "record"}:
-            refuse_in_progress_adoption(config, args.command)
+        if args.command in {"fetch", "plan", "apply", "verify", "record"}:
+            require_operation_lifecycle(root, config, args.command)
+            if args.command != "fetch":
+                refuse_in_progress_adoption(config, args.command)
         if args.command == "validate":
             validate_repository(root)
         elif args.command == "status":

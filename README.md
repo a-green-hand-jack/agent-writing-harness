@@ -4,18 +4,30 @@
 
 A paper-first repository for Human–Agent collaborative scientific writing.
 
+Agents starting from this GitHub Template should read `AGENT_GUIDE.md` first.
+It defines the product-independent path from this **template repo** to a
+separate downstream **writing repo**, then indexes the writing, evidence,
+publication, adoption, synchronization, and release workflows.
+
+For the rationale behind those contracts and tools, see
+`WHY_THIS_TEMPLATE.md`: it explains the writing risks the template is designed
+to reduce, the complete built-in paper skill stack, its practical gains, and
+its limits.
+
 ## Start writing
 
-1. If this repository was created from the template and `.agents/init-state.json` does not exist, run `python3 .agents/tools/paper-init.py clean --commit` before editing paper content. This strips upstream template governance IDs and records the initialization.
-2. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
-2. Record paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
-3. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
-4. Record publication variants and allowed differences in `PUBLICATION.md`.
-5. Have the Agent construct and repair BibTeX from retrieved authoritative evidence, maintain `references/ledger.json` in the same change, and follow `REFERENCES.md`; never invent free-form metadata.
-6. For every substantive citation, have the Agent run the Draft citation-support check (`citation-support-review`): inventory the active occurrence, resolve or discover the source, retrieve exact passages, and record a passing result as provisional. Never insert a citation from title relevance or metadata existence alone.
-7. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
-8. Edit the one canonical LaTeX source under `paper/`.
-9. Build:
+1. If an Agent is currently in this template repo, load `ccf-project-scaffolder` in template-create mode. It follows `AGENT_GUIDE.md` to create and initialize a separate writing repo from the GitHub Template. Do not draft a real paper in the template repo.
+2. If independent repository-creation evidence confirms that this repository was created from the template, its origin is not the upstream template, and `.agents/init-state.json` does not exist, run `python3 .agents/tools/paper-init.py record-template-origin --commit` followed by `python3 .agents/tools/paper-init.py clean --commit` before editing paper content. The first command records GitHub's template provenance; the second strips upstream template governance IDs and records initialization. A non-upstream origin, copied template files, or the generic `paper-init.py status` label is not enough; use template adoption for an unrelated or ambiguous existing paper repository.
+3. Give the Agent the first-session packet in `AGENT_GUIDE.md`: research seed, evidence inventory, target or `unresolved`, authorship constraints, first deliverable, and hard constraints. This packet is enough to begin onboarding and contract setup; section drafting requires supplied or Human-approved claims and evidence for that section.
+4. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
+5. Record only real paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
+6. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
+7. Record publication variants and allowed differences in `PUBLICATION.md`.
+8. Have the Agent construct and repair BibTeX from retrieved authoritative evidence, maintain `references/ledger.json` in the same change, and follow `REFERENCES.md`; never invent free-form metadata.
+9. For every substantive citation, have the Agent run the Draft citation-support check (`citation-support-review`): inventory the active occurrence, resolve or discover the source, retrieve exact passages, and record a passing result as provisional. Never insert a citation from title relevance or metadata existence alone.
+10. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
+11. Edit the one canonical LaTeX source under `paper/`.
+12. Build:
 
 ```bash
 make pdf
@@ -65,7 +77,7 @@ The factory template is intentionally unresolved, so strict release builds fail 
 bash .agents/tools/verify.sh
 ```
 
-`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, the offline reference ledger (including occurrence coverage and claim-support state), publication variants, release-record boundaries, template-adoption and template-sync configuration, regressions, and vendored-skill integrity. The separate `Reference validation` workflow installs hash-locked Pybtex format validation and the open-source metadata checker only after the protected publication policy enables them.
+`verify.sh` checks structure, documentation consistency, Draft contracts, interfaces, the offline reference ledger (including occurrence coverage and claim-support state), publication variants, release-record boundaries, template-adoption and template-sync configuration, regressions, vendored-skill integrity, and one registered task-level evaluation scenario per bundled wrapper. The deterministic scenario check does not invoke a model; live worker/reviewer sub-agent runs are explicit non-blocking evaluations. The separate `Reference validation` workflow installs hash-locked Pybtex format validation and the open-source metadata checker only after the protected publication policy enables them.
 
 ## Bundled Agent skills
 
@@ -131,7 +143,7 @@ python3 .agents/tools/template-sync.py plan --bootstrap   # only when no trustwo
 python3 .agents/tools/template-sync.py apply
 ```
 
-The plan separates changes into `safe`, `already`, `manual`, `conflict`, and `ignored`. Safe infrastructure updates can be staged mechanically. Human contracts, paper content, references, macros, CI, build logic, dependency locks, venue configuration, style, and project knowledge remain protected and are exported to an ignored merge bundle for Agent review. Reference-integrity tooling received by an older sync engine remains inert until the protected `PUBLICATION.md` policy and `paper/refs.bib` activation marker are merged after ledger migration and downstream-local `.agents/template-sync.json` records `reference_integrity.adopted=true`.
+The shared path policy is registered in `.agents/template-inheritance.json`; downstream-local additions remain in `.agents/template-sync.json`. The plan separates changes into `safe`, `already`, `manual`, `conflict`, and `ignored`. Safe infrastructure updates can be staged mechanically. Human contracts, paper content, publication variants, references, macros, CI, build logic, dependency locks, venue configuration, style, and project knowledge remain protected and are exported to an ignored merge bundle for Agent review. Reference-integrity tooling received by an older sync engine remains inert until the protected `PUBLICATION.md` policy and `paper/refs.bib` activation marker are merged after ledger migration and downstream-local `.agents/template-sync.json` records `reference_integrity.adopted=true`.
 
 After manual merges and successful downstream validation:
 
