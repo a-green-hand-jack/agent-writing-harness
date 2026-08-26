@@ -13,7 +13,7 @@
   },
   "template_creation": {
     "inheritance": "all-tracked-files",
-    "post_creation_command": "python3 .agents/tools/paper-init.py clean --commit"
+    "post_creation_command": "python3 .agents/tools/paper-init.py record-template-origin --commit && python3 .agents/tools/paper-init.py clean --commit"
   },
   "adoption": {
     "required_paths": [
@@ -48,6 +48,7 @@
       ".agents/overleaf-sync.json",
       ".agents/documentation-consistency.json",
       ".agents/init-state.json",
+      ".agents/template-origin.json",
       ".agents/runtime/",
       "dist/"
     ],
@@ -98,6 +99,7 @@
       ".agents/overleaf-sync.json",
       ".agents/documentation-consistency.json",
       ".agents/init-state.json",
+      ".agents/template-origin.json",
       ".agents/runtime/",
       "dist/"
     ],
