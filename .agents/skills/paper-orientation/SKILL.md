@@ -22,7 +22,7 @@ python3 .agents/tools/paper-init.py status
 
 Classify the observed state before editing or running initialization commands:
 
-- `upstream_template`: origin is exactly `a-green-hand-jack/ccfa-writing-paper-template` and the initialization marker is absent. A new paper must use the template-create mode of `ccf-project-scaffolder`; do not write paper content here.
+- `upstream_template`: `python3 .agents/tools/paper-init.py status` reports `OK paper_init upstream_template`. A new paper must use the template-create mode of `ccf-project-scaffolder`; do not write paper content here.
 - uninitialized template-created downstream: `.agents/template-origin.json` is a valid repository-bound attestation verified through GitHub's `template_repository` field, its origin is not the upstream template, and the initialization marker is absent. Run downstream initialization before paper work.
 - initialized downstream: the provenance attestation and initialization marker are valid, and `.agents/template-sync.json` identifies the configured upstream template. Use ordinary paper workflows; use `template-sync` for later upstream infrastructure updates.
 - adoption in progress: `.agents/template-sync.json` exists with `adoption.status: in_progress`. Resume `template-adoption`; do not route to ordinary writing or `template-sync` until reviewed finalization.
@@ -30,6 +30,8 @@ Classify the observed state before editing or running initialization commands:
   `adoption.status: reviewed` and a reviewed baseline, while
   `.agents/template-origin.json` and `.agents/init-state.json` are absent. Use
   ordinary paper workflows; use `template-sync` for later upstream updates.
+  This also covers reviewed real-paper case branches hosted in the template
+  repository; their paper content remains downstream-owned evidence.
 - unrelated or ambiguous existing paper repository: there is no positive GitHub Template provenance or reviewed adoption state. Use `template-adoption`, not template creation or ordinary sync.
 
 If the remote, marker, and repository contents disagree, stop and report the
