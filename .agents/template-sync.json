@@ -30,9 +30,9 @@
   },
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed lifecycle hardening sync to template main ad45718; preserved case paper contracts and downstream anatomy.",
-  "last_synced_at": "2026-08-26T07:56:06+00:00",
-  "last_synced_commit": "ad4571896528bc9a71289720e05d576c5b32fd7c",
+  "last_sync_note": "Reviewed hosted-case routing fix sync to template main c135f32; preserved DGM paper contracts and downstream anatomy.",
+  "last_synced_at": "2026-08-26T08:50:39+00:00",
+  "last_synced_commit": "c135f3261693042a2ba61c487af3f23ce6fdbebe",
   "reference_integrity": {
     "adopted": false
   },
