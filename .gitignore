@@ -14,3 +14,5 @@ paper/main*.pdf
 /.orca/
 /.env
 *.ptc
+/opencode.jsonc
+/opencode.json
