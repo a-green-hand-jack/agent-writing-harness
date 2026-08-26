@@ -13,3 +13,5 @@ paper/main*.pdf
 /dist/
 /.orca/
 /.env
+/opencode.jsonc
+/opencode.json

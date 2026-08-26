@@ -1,4 +1,26 @@
 {
+  "adoption": {
+    "prior_sync_history": [
+      {
+        "adoption": null,
+        "last_sync_note": "Template adoption is in progress against 626ca3459e450ac1117a314857087de92d9b7fdc; finalize only after semantic review and validation.",
+        "last_synced_at": null,
+        "last_synced_commit": null,
+        "reference_integrity": {
+          "adopted": false
+        },
+        "upstream": {
+          "branch": "main",
+          "remote": "origin",
+          "url": "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git"
+        }
+      }
+    ],
+    "reviewed_at": "2026-08-09T08:10:47+00:00",
+    "status": "reviewed",
+    "target_commit": "626ca3459e450ac1117a314857087de92d9b7fdc",
+    "verification_repository_fingerprint": "64dd184094894f7a2185e6fd34e0749ea0cf0806957304461f9371d9652dbdd3"
+  },
   "always_manual": [],
   "ignored_paths": [],
   "last_sync_note": "Reviewed Agent-assisted template synchronization.",

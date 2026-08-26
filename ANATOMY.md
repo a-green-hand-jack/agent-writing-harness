@@ -19,14 +19,18 @@ A clean copy of `paper/` must compile all supported variants independently.
 
 ## Agent sidecar
 
-- `AGENTS.md`: thin routing entry point.
+- `AGENTS.md`: thin routing entry point for ARIS paper work.
 - `.agents/knowledge/`: optional context loaded only when relevant.
-- `.agents/skills/`: focused local procedures and bundled-skill wrappers.
+- `.agents/skills/`: focused local procedures, the shared repository-role gate, template lifecycle workflows, and bundled-skill wrappers.
 - `.agents/vendor/`: immutable third-party skill snapshots.
 - `.agents/tools/` and `.agents/tests/`: verification, release, adoption, synchronization, and regression tooling.
 - `.agents/runtime/`: ignored short-lived coordination and verification evidence.
 - `.agents/template-sync.json`: downstream-local reviewed template baseline.
 - `.agents/overleaf-sync.json`: paper-only Overleaf working-copy configuration.
+
+ARIS is a reviewed real-paper case hosted in the template repository. It uses
+the reviewed-adoption lifecycle state rather than claiming GitHub Template
+provenance; later infrastructure updates use path-level template synchronization.
 
 ## Generated release instances
 
