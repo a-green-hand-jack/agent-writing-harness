@@ -57,6 +57,7 @@ These skills connect Agent work to the writing repo's current state:
 | Skill | How it helps the paper |
 |---|---|
 | `paper-orientation` | Recovers the minimum current context at the start of a session without loading the whole repository or stale history. |
+| `ccf-project-scaffolder` template-create mode | Creates and initializes an independent writing repo from the GitHub Template, pushes its initialization commit, and hands off with a first-session paper packet. |
 | `section-writing` | Owns drafting and substantial revision of a named section from the current claims, evidence, interfaces, references, and section responsibility. |
 | `style-alignment` | Governs positioning, narrative architecture, section responsibilities, writing policy, venue overlays, and adoption of a Human-approved Writing DNA. |
 | `control-review` | Retrieves impact and requires the right Human decision before a central claim, story choice, experiment condition, limitation, interpretation, or stable interface meaning changes. |
@@ -91,7 +92,7 @@ cover more than prose generation:
 | `ccf-submission-checker` | Checks venue template, page limit, anonymity, camera-ready rules, LaTeX/PDF output, metadata, fonts, supplementary material, artifacts, licenses, and policy freshness. |
 | `ccf-rebuttal-writer` | Organizes rebuttals, author responses, response letters, reviewer-comment ledgers, revision summaries, and conservative resubmission plans. |
 | `ccf-pipeline-orchestrator` | Plans project stages, goals, constraints, gates, artifacts, and handoffs, then routes work to the responsible skill; it does not pretend to execute every specialty itself. |
-| `ccf-project-scaffolder` | Prepares external CCF paper project folders, templates, configuration, and artifact directories when project scaffolding outside the normal template-creation path is needed. |
+| `ccf-project-scaffolder` generic scaffold mode | Prepares external CCF paper project folders, templates, configuration, and artifact directories outside the normal template-creation path. Its local template-create mode owns the GitHub Template to writing-repo transition. |
 | `ccf-common` | Maintains shared CCFA routing, evidence, privacy, task-mode, handoff, and artifact contracts. It supports the capability layer but is not loaded for ordinary paper work. |
 | `ccf-skill-forger` | Maintains and audits skills, triggers, resources, scripts, privacy boundaries, and family governance. It improves the tool layer, not manuscript content directly. |
 

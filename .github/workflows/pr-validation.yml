@@ -32,7 +32,15 @@ jobs:
           python-version: "3.12"
 
       - name: Fetch the configured template baseline
-        run: python3 .agents/tools/template-sync.py fetch
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(python3 .agents/tools/paper-init.py status)"
+          if grep -Fxq "OK paper_init upstream_template" <<<"$status"; then
+            printf '%s\n' "$status"
+          else
+            python3 .agents/tools/template-sync.py fetch
+          fi
 
       - name: Run paper-first verification
         run: bash .agents/tools/verify.sh

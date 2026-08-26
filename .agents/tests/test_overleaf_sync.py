@@ -82,14 +82,12 @@ class OverleafSyncTests(unittest.TestCase):
         )
 
     def test_configured_repository_passes_static_validation(self) -> None:
-        result = run(
-            [sys.executable, str(TOOL), "--root", str(ROOT), "validate"],
-            ROOT,
-            check=False,
-        )
+        result = self.tool("validate")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("source=paper/", result.stdout)
-        config = json.loads((ROOT / ".agents/overleaf-sync.json").read_text(encoding="utf-8"))
+        config = json.loads(
+            (self.repo / ".agents/overleaf-sync.json").read_text(encoding="utf-8")
+        )
         self.assertEqual(config["source_prefix"], "paper")
         remote = config["remote"]
         self.assertIsInstance(remote, dict)
