@@ -30,9 +30,9 @@
   },
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed Agent-assisted template synchronization.",
-  "last_synced_at": "2026-08-24T19:15:30+00:00",
-  "last_synced_commit": "6fff56a2bad643040eb2c8555e286e50025f041a",
+  "last_sync_note": "Reviewed lifecycle hardening sync to template main ad45718; preserved case paper contracts and downstream anatomy.",
+  "last_synced_at": "2026-08-26T07:56:06+00:00",
+  "last_synced_commit": "ad4571896528bc9a71289720e05d576c5b32fd7c",
   "reference_integrity": {
     "adopted": false
   },
