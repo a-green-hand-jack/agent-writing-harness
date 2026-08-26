@@ -23,9 +23,9 @@
   },
   "always_manual": [],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed Agent-assisted template synchronization.",
-  "last_synced_at": "2026-08-24T19:12:04+00:00",
-  "last_synced_commit": "6fff56a2bad643040eb2c8555e286e50025f041a",
+  "last_sync_note": "Reviewed template sync from 6fff56a to c135f32; preserved ARIS paper contracts, observational evidence scope, and hosted-case lifecycle.",
+  "last_synced_at": "2026-08-26T09:11:58+00:00",
+  "last_synced_commit": "c135f3261693042a2ba61c487af3f23ce6fdbebe",
   "reference_integrity": {
     "adopted": true
   },
