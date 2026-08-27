@@ -6,11 +6,14 @@
     "target_commit": "f7d1a37287f045913cca435738ac7e4b4d2888d0",
     "verification_repository_fingerprint": "e6e641c82bf91dd0884e782ebb4ef2a675dd42c8269f994f35c10a3818b9e1a0"
   },
-  "always_manual": [],
+  "always_manual": [
+    ".agents/tests/test_structure.py",
+    ".agents/tools/check-structure.py"
+  ],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed hosted-case routing sync from ad45718 to c135f32; preserved CORAL paper contracts and manual CI behavior.",
-  "last_synced_at": "2026-08-26T09:18:40+00:00",
-  "last_synced_commit": "c135f3261693042a2ba61c487af3f23ce6fdbebe",
+  "last_sync_note": "Reviewed Agent-assisted template synchronization.",
+  "last_synced_at": "2026-08-27T15:18:45+00:00",
+  "last_synced_commit": "7ffa76c4befc27776cf10ab51385b9819346cac9",
   "reference_integrity": {
     "adopted": false
   },
