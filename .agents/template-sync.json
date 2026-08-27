@@ -28,7 +28,9 @@
     "target_commit": "f7d1a37287f045913cca435738ac7e4b4d2888d0",
     "verification_repository_fingerprint": "85837a9c4c0311f4447e83af5b736a154904af204bef03ef92cce6019022c98a"
   },
-  "always_manual": [],
+  "always_manual": [
+    ".agents/tools/check-structure.py"
+  ],
   "ignored_paths": [],
   "last_sync_note": "Reviewed hosted-case routing fix sync to template main c135f32; preserved DGM paper contracts and downstream anatomy.",
   "last_synced_at": "2026-08-26T08:50:39+00:00",
