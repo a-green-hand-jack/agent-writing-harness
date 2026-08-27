@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import sys
@@ -85,6 +86,35 @@ class PublicationChecks(unittest.TestCase):
             result = run(root)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("PaperAcknowledgementsfalse", result.stdout)
+
+    def test_external_entrypoint_requires_exact_code_token(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / ".agents").mkdir()
+            (root / ".agents/paper-build.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": "paper-build-profile-v1",
+                        "layout": "external-latex",
+                        "source_root": ".",
+                        "entrypoint": "main.tex",
+                        "bibliography": None,
+                        "builds": [{"name": "manuscript", "command": ["make"]}],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            headings = (
+                "# Publication Contract\n## Canonical paper\n`not-main.tex`\n"
+                "## Active variants\n`manuscript`\n## Allowed differences\n"
+                "## Must not diverge silently\n## Human review triggers\n"
+                "## Build interface\n## Release instances\n"
+            )
+            (root / "PUBLICATION.md").write_text(headings, encoding="utf-8")
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("declared entrypoint", result.stdout)
 
 
 if __name__ == "__main__":

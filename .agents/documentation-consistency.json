@@ -25,7 +25,7 @@
     ]
   },
   "stale_patterns": {
-    "\\bICLR[ _-]?2026\\b": "obsolete target venue ICLR 2026",
+    "\\bTarget(?: venue)?[^\\n]{0,20}\\bICLR[ _-]?2026\\b": "obsolete target venue ICLR 2026",
     "lab/artifacts/": "removed lab artifact registry",
     "state/float-placement-map\\.yaml": "removed float-placement map",
     "scripts/check-figures-tables\\.py": "removed figure/table checker",

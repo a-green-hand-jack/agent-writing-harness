@@ -170,6 +170,43 @@ jobs:
           ! grep -Fq "TODO Authors" "$RUNNER_TEMP/default-main.txt"
           ! grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/default-main.txt"
 
+  official-templates:
+    name: official LaTeX template smoke tests
+    if: github.repository == 'a-green-hand-jack/ccfa-writing-paper-template'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout the validated head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install LaTeX template dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ghostscript \
+            latexmk \
+            texlive-fonts-extra \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-plain-generic \
+            texlive-publishers \
+            texlive-science
+
+      - name: Compile official template matrix
+        env:
+          REQUIRE_INSTALLED_LATEX_TEMPLATES: "1"
+          REQUIRE_OFFICIAL_LATEX_TEMPLATES: "1"
+          OFFICIAL_TEMPLATE_CACHE: ${{ runner.temp }}/official-template-cache
+        run: python3 -m unittest discover -s .agents/tests -p 'test_paper_profile.py'
+
   release-package:
     name: release-package
     runs-on: ubuntu-latest
