@@ -17,13 +17,16 @@ PROFILE_TOOL = ROOT / ".agents/tools/check-paper-profile.py"
 PUBLICATION_TOOL = ROOT / ".agents/tools/check-publication.py"
 sys.path.insert(0, str(ROOT / ".agents/tools"))
 
-from _journal_templates import (
-    JOURNAL_TEMPLATES,
-    JournalTemplateError,
+from _official_templates import (
+    OFFICIAL_TEMPLATES,
+    OfficialTemplate,
+    OfficialTemplateError,
     RemoteFile,
+    _sha256,
     _download,
     _extract,
     run_smoke_matrix,
+    smoke_test,
 )
 from _paper_profile import ProfileError, finish_output, run_profile_command
 import _paper_profile
@@ -294,36 +297,56 @@ class PaperProfileTests(unittest.TestCase):
             self.assertEqual(output.read_bytes(), b"previous output")
 
 @unittest.skipUnless(sys.platform == "linux", "safe build supervision requires Linux")
-class JournalClassBuildTests(unittest.TestCase):
+class InstalledLatexTemplateTests(unittest.TestCase):
     CASES = {
-        "elsarticle": r"""\documentclass{elsarticle}
+        "elsarticle": (
+            "elsarticle",
+            r"""\documentclass{elsarticle}
 \begin{document}\begin{frontmatter}\title{Fixture}\author{Author}
 \begin{abstract}Abstract.\end{abstract}\end{frontmatter}Body.\end{document}
 """,
-        "IEEEtran": r"""\documentclass[journal]{IEEEtran}
+        ),
+        "IEEEtran": (
+            "IEEEtran",
+            r"""\documentclass[journal]{IEEEtran}
 \title{Fixture}\author{Author}\begin{document}\maketitle
 \begin{abstract}Abstract.\end{abstract}Body.\end{document}
 """,
-        "revtex4-2": r"""\documentclass{revtex4-2}
+        ),
+        "revtex4-2": (
+            "revtex4-2",
+            r"""\documentclass{revtex4-2}
 \begin{document}\title{Fixture}\author{Author}
 \begin{abstract}Abstract.\end{abstract}\maketitle Body.\end{document}
 """,
-        "acmart": r"""\documentclass[manuscript]{acmart}
+        ),
+        "acmart": (
+            "acmart",
+            r"""\documentclass[manuscript]{acmart}
 \setcopyright{none}\acmConference{}{}{}\acmBooktitle{}
 \title{Fixture}\author{Author}\affiliation{\institution{Institution}\country{Country}}
 \begin{document}\begin{abstract}Abstract.\end{abstract}\maketitle Body.\end{document}
 """,
+        ),
+        "kdd-2026": (
+            "acmart",
+            r"""\documentclass[sigconf,anonymous,review]{acmart}
+\setcopyright{none}\acmConference{}{}{}\acmBooktitle{}
+\title{Fixture}\author{Anonymous Author}
+\begin{document}\begin{abstract}Abstract.\end{abstract}\maketitle Body.\end{document}
+""",
+        ),
     }
 
-    def test_installed_journal_classes_compile(self) -> None:
+    def test_installed_latex_templates_compile(self) -> None:
         latexmk = shutil.which("latexmk")
         kpsewhich = shutil.which("kpsewhich")
         if latexmk is None or kpsewhich is None:
             self.skipTest("latexmk and kpsewhich are required")
         unavailable: list[str] = []
         compiled = 0
-        for class_name, source in self.CASES.items():
-            with self.subTest(document_class=class_name):
+        for fixture, (class_name, source) in self.CASES.items():
+            with self.subTest(fixture=fixture, document_class=class_name):
                 available = subprocess.run(
                     [kpsewhich, f"{class_name}.cls"],
                     text=True,
@@ -331,32 +354,39 @@ class JournalClassBuildTests(unittest.TestCase):
                     check=False,
                 )
                 if available.returncode != 0 or not available.stdout.strip():
-                    unavailable.append(class_name)
+                    unavailable.append(fixture)
                     continue
                 with tempfile.TemporaryDirectory() as directory:
                     root = Path(directory)
                     (root / "manuscript.tex").write_text(source, encoding="utf-8")
                     result, _ = run_profile_command(
                         root,
-                        [latexmk, "-pdf", "-interaction=nonstopmode", "-halt-on-error", "manuscript.tex"],
+                        [
+                            latexmk,
+                            "-pdf",
+                            "-interaction=nonstopmode",
+                            "-halt-on-error",
+                            "manuscript.tex",
+                        ],
                         timeout_seconds=180,
                     )
                     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                     self.assertGreater((root / "manuscript.pdf").stat().st_size, 0)
                     compiled += 1
-        if os.environ.get("REQUIRE_JOURNAL_CLASSES") == "1":
-            self.assertEqual(unavailable, [], f"missing required journal classes: {unavailable}")
+        if os.environ.get("REQUIRE_INSTALLED_LATEX_TEMPLATES") == "1":
+            self.assertEqual(unavailable, [], f"missing required LaTeX templates: {unavailable}")
         if compiled == 0:
             self.skipTest("none of the journal matrix classes is installed")
 
 
-class OfficialJournalPackageTests(unittest.TestCase):
+class OfficialLatexPackageTests(unittest.TestCase):
     PLATFORM_INDEPENDENT_TESTS = {
         "test_failed_build_refuses_cleanup_through_symlinked_output_parent",
         "test_official_archive_rejects_parent_traversal",
         "test_official_archive_rejects_symlink_member",
+        "test_official_download_accepts_updates_and_records_digest",
         "test_official_download_rejects_hash_mismatch",
-        "test_official_matrix_is_pinned",
+        "test_official_matrix_uses_current_sources",
     }
 
     def setUp(self) -> None:
@@ -366,32 +396,70 @@ class OfficialJournalPackageTests(unittest.TestCase):
         ):
             self.skipTest("safe build supervision requires Linux")
 
-    def test_official_matrix_is_pinned(self) -> None:
+    def test_official_matrix_uses_current_sources(self) -> None:
         self.assertEqual(
-            {template.name for template in JOURNAL_TEMPLATES},
-            {"springer-nature", "aas", "iop", "jmlr", "plos-one"},
+            {template.name for template in OFFICIAL_TEMPLATES},
+            {
+                "springer-nature",
+                "aas",
+                "iop",
+                "jmlr",
+                "plos-one",
+                "icml-2026",
+                "iclr-2026",
+                "neurips-2026",
+                "acl-2026",
+                "aaai-2026",
+            },
         )
-        for template in JOURNAL_TEMPLATES:
+        for template in OFFICIAL_TEMPLATES:
             with self.subTest(template=template.name):
+                self.assertTrue(template.venue)
+                self.assertTrue(template.identity)
+                self.assertTrue(template.authority_url.startswith("https://"))
                 self.assertTrue(template.entrypoint)
                 self.assertTrue(template.output)
+                self.assertIn(template.latexmk_mode, {"-pdf", "-pdfps"})
                 self.assertTrue(template.files)
                 for remote in template.files:
-                    self.assertRegex(remote.sha256, r"^[0-9a-f]{64}$")
+                    self.assertIsNone(remote.sha256)
                     self.assertTrue(remote.url.startswith("https://"))
 
     def test_official_packages_compile(self) -> None:
-        if os.environ.get("REQUIRE_OFFICIAL_JOURNAL_TEMPLATES") != "1":
+        if os.environ.get("REQUIRE_OFFICIAL_LATEX_TEMPLATES") != "1":
             self.skipTest("official package smoke tests are enabled only in CI")
         if shutil.which("latexmk") is None:
-            self.fail("REQUIRE_OFFICIAL_JOURNAL_TEMPLATES=1 requires latexmk")
-        cache_override = os.environ.get("JOURNAL_TEMPLATE_CACHE")
+            self.fail("REQUIRE_OFFICIAL_LATEX_TEMPLATES=1 requires latexmk")
+        cache_override = os.environ.get("OFFICIAL_TEMPLATE_CACHE")
         if cache_override:
             failures = run_smoke_matrix(Path(cache_override))
         else:
-            with tempfile.TemporaryDirectory(prefix="ccfa-journal-cache-") as directory:
+            with tempfile.TemporaryDirectory(prefix="ccfa-official-template-cache-") as directory:
                 failures = run_smoke_matrix(Path(directory))
-        self.assertEqual(failures, {}, "official journal smoke failures: " + repr(failures))
+        self.assertEqual(failures, {}, "official LaTeX smoke failures: " + repr(failures))
+
+    def test_official_download_accepts_updates_and_records_digest(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source.bin"
+            source.write_bytes(b"first official package")
+            remote = RemoteFile(name="package.bin", url=source.as_uri())
+            cache = root / "cache"
+
+            downloaded = _download(remote, cache)
+            first_digest = _sha256(downloaded)
+            source.write_bytes(b"updated official package")
+            downloaded = _download(remote, cache)
+            second_digest = _sha256(downloaded)
+
+            self.assertNotEqual(first_digest, second_digest)
+            self.assertEqual(downloaded.read_bytes(), b"updated official package")
+            record = json.loads(
+                (cache / "package.bin.sha256.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(record["schema_version"], "official-template-download-v1")
+            self.assertEqual(record["url"], source.as_uri())
+            self.assertEqual(record["sha256"], second_digest)
 
     def test_official_download_rejects_hash_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -403,9 +471,47 @@ class OfficialJournalPackageTests(unittest.TestCase):
                 url=source.as_uri(),
                 sha256="0" * 64,
             )
-            with self.assertRaises(JournalTemplateError):
+            with self.assertRaises(OfficialTemplateError):
                 _download(remote, root / "cache")
             self.assertFalse((root / "cache/package.bin").exists())
+
+    def test_official_smoke_disables_latexmk_rc_and_shell_escape(self) -> None:
+        if shutil.which("latexmk") is None:
+            self.skipTest("latexmk is required")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = root / "package.zip"
+            rc_marker = root / "latexmkrc-ran"
+            tex_marker = root / "shell-escape-ran"
+            with zipfile.ZipFile(archive, "w") as package:
+                package.writestr(
+                    ".latexmkrc",
+                    f"system('touch', '{rc_marker}');\n",
+                )
+                package.writestr(
+                    "sample.tex",
+                    (
+                        "\\documentclass{article}\n"
+                        f"\\immediate\\write18{{touch {tex_marker}}}\n"
+                        "\\begin{document}Fixture\\end{document}\n"
+                    ),
+                )
+            template = OfficialTemplate(
+                name="security-fixture",
+                venue="security fixture",
+                identity="local",
+                authority_url="https://example.invalid/fixture",
+                files=(RemoteFile(name="package.zip", url=archive.as_uri()),),
+                archive="package.zip",
+                sample_root=None,
+                entrypoint="sample.tex",
+                output="sample.pdf",
+            )
+
+            smoke_test(template, root / "cache")
+
+            self.assertFalse(rc_marker.exists())
+            self.assertFalse(tex_marker.exists())
 
     def test_official_archive_rejects_parent_traversal(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -413,7 +519,7 @@ class OfficialJournalPackageTests(unittest.TestCase):
             archive = root / "package.zip"
             with zipfile.ZipFile(archive, "w") as package:
                 package.writestr("../outside.txt", "must not extract")
-            with self.assertRaises(JournalTemplateError):
+            with self.assertRaises(OfficialTemplateError):
                 _extract(archive, root / "stage")
             self.assertFalse((root / "outside.txt").exists())
 
@@ -426,7 +532,7 @@ class OfficialJournalPackageTests(unittest.TestCase):
             member.external_attr = (0o120777 << 16) | 0o777
             with zipfile.ZipFile(archive, "w") as package:
                 package.writestr(member, "../outside.txt")
-            with self.assertRaisesRegex(JournalTemplateError, "symlink"):
+            with self.assertRaisesRegex(OfficialTemplateError, "symlink"):
                 _extract(archive, root / "stage")
             self.assertFalse((root / "outside.txt").exists())
 
