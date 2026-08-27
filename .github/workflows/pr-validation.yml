@@ -105,7 +105,7 @@ jobs:
             # them. Branch on the PR base (or the pushed ref) instead of the
             # repository, because real-paper case branches live in the same repo.
             base_ref="${{ github.event.pull_request.base.ref || github.ref_name }}"
-            if [[ "$base_ref" == "main" ]]; then
+            if [[ "$base_ref" == "main" || "$base_ref" == "template-dev" ]]; then
               grep -Fq "TODO Authors" "$RUNNER_TEMP/$variant.txt"
               grep -iEq "Acknowledg(e)?ments" "$RUNNER_TEMP/$variant.txt"
             else
