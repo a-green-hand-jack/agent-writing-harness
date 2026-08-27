@@ -2080,7 +2080,9 @@ def require_applied_safe_state(root: Path, plan: dict[str, Any]) -> None:
         path = str(item["path"])
         staged = git(root, "diff", "--quiet", "--cached", target, "--", path, check=False)
         worktree = git(root, "diff", "--quiet", "--", path, check=False)
-        if staged.returncode != 0 or worktree.returncode != 0:
+        target_deleted = blob_at(root, target, path) is None
+        unexpectedly_present = target_deleted and os.path.lexists(root / path)
+        if staged.returncode != 0 or worktree.returncode != 0 or unexpectedly_present:
             failures.append(path)
     if failures:
         raise AdoptionError(
