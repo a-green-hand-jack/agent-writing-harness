@@ -22,6 +22,7 @@ Before merge:
    - `references` (in `Reference validation`) — offline ledger enforcement plus locked correction-candidate and non-generative metadata audits when the protected policy enables them;
    - `latex (<variant>)` — real TeX builds and variant-surface checks;
    - `paper-only` — all variants compile with only `paper/` present;
+   - `official-templates` — installed-class fixtures and current official conference/publisher package smoke builds;
    - `release-package` — immutable instance build, checksum validation, isolated source/flat compilation, and artifact upload;
 3. inspect job logs and fix the root cause of any failure;
 4. rerun the complete workflow after each fix;
