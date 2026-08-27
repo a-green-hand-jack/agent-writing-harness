@@ -339,6 +339,8 @@ class InstalledLatexTemplateTests(unittest.TestCase):
     }
 
     def test_installed_latex_templates_compile(self) -> None:
+        if os.environ.get("REQUIRE_INSTALLED_LATEX_TEMPLATES") != "1":
+            self.skipTest("installed template smoke tests are enabled only in template CI")
         latexmk = shutil.which("latexmk")
         kpsewhich = shutil.which("kpsewhich")
         if latexmk is None or kpsewhich is None:
@@ -373,8 +375,7 @@ class InstalledLatexTemplateTests(unittest.TestCase):
                     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                     self.assertGreater((root / "manuscript.pdf").stat().st_size, 0)
                     compiled += 1
-        if os.environ.get("REQUIRE_INSTALLED_LATEX_TEMPLATES") == "1":
-            self.assertEqual(unavailable, [], f"missing required LaTeX templates: {unavailable}")
+        self.assertEqual(unavailable, [], f"missing required LaTeX templates: {unavailable}")
         if compiled == 0:
             self.skipTest("none of the journal matrix classes is installed")
 
