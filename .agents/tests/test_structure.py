@@ -373,6 +373,25 @@ class StructureChecks(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("unsupported TeX dependency search path directive", result.stdout)
 
+    def test_dependency_boundary_resolves_coral_graphics_path_symlinks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            write(root / "paper/venue_preamble.tex", "\\graphicspath{{figures/}}\n")
+            write(root / ".agents/secret.png", "Control content\n")
+            (root / "paper/figures/secret.png").symlink_to(root / ".agents/secret.png")
+            main = root / "paper/main.tex"
+            main.write_text(
+                main.read_text(encoding="utf-8").replace(
+                    "\\begin{document}",
+                    "\\begin{document}\n\\includegraphics{secret}",
+                ),
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("non-paper surface", result.stdout)
+
     def test_dependency_boundary_rejects_unbraced_input_syntax(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

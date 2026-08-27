@@ -253,8 +253,23 @@ def check_dependency_boundary(root: Path, profile: dict[str, object]) -> int:
             )
         return 0
 
+    graphics_search_bases: list[Path] = []
+    for allowed_path, allowed_directive in PATH_DIRECTIVE_ALLOWLIST:
+        directive_source = root / allowed_path
+        if not directive_source.is_file():
+            continue
+        directive_text = active_tex(directive_source.read_text(encoding="utf-8"))
+        if allowed_directive not in directive_text:
+            continue
+        search_base = entrypoint_root / "figures"
+        code |= boundary_error(
+            directive_source, "graphics search path", "figures/", search_base
+        )
+        graphics_search_bases.append(search_base)
+
     def candidates_for(
         source: Path,
+        label: str,
         reference: str,
         extensions: tuple[str, ...],
     ) -> list[Path]:
@@ -270,7 +285,10 @@ def check_dependency_boundary(root: Path, profile: dict[str, object]) -> int:
         variants = [raw]
         if dynamic_at < 0 and raw.suffix == "":
             variants = [raw.with_suffix(extension) if extension else raw for extension in extensions]
-        bases = tuple(dict.fromkeys((source.parent, entrypoint_root, source_root, root)))
+        bases = [source.parent, entrypoint_root, source_root, root]
+        if label == "graphics":
+            bases.extend(graphics_search_bases)
+        bases = list(dict.fromkeys(bases))
         return [base / variant for base in bases for variant in variants]
 
     source_files = sorted(
@@ -318,7 +336,7 @@ def check_dependency_boundary(root: Path, profile: dict[str, object]) -> int:
                             f"{path.relative_to(root)} -> {{{value}}}"
                         )
                         continue
-                    candidates = candidates_for(path, value, extensions)
+                    candidates = candidates_for(path, label, value, extensions)
                     if not candidates:
                         continue
                     existing = [
