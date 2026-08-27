@@ -9,6 +9,12 @@ Own the transition from a Human-provided **brief repo** to an initialized
 **writing repo** whose contracts are filled. This is the entry point for both
 autonomous (agent-only, long-running) and collaborative paper sessions.
 
+The brief-driven start task has exactly one owner: this skill. Repository
+creation inside that task follows the `ccf-project-scaffolder` template-create
+procedure as a subordinate step; that procedure keeps its own owner authority
+for the standalone "create a writing repo" task and is not a second owner of
+the brief-driven task.
+
 ## Trigger
 
 - The Human supplies a brief repo (or path) containing `BRIEF.md` with the paper
@@ -40,16 +46,19 @@ autonomous (agent-only, long-running) and collaborative paper sessions.
    python3 .agents/tools/paper-brief.py validate --brief <path>
    ```
 
-4. In the initialized writing repo, ingest the brief into the contracts:
+4. In the initialized writing repo, ingest the brief into `PAPER.md`:
 
    ```bash
    python3 .agents/tools/paper-brief.py ingest --brief <path> [--commit]
    ```
 
    The tool copies the brief to the writing-repo root `BRIEF.md` and fills only
-   decided fields (identity, thesis, contributions, operating mode, locked and
-   evolving areas, unresolved queue, style). Missing or empty brief fields stay
-   `unresolved`.
+   decided `PAPER.md` fields (identity, thesis, contributions, operating mode,
+   locked and evolving areas, unresolved queue, style). Missing or empty brief
+   fields stay `unresolved`. The brief's evidence, delivery, author,
+   constraints, and first-deliverable sections remain authoritative in
+   `BRIEF.md` until their owner workflows update `EXPERIMENTS.md`,
+   `PUBLICATION.md`, and the other contracts.
 5. Confirm the declared operating mode in `PAPER.md` (`collaborative` or
    `autonomous`) and the approval boundary. Never widen the boundary silently.
 6. Run the downstream verification and daily draft build:
@@ -61,10 +70,10 @@ autonomous (agent-only, long-running) and collaborative paper sessions.
 
 7. Hand off:
    - collaborative mode → ordinary `section-writing` on Human request;
-   - autonomous mode → proceed through idea, outline, drafting, evidence,
-     self-review, polish, and variant builds on your own, producing checkpoints
-     for Human review; stop for Human approval before changing a locked item,
-     approving a release, or final submission.
+   - autonomous mode → proceed through drafting, self-review, polish, and
+     variant and checkpoint builds on your own; prepare idea shaping and
+     evidence analysis as proposals only; stop for Human approval before
+     changing a locked item, approving a release, or final submission.
 
 ## Contract declaration
 

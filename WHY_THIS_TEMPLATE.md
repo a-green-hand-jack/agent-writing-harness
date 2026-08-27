@@ -137,11 +137,12 @@ story, fairness condition, or interpretation.
 `PAPER.md` also declares the operating mode (`## Operating mode`). In
 **collaborative** mode the Human stays in the loop for each substantive step.
 In **autonomous** mode the Human provides the brief and materials once, and the
-Agent proceeds through idea, outline, drafting, evidence, self-review, polish,
-and variant builds without step-by-step confirmation, stopping for Human
-approval before changing a locked item, approving a release, or final
-submission. The mode changes how much confirmation the Agent needs, never what
-it may silently alter.
+Agent proceeds through drafting, self-review, polish, and variant and checkpoint
+builds without step-by-step confirmation, and may prepare idea shaping and
+evidence analysis as proposals only. It stops for Human approval before
+changing a locked item, approving a release, or final submission. The mode
+changes how much confirmation the Agent needs, never what it may silently
+alter.
 
 **Practical gain:** fewer silent changes to the thesis, claim strength, or
 experimental meaning, more focused Human decisions when they are actually

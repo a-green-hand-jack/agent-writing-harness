@@ -8,6 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOL = ROOT / ".agents/tools/paper-brief.py"
+UPSTREAM_ORIGIN = "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git"
+WRITING_ORIGIN = "git@github.com:someone/writing-repo.git"
 
 
 def write(path: Path, text: str) -> None:
@@ -22,6 +24,23 @@ def run(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         check=False,
     )
+
+
+def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(root), *args],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def make_writing_repo(root: Path, origin: str = WRITING_ORIGIN) -> None:
+    write(root / "PAPER.md", FACTORY_PAPER)
+    git(root, "init", "-q")
+    git(root, "remote", "add", "origin", origin)
+    git(root, "add", "PAPER.md")
+    git(root, "-c", "user.name=test", "-c", "user.email=test@example.com", "commit", "-qm", "init")
 
 
 FACTORY_PAPER = """# Paper Contract
@@ -98,6 +117,8 @@ X improves accuracy.
 - Language and length limits: English, 9 pages
 ## First deliverable
 - outline
+## Template usage note
+Use the template harness to write this paper.
 """
 
 
@@ -117,6 +138,20 @@ class PaperBriefChecks(unittest.TestCase):
             result = run(Path(directory), "validate", "--brief", str(brief))
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("missing required sections: Constraints", result.stdout + result.stderr)
+
+    def test_validate_requires_template_usage_note(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            brief = Path(directory) / "BRIEF.md"
+            write(
+                brief,
+                brief_fixture().replace(
+                    "## Template usage note\nUse the template harness to write this paper.\n",
+                    "",
+                ),
+            )
+            result = run(Path(directory), "validate", "--brief", str(brief))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Template usage note", result.stdout + result.stderr)
 
     def test_validate_rejects_invalid_mode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -138,10 +173,20 @@ class PaperBriefChecks(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("does not exist", result.stdout + result.stderr)
 
+    def test_validate_rejects_symlinked_brief(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "target.md"
+            write(target, brief_fixture())
+            link = Path(directory) / "link.md"
+            link.symlink_to(target)
+            result = run(Path(directory), "validate", "--brief", str(link))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("symlink", result.stdout + result.stderr)
+
     def test_ingest_fills_decided_fields_and_leaves_missing_unresolved(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory) / "writing"
-            write(repo / "PAPER.md", FACTORY_PAPER)
+            make_writing_repo(repo)
             brief = Path(directory) / "briefrepo" / "BRIEF.md"
             write(brief, brief_fixture())
             result = run(repo, "ingest", "--brief", str(brief))
@@ -163,7 +208,7 @@ class PaperBriefChecks(unittest.TestCase):
     def test_ingest_does_not_invent_from_empty_brief(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory) / "writing"
-            write(repo / "PAPER.md", FACTORY_PAPER)
+            make_writing_repo(repo)
             empty = """# Paper Brief
 ## Paper identity
 - Working title: TODO
@@ -188,6 +233,8 @@ TODO
 - Language and length limits: TODO
 ## First deliverable
 - TODO
+## Template usage note
+Use the template harness to write this paper.
 """
             brief = Path(directory) / "briefrepo" / "BRIEF.md"
             write(brief, empty)
@@ -196,6 +243,83 @@ TODO
             paper = (repo / "PAPER.md").read_text(encoding="utf-8")
             self.assertIn("Working title: TODO Paper Title", paper)
             self.assertIn("Mode: unresolved", paper)
+            self.assertIn("### Central thesis — unresolved", paper)
+
+    def test_ingest_refuses_non_repository(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory) / "writing"
+            write(repo / "PAPER.md", FACTORY_PAPER)
+            brief = Path(directory) / "briefrepo" / "BRIEF.md"
+            write(brief, brief_fixture())
+            result = run(repo, "ingest", "--brief", str(brief))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("requires a Git repository", result.stdout + result.stderr)
+
+    def test_ingest_refuses_upstream_template_repository(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory) / "upstream"
+            make_writing_repo(repo, origin=UPSTREAM_ORIGIN)
+            brief = Path(directory) / "briefrepo" / "BRIEF.md"
+            write(brief, brief_fixture())
+            result = run(repo, "ingest", "--brief", str(brief))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("upstream template repository", result.stdout + result.stderr)
+
+    def test_ingest_rejects_invalid_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory) / "writing"
+            make_writing_repo(repo)
+            brief = Path(directory) / "briefrepo" / "BRIEF.md"
+            write(brief, brief_fixture().replace("- Mode: autonomous", "- Mode: unsupervised"))
+            result = run(repo, "ingest", "--brief", str(brief))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Mode must be collaborative, autonomous, or unresolved", result.stdout + result.stderr)
+
+    def test_ingest_fails_closed_on_unmapped_decided_field(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory) / "writing"
+            make_writing_repo(repo)
+            # Remove a recognized identity anchor so a decided field cannot map.
+            path = repo / "PAPER.md"
+            path.write_text(
+                path.read_text(encoding="utf-8").replace(
+                    "- Working title: TODO Paper Title", "- Working title is decided elsewhere"
+                ),
+                encoding="utf-8",
+            )
+            brief = Path(directory) / "briefrepo" / "BRIEF.md"
+            write(brief, brief_fixture())
+            result = run(repo, "ingest", "--brief", str(brief))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("no recognized contract target", result.stdout + result.stderr)
+            self.assertNotIn("Working title: A Study of X", (repo / "PAPER.md").read_text(encoding="utf-8"))
+
+    def test_ingest_preserves_explicit_unresolved_thesis(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory) / "writing"
+            make_writing_repo(repo)
+            brief_text = brief_fixture().replace("X improves accuracy.", "unresolved")
+            brief = Path(directory) / "briefrepo" / "BRIEF.md"
+            write(brief, brief_text)
+            result = run(repo, "ingest", "--brief", str(brief))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            paper = (repo / "PAPER.md").read_text(encoding="utf-8")
+            self.assertIn("### Central thesis — unresolved", paper)
+            self.assertNotIn("### Central thesis\n\nunresolved", paper)
+
+    def test_ingest_refuses_symlinked_destination(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory) / "writing"
+            make_writing_repo(repo)
+            outside = Path(directory) / "outside.md"
+            write(outside, "do not clobber")
+            (repo / "BRIEF.md").symlink_to(outside)
+            brief = Path(directory) / "briefrepo" / "BRIEF.md"
+            write(brief, brief_fixture())
+            result = run(repo, "ingest", "--brief", str(brief))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("symlinked destination", result.stdout + result.stderr)
+            self.assertEqual("do not clobber", outside.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

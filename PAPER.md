@@ -30,10 +30,10 @@ the Agent drafts and revises on request and brings high-impact choices to a
 decision packet.
 
 In **autonomous** mode the Human provides the brief and materials, then the
-Agent proceeds through idea, outline, drafting, evidence, self-review, polish,
-and variant builds on its own, producing checkpoints for Human review. The
-Agent still stops for Human approval before changing a locked item, approving a
-release, or final submission.
+Agent proceeds through drafting, self-review, polish, and variant and checkpoint
+builds on its own, and may prepare idea shaping and evidence analysis as
+proposals only. The Agent stops for Human approval before changing a locked
+item, approving a release, or final submission.
 
 ## What readers should believe
 
