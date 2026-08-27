@@ -286,7 +286,10 @@ class PaperProfileTests(unittest.TestCase):
             output = root / "manuscript.pdf"
             output.write_bytes(b"previous output")
             marker = root / "launched"
-            with mock.patch.object(_paper_profile, "_enable_child_subreaper", return_value=False):
+            with (
+                mock.patch.object(_paper_profile, "_child_subreaper_enabled", return_value=False),
+                mock.patch.object(_paper_profile, "_enable_child_subreaper", return_value=False),
+            ):
                 with self.assertRaisesRegex(ProfileError, "child-subreaper"):
                     run_profile_command(
                         root,
@@ -661,14 +664,63 @@ class OfficialLatexPackageTests(unittest.TestCase):
 
     def test_profile_command_refuses_unrelated_active_child(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            unrelated = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(10)"])
+            previous_subreaper_state = _paper_profile._child_subreaper_enabled()
+            self.assertIsNotNone(previous_subreaper_state)
+            unrelated: subprocess.Popen[bytes] | None = None
             try:
+                self.assertTrue(_paper_profile._set_child_subreaper(False))
+                unrelated = subprocess.Popen(
+                    [sys.executable, "-c", "import time; time.sleep(10)"]
+                )
                 with self.assertRaisesRegex(ProfileError, "unrelated child processes"):
                     run_profile_command(Path(directory), ["true"])
                 self.assertIsNone(unrelated.poll())
+                self.assertFalse(_paper_profile._child_subreaper_enabled())
             finally:
-                unrelated.terminate()
-                unrelated.wait()
+                try:
+                    if unrelated is not None:
+                        unrelated.terminate()
+                        unrelated.wait()
+                finally:
+                    self.assertTrue(
+                        _paper_profile._set_child_subreaper(bool(previous_subreaper_state))
+                    )
+
+    def test_profile_command_preserves_enabled_subreaper_state(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            previous_subreaper_state = _paper_profile._child_subreaper_enabled()
+            self.assertIsNotNone(previous_subreaper_state)
+            try:
+                self.assertTrue(_paper_profile._set_child_subreaper(True))
+                result, ready = run_profile_command(Path(directory), ["true"])
+                self.assertEqual(result.returncode, 0)
+                self.assertTrue(ready)
+                self.assertTrue(_paper_profile._child_subreaper_enabled())
+            finally:
+                self.assertTrue(
+                    _paper_profile._set_child_subreaper(bool(previous_subreaper_state))
+                )
+
+    def test_profile_command_preserves_primary_error_when_restore_raises(self) -> None:
+        primary = ProfileError("primary supervision failure")
+        with (
+            mock.patch.object(_paper_profile, "_child_subreaper_enabled", return_value=False),
+            mock.patch.object(_paper_profile, "_enable_child_subreaper", return_value=True),
+            mock.patch.object(
+                _paper_profile,
+                "_run_profile_subprocess_as_subreaper",
+                side_effect=primary,
+            ),
+            mock.patch.object(
+                _paper_profile,
+                "_set_child_subreaper",
+                side_effect=RuntimeError("restore failed"),
+            ),
+        ):
+            with self.assertRaisesRegex(ProfileError, "primary supervision failure") as caught:
+                run_profile_command(Path("."), ["true"])
+        self.assertIs(caught.exception, primary)
+        self.assertIsInstance(caught.exception.__cause__, RuntimeError)
 
     def test_profile_timeout_kills_detached_descendant_before_output_restore(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

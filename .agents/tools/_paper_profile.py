@@ -417,12 +417,62 @@ def _run_profile_subprocess(
 ) -> subprocess.CompletedProcess[str]:
     if sys.platform != "linux":
         raise ProfileError("safe paper build process supervision currently requires Linux")
-    subreaper_enabled = _enable_child_subreaper()
-    if not subreaper_enabled:
-        raise ProfileError("cannot enable Linux child-subreaper supervision for paper build")
-    baseline_descendants = (
-        _descendant_process_ids(os.getpid()) if subreaper_enabled else None
-    )
+    previous_subreaper_state = _child_subreaper_enabled()
+    if previous_subreaper_state is None:
+        raise ProfileError("cannot inspect Linux child-subreaper state for paper build")
+    result: subprocess.CompletedProcess[str] | None = None
+    primary_error: BaseException | None = None
+    primary_traceback = None
+    restore_error: BaseException | None = None
+    restored = True
+    try:
+        try:
+            if not previous_subreaper_state and not _enable_child_subreaper():
+                raise ProfileError(
+                    "cannot enable Linux child-subreaper supervision for paper build"
+                )
+            result = _run_profile_subprocess_as_subreaper(
+                command,
+                cwd=cwd,
+                env=env,
+                timeout_seconds=timeout_seconds,
+            )
+        except BaseException as exc:
+            primary_error = exc
+            primary_traceback = exc.__traceback__
+    finally:
+        if not previous_subreaper_state:
+            try:
+                restored = _set_child_subreaper(False)
+            except BaseException as exc:
+                restored = False
+                restore_error = exc
+
+    if primary_error is not None:
+        if not restored:
+            if restore_error is None:
+                restore_error = ProfileError(
+                    "cannot restore Linux child-subreaper state after paper build"
+                )
+            raise primary_error.with_traceback(primary_traceback) from restore_error
+        raise primary_error.with_traceback(primary_traceback)
+    if not restored:
+        if restore_error is not None:
+            raise restore_error
+        raise ProfileError("cannot restore Linux child-subreaper state after paper build")
+    if result is None:
+        raise ProfileError("paper build command ended without a result")
+    return result
+
+
+def _run_profile_subprocess_as_subreaper(
+    command: list[str],
+    *,
+    cwd: Path,
+    env: dict[str, str] | None,
+    timeout_seconds: float,
+) -> subprocess.CompletedProcess[str]:
+    baseline_descendants = _descendant_process_ids(os.getpid())
     if baseline_descendants:
         raise ProfileError(
             "cannot safely supervise a build while unrelated child processes are active"
@@ -482,13 +532,30 @@ def _run_profile_subprocess(
 
 
 def _enable_child_subreaper() -> bool:
+    return _set_child_subreaper(True)
+
+
+def _set_child_subreaper(enabled: bool) -> bool:
     if sys.platform != "linux":
         return False
     try:
         libc = ctypes.CDLL(None, use_errno=True)
-        return libc.prctl(36, 1, 0, 0, 0) == 0  # PR_SET_CHILD_SUBREAPER
+        return libc.prctl(36, int(enabled), 0, 0, 0) == 0  # PR_SET_CHILD_SUBREAPER
     except (AttributeError, OSError):
         return False
+
+
+def _child_subreaper_enabled() -> bool | None:
+    if sys.platform != "linux":
+        return None
+    try:
+        libc = ctypes.CDLL(None, use_errno=True)
+        enabled = ctypes.c_int()
+        if libc.prctl(37, ctypes.byref(enabled), 0, 0, 0) != 0:  # PR_GET_CHILD_SUBREAPER
+            return None
+        return bool(enabled.value)
+    except (AttributeError, OSError):
+        return None
 
 
 def _terminate_profile_process_group(
