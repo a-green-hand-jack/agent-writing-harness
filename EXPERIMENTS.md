@@ -7,6 +7,10 @@ Use the same flexible collaboration cues as `PAPER.md`: **locked**, **bounded**,
 
 ## Experiment overview
 
+Evidence and materials supplied by the Human are inventoried in `BRIEF.md`;
+this file records only paper-facing evidence questions and their interpretation
+boundaries.
+
 | ID | Paper question | Supports | Current state |
 |---|---|---|---|
 | — | No paper-facing evidence question recorded yet | — | unresolved |

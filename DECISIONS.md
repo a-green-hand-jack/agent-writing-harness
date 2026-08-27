@@ -120,6 +120,65 @@ verifiable while keeping the paper contracts as the single source of truth, and
 avoids redistributing third-party paper content whose redistribution rights are
 unverified.
 
+## DEC-0016: Brief-driven paper bootstrap
+
+Decision: a paper can start from a Human-owned **brief repo** whose `BRIEF.md`
+holds the paper content spec (identity, thesis, contributions, evidence
+inventory, constraints) plus template-usage instructions. The Agent reads the
+brief, creates an initialized writing repo from the GitHub Template
+(`ccf-project-scaffolder` template-create mode), and ingests the brief into the
+Human-facing contracts with `.agents/tools/paper-brief.py ingest --brief
+<path>` (`paper-brief-ingest` skill). The brief is copied to the writing-repo
+root `BRIEF.md` as provenance and material inventory.
+
+The ingest maps only decided brief fields onto `PAPER.md`; missing or empty
+fields stay `unresolved` and the tool never invents a title, claim, result,
+citation, venue, author, approval, or release state. `BRIEF.md` is a protected
+downstream path in template adoption and synchronization.
+
+Rationale: this makes the harness usable for agent-only, long-running paper
+sessions without hand-transcribing the first-session packet, while keeping the
+Human-authored brief as the single input contract and preserving the
+`unresolved`-honest boundary.
+
+## DEC-0017: Operating modes and the autonomous approval boundary
+
+Decision: each writing repo declares an operating mode in `PAPER.md`
+(`## Operating mode`): `collaborative` or `autonomous`. The mode changes how
+much confirmation the Agent needs, never what it may silently alter.
+
+- Collaborative: the Human stays in the loop for each substantive step; the
+  Agent drafts and revises on request and brings high-impact choices to a
+  decision packet.
+- Autonomous: the Human provides the brief and materials once; the Agent
+  proceeds through idea, outline, drafting, evidence, self-review, polish, and
+  variant builds on its own, producing checkpoints for Human review. The Agent
+  still stops for Human approval before changing a locked item, approving a
+  release, or final submission.
+
+Autonomy does not relax the strong rules: no invented contributions, facts,
+results, citations, identity, approval, or external-platform success, and no
+promotion of expected or unresolved results into verified evidence.
+
+Rationale: agent-only long-running sessions need a defined boundary between what
+the Agent may drive without confirmation and the hard gates that remain Human
+decisions. The mode makes that boundary visible in the contract instead of
+leaving it implicit.
+
+## DEC-0018: Domain-agnostic positioning with retained repository name
+
+Decision: the template is positioned as a general agent-writing harness for
+academic paper projects, not as a CCF-specific workflow. The repository name
+retains the `ccfa-` prefix (renaming would break the GitHub Template reference),
+but documentation describes the bundled CCFA-Skills suite as one bundled
+capability family, not the template identity. Official publisher templates
+across venues (PLOS ONE, ICML, ICLR, NeurIPS, ACL, AAAI) and the
+`external-latex` build profile already reflect this.
+
+Rationale: the harness serves papers in any field; the CCF letters in the name
+are historical. Keeping the name preserves template references while the
+positioning and documentation reflect the broader scope.
+
 ## Recording future decisions
 
 Record durable, high-impact Human decisions and rationale here. Do not record every sentence edit or temporary discussion. A useful decision states what was chosen, affected paper objects, rejected alternatives when relevant, and what future change requires review.

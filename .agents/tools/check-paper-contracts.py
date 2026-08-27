@@ -11,6 +11,7 @@ REQUIRED_HEADINGS = {
     "PAPER.md": [
         "# Paper Contract",
         "## Paper identity",
+        "## Operating mode",
         "## What readers should believe",
         "## What must not change silently",
         "## What may evolve",
@@ -55,6 +56,7 @@ FOCUSED_SKILLS = (
     "publication-planning",
     "citation-support-review",
     "release-review",
+    "paper-brief-ingest",
 )
 SKILL_CONTRACT_REQUIREMENTS = {
     "F7-CR-001-v1": "control-review",
@@ -64,6 +66,7 @@ SKILL_CONTRACT_REQUIREMENTS = {
     "F7-RR-001-v1": "reference-repair",
     "F7-CSR-001-v1": "citation-support-review",
     "F7-TS-001-v1": "template-sync",
+    "F7-PBI-001-v1": "paper-brief-ingest",
 }
 PLACEHOLDER_RE = re.compile(r"\b(?:TODO|TBD|PLACEHOLDER)\b|\\PaperTODO\b", re.I)
 UNRESOLVED_CURRENT_RE = re.compile(

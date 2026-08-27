@@ -58,6 +58,7 @@ REQUIRED = (
     ".agents/tools/_paper_profile.py",
     ".agents/tools/verify.sh",
     ".agents/tools/paper-init.py",
+    ".agents/tools/paper-brief.py",
     ".agents/tools/check-documentation.py",
     ".agents/tools/check-venue-knowledge.py",
     ".agents/tools/check-publication.py",

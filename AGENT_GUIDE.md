@@ -16,7 +16,8 @@ Use these names consistently:
 | Term | Meaning |
 |---|---|
 | **template repo** | The upstream GitHub Template repository, `a-green-hand-jack/ccfa-writing-paper-template`. It is maintained as reusable infrastructure and is not the workspace for a particular paper. |
-| **writing repo** | A downstream repository for one actual paper, normally created from the template repo. It has independent Git history, project-specific contracts, and canonical paper content. |
+| **brief repo** | A Human-owned repository that holds the paper brief: a `BRIEF.md` content spec (identity, claims, evidence inventory, constraints) plus instructions for using this template. It is the input that starts a paper. |
+| **writing repo** | A downstream repository for one actual paper, normally created from the template repo and filled from a brief. It has independent Git history, project-specific contracts, and canonical paper content. It is the harness instance the Agent works in. |
 
 Existing documentation may also say "upstream template" for the template repo
 and "downstream paper repository" for a writing repo.
@@ -238,6 +239,46 @@ Commit only when the Human requests a commit or the applicable workflow
 explicitly requires one. The initialization command above is the deliberate
 exception because its contract includes `--commit`.
 
+## Brief-Driven Start (Collaborative Or Autonomous)
+
+A paper often starts from a **brief repo**: a Human-owned repository containing
+`BRIEF.md` (the content spec) plus template-usage instructions and materials.
+This is the recommended entry point when the goal is **autonomous** writing —
+the Human supplies the brief once, opens a coding agent (TUI or headless) in
+the brief repo, and the Agent creates and runs the writing repo long-term.
+
+The Agent flow:
+
+1. Confirm the current repository role with the `paper-orientation` gate. The
+   brief repo itself is not a writing repo and must not receive paper content.
+2. Read `BRIEF.md` for paper identity, thesis, contributions, evidence
+   inventory, constraints, and the declared operating mode.
+3. Create and initialize the writing repo exactly as in the happy path above
+   (`ccf-project-scaffolder` template-create mode), or clone the brief and run
+   `paper-brief-ingest` from an initialized writing repo.
+4. Validate and ingest the brief into the contracts:
+
+   ```bash
+   python3 .agents/tools/paper-brief.py validate --brief <brief-repo-or-file>
+   python3 .agents/tools/paper-brief.py ingest --brief <brief-repo-or-file> [--commit]
+   ```
+
+   The tool copies the brief to the writing-repo root `BRIEF.md` and fills only
+   decided fields. Missing or empty brief fields stay `unresolved`; never
+   invent a value.
+5. Confirm `PAPER.md` `## Operating mode` (`collaborative` or `autonomous`) and
+   the approval boundary, then run `bash .agents/tools/verify.sh` and `make pdf`.
+6. In **autonomous** mode, proceed through idea, outline, drafting, evidence,
+   self-review, polish, and variant builds without step-by-step confirmation.
+   Produce checkpoints (commits, builds, review notes) for the Human. Stop for
+   Human approval before changing a locked item, approving a release, or final
+   submission. In **collaborative** mode, follow the routine task workflow and
+   wait for Human request or approval per step.
+
+Autonomy never relaxes the strong rules: no invented contributions, facts,
+results, citations, identity, approval, or external-platform success, and no
+promotion of expected or unresolved results into verified evidence.
+
 ## Sources Of Truth And Decision Authority
 
 For ordinary work in a writing repo, use this priority when sources conflict:
@@ -305,6 +346,7 @@ common routes without replacing it:
 |---|---|---|
 | Recover context at the start of a writing session | Active section and current diff | `.agents/skills/paper-orientation/SKILL.md` |
 | Create and initialize a new writing repo from this GitHub Template | Repository role, GitHub creation inputs, and first-session packet | `.agents/skills/ccf-project-scaffolder/SKILL.md` in template-create mode |
+| Start a paper from a Human-provided brief repo (brief → contracts, operating mode) | `BRIEF.md`, repository role, and first-session packet | `.agents/skills/paper-brief-ingest/SKILL.md` |
 | Draft or substantially revise a paper section | Active section; relevant experiment, interface, and citation records only | `.agents/skills/section-writing/SKILL.md` |
 | Change positioning, story architecture, section responsibility, or writing policy | Relevant paper and decision contracts | `.agents/skills/style-alignment/SKILL.md` |
 | Change a central claim, experiment condition, limitation, result interpretation, or stable interface meaning | Every directly affected contract and consumer | `.agents/skills/control-review/SKILL.md` |
