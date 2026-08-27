@@ -2,7 +2,8 @@
   "schema_version": "paper-documentation-consistency-v1",
   "required_facts": {
     "PAPER.md": [
-      "Target venue: unresolved"
+      "Target venue: unresolved",
+      "Operating mode"
     ],
     "PUBLICATION.md": [
       "`make pdf` defaults to `draft`",
@@ -10,6 +11,7 @@
       "Git root contains only the tracked `paper/` tree"
     ],
     "README.md": [
+      "agent-writing harness",
       "The factory template is intentionally unresolved",
       "The one-time initial publication uses `push --bootstrap`",
       "ships the CCFA-Skills suite and writing-dna-skill as immutable snapshots under `.agents/vendor/`",

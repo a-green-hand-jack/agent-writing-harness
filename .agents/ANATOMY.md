@@ -21,6 +21,7 @@
 - `tools/`:
   - `verify.sh` runs structure, documentation consistency, Draft contract, interface, publication, release-record, template-adoption, template-sync, and regression checks.
   - `paper-init.py` verifies GitHub Template provenance, removes template-specific governance IDs, resets downstream-local metadata, and records the initialization.
+  - `paper-brief.py` validates a Human-provided paper brief and ingests it into the writing-repo contracts (copying `BRIEF.md`, filling only decided `PAPER.md` fields, leaving the rest `unresolved`).
   - `check-actions.py` rejects first-party GitHub Actions majors that are no longer Node.js 24 compatible.
   - `check-skills.py` validates repo-local skill frontmatter, router coverage, and stale adapter references.
   - `check-vendored-skills.py` validates the immutable vendor snapshots against the provenance manifest (file hashes, licenses, symlink rejection, exclusion boundary, wrapper targets, and router coverage).
@@ -43,6 +44,9 @@
 ## Boundary
 
 - Human-facing intent lives in root contracts.
+- The Human-authored paper brief lives in root `BRIEF.md`; it is ingested at
+  bootstrap, kept as provenance and material inventory, and protected from
+  template adoption/synchronization overwrite.
 - Authored scientific content lives in canonical `paper/` surfaces.
 - Publication variants contain only presentation switches.
 - Generated release instances live in ignored `dist/` and never become authored source.

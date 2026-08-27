@@ -59,6 +59,7 @@ REQUIRED = (
     ".agents/evals/vendored-skills/scenarios.json",
     ".agents/tools/verify.sh",
     ".agents/tools/paper-init.py",
+    ".agents/tools/paper-brief.py",
     ".agents/tools/check-actions.py",
     ".agents/tools/check-skills.py",
     ".agents/tools/check-documentation.py",

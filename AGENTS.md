@@ -53,6 +53,7 @@ reviewed adoption reports `adoption_reviewed` without origin or init records.
 - template, page-limit, or anonymity compliance checks → `.agents/skills/ccf-submission-checker/SKILL.md` (sidecar of publication-planning/release-review)
 - immutable release candidate → `.agents/skills/release-review/SKILL.md`
 - create a new writing repo from this GitHub Template → `.agents/skills/ccf-project-scaffolder/SKILL.md` in template-create mode (shared gate: `paper-orientation`)
+- start a paper from a Human-provided brief repo (brief → contracts, operating mode) → `.agents/skills/paper-brief-ingest/SKILL.md`
 - adapt an existing paper repository to this template → `.agents/skills/template-adoption/SKILL.md`
 - synchronize an adopted downstream repository with the upstream template → `.agents/skills/template-sync/SKILL.md`
 - repository tooling, build, or CI fixes → `.agents/tools/` (no skill; follow `CONTRIBUTING.md` and `verify.sh`)
@@ -81,8 +82,7 @@ The template ships the CCFA-Skills suite and writing-dna-skill as immutable snap
 - writing-style distillation from an approved corpus → `.agents/skills/writing-dna-skill/SKILL.md` (sidecar)
 - whitelist cleanup of AI writing tells → `.agents/skills/lieflat-less-ai-tone/SKILL.md` (sidecar)
 
-Do not load all skills for an ordinary local edit.
-Do not inject manuscript-wide reviewer passes into section drafting. Version-level consistency review is explicit, starts only after the Human marks a manuscript version ready, and is findings-only by default.
+Do not load all skills for an ordinary local edit. Do not inject manuscript-wide reviewer passes into section drafting; version-level consistency review is explicit, starts only after the Human marks a manuscript version ready, and is findings-only by default.
 
 **Single-owner invariant.** Each task loads exactly ONE primary owner skill; bundled CCFA skills are sidecars that never override a local owner skill or a Human contract. When two skills both match the same task, the local owner and the Human contract win and the other skill is treated as a sidecar. A bundled skill is never loaded standalone as an owner.
 
@@ -95,7 +95,7 @@ Do not inject manuscript-wide reviewer passes into section drafting. Version-lev
 
 The Human decides central claims, claim degradation, the main story, experiment fairness, important result interpretation, ambiguous citation identity/version choices that affect meaning, stable interface meaning, active variants, permitted cross-version differences, release approval, and external publication.
 
-The Agent performs retrieval, evidence-backed BibTeX and ledger repair, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, writing-repo creation, template-adoption inspection and mapping, template-sync planning, and focused validation.
+The Agent performs retrieval, evidence-backed BibTeX and ledger repair, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, writing-repo creation, template-adoption inspection and mapping, template-sync planning, and focused validation. In autonomous mode (`PAPER.md` `Mode: autonomous`), the Agent may also draft, self-review, polish, and build checkpoints without step-by-step confirmation, stopping for Human review on locked-claim changes, release approval, and final submission.
 
 ## Strong rules
 

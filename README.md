@@ -2,7 +2,13 @@
 
 [![PR validation](https://github.com/a-green-hand-jack/ccfa-writing-paper-template/actions/workflows/pr-validation.yml/badge.svg?branch=main)](https://github.com/a-green-hand-jack/ccfa-writing-paper-template/actions/workflows/pr-validation.yml)
 
-A paper-first repository for Human–Agent collaborative scientific writing.
+A paper-first repository that works as an **agent-writing harness**: from this
+GitHub Template you get a **writing repo** that a coding agent (Codex, OpenCode,
+Claude, Copilot, or a plain shell workflow) uses to draft, revise, evidence,
+and release a paper. The harness supports both **collaborative** writing, where
+the Human stays in the loop for each substantive step, and **autonomous**
+writing, where the Human supplies a brief and materials and the Agent runs the
+paper long-term on its own with periodic checkpoints.
 
 Agents starting from this GitHub Template should read `AGENT_GUIDE.md` first.
 It defines the product-independent path from this **template repo** to a
@@ -17,17 +23,18 @@ limits.
 ## Start writing
 
 1. If an Agent is currently in this template repo, load `ccf-project-scaffolder` in template-create mode. It follows `AGENT_GUIDE.md` to create and initialize a separate writing repo from the GitHub Template. Do not draft a real paper in the template repo.
-2. If independent repository-creation evidence confirms that this repository was created from the template, its origin is not the upstream template, and `.agents/init-state.json` does not exist, run `python3 .agents/tools/paper-init.py record-template-origin --commit` followed by `python3 .agents/tools/paper-init.py clean --commit` before editing paper content. The first command records GitHub's template provenance; the second strips upstream template governance IDs and records initialization. A non-upstream origin, copied template files, or the generic `paper-init.py status` label is not enough; use template adoption for an unrelated or ambiguous existing paper repository.
-3. Give the Agent the first-session packet in `AGENT_GUIDE.md`: research seed, evidence inventory, target or `unresolved`, authorship constraints, first deliverable, and hard constraints. This packet is enough to begin onboarding and contract setup; section drafting requires supplied or Human-approved claims and evidence for that section.
-4. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
-5. Record only real paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
-6. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
-7. Record publication variants and allowed differences in `PUBLICATION.md`.
-8. Have the Agent construct and repair BibTeX from retrieved authoritative evidence, maintain `references/ledger.json` in the same change, and follow `REFERENCES.md`; never invent free-form metadata.
-9. For every substantive citation, have the Agent run the Draft citation-support check (`citation-support-review`): inventory the active occurrence, resolve or discover the source, retrieve exact passages, and record a passing result as provisional. Never insert a citation from title relevance or metadata existence alone.
-10. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
-11. Edit the one canonical LaTeX source under `paper/`.
-12. Build:
+2. To start a paper from a **brief repo** (a Human-owned repository with a `BRIEF.md` content spec plus template-usage instructions), have the Agent load `paper-brief-ingest`: it creates the initialized writing repo, ingests the brief into the paper contracts with `python3 .agents/tools/paper-brief.py ingest --brief <path>`, and records the declared operating mode. This is the recommended entry point for autonomous agent writing.
+3. If independent repository-creation evidence confirms that this repository was created from the template, its origin is not the upstream template, and `.agents/init-state.json` does not exist, run `python3 .agents/tools/paper-init.py record-template-origin --commit` followed by `python3 .agents/tools/paper-init.py clean --commit` before editing paper content. The first command records GitHub's template provenance; the second strips upstream template governance IDs and records initialization. A non-upstream origin, copied template files, or the generic `paper-init.py status` label is not enough; use template adoption for an unrelated or ambiguous existing paper repository.
+4. Give the Agent the first-session packet in `AGENT_GUIDE.md`: research seed, evidence inventory, target or `unresolved`, authorship constraints, first deliverable, and hard constraints. This packet is enough to begin onboarding and contract setup; section drafting requires supplied or Human-approved claims and evidence for that section.
+5. Record thesis, story, style, protected decisions, and open questions in `PAPER.md`.
+6. Record only real paper-facing experiment questions and interpretation boundaries in `EXPERIMENTS.md`.
+7. Maintain recurring identity, terminology, notation, and results through `PAPER_INTERFACES.md` and `paper/macros.tex`.
+8. Record publication variants and allowed differences in `PUBLICATION.md`.
+9. Have the Agent construct and repair BibTeX from retrieved authoritative evidence, maintain `references/ledger.json` in the same change, and follow `REFERENCES.md`; never invent free-form metadata.
+10. For every substantive citation, have the Agent run the Draft citation-support check (`citation-support-review`): inventory the active occurrence, resolve or discover the source, retrieve exact passages, and record a passing result as provisional. Never insert a citation from title relevance or metadata existence alone.
+11. If the target venue is active, record its official planning facts under `.agents/knowledge/venues/<venue>-<year>.md`; see the venue knowledge schema before scheduling around deadlines or page limits.
+12. Edit the one canonical LaTeX source under `paper/`.
+13. Build:
 
 ```bash
 make pdf
@@ -38,6 +45,20 @@ make pdf VARIANT=arxiv
 
 Clean generated LaTeX files with `make clean`.
 
+## Operating modes
+
+A writing repo declares its operating mode in `PAPER.md` (`## Operating mode`).
+The mode changes how much confirmation the Agent needs, never what the Agent may
+silently alter.
+
+- **Collaborative** (`Mode: collaborative`): the Human stays in the loop for each substantive step. The Agent drafts and revises on request and brings high-impact choices to a decision packet.
+- **Autonomous** (`Mode: autonomous`): the Human provides the brief and materials, then the Agent proceeds through idea, outline, drafting, evidence, self-review, polish, and variant builds on its own, producing checkpoints for Human review. The Agent still stops for Human approval before changing a locked item, approving a release, or final submission.
+
+Autonomy is not a license to fabricate: even in autonomous mode the strong rules
+in `AGENTS.md` apply — no invented contributions, facts, results, citations,
+identity, approval, or external-platform success, and no promotion of expected
+or unresolved results into verified evidence.
+
 The commands above are this repository's default `canonical-variants` build
 profile. An adopted publisher template may retain a single native entrypoint or
 declare its own named builds in `.agents/paper-build.json`; see
@@ -46,7 +67,8 @@ and validation limits.
 
 ## Human-facing surface
 
-- `PAPER.md` — positioning, claims, story, style, protected decisions, and unresolved work.
+- `BRIEF.md` — the Human-authored paper brief (content spec plus template-usage instructions) ingested at bootstrap and kept as provenance and material inventory.
+- `PAPER.md` — positioning, claims, story, style, protected decisions, operating mode, and unresolved work.
 - `EXPERIMENTS.md` — paper-facing experiment questions and interpretation boundaries.
 - `PAPER_INTERFACES.md` — stable semantic names shared by canonical and variant surfaces.
 - `PUBLICATION.md` — variants, delivery targets, release-instance boundaries, and Human review triggers.
