@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import shutil
 import subprocess
@@ -643,6 +644,38 @@ if __name__ == "__main__":
         refused = self.tool("verify", "--builds")
         self.assertNotEqual(refused.returncode, 0)
         self.assertIn("safe adoption changes are not fully applied", refused.stderr)
+
+    def test_verify_rejects_untracked_entries_for_deleted_safe_target(self) -> None:
+        module_spec = importlib.util.spec_from_file_location("template_adoption", TOOL)
+        self.assertIsNotNone(module_spec)
+        self.assertIsNotNone(module_spec.loader)
+        sys.path.insert(0, str(TOOL.parent))
+        try:
+            module = importlib.util.module_from_spec(module_spec)
+            module_spec.loader.exec_module(module)
+        finally:
+            sys.path.pop(0)
+        paths = (
+            ".agents/tools/deleted-safe-file.txt",
+            ".agents/tools/deleted-safe-link",
+            ".agents/tools/deleted-safe-directory",
+        )
+        write(self.downstream, paths[0], "recreated after deletion\n")
+        (self.downstream / paths[1]).symlink_to("missing-target")
+        (self.downstream / paths[2]).mkdir()
+
+        for path in paths:
+            with self.subTest(path=path):
+                with self.assertRaises(module.AdoptionError) as context:
+                    module.require_applied_safe_state(
+                        self.downstream,
+                        {
+                            "target_commit": self.target,
+                            "items": [{"category": "safe", "path": path}],
+                        },
+                    )
+
+                self.assertIn(path, str(context.exception))
 
     def test_verify_rejects_downstream_head_changed_after_apply(self) -> None:
         self.plan()
