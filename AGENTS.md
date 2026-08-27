@@ -95,7 +95,7 @@ Do not load all skills for an ordinary local edit. Do not inject manuscript-wide
 
 The Human decides central claims, claim degradation, the main story, experiment fairness, important result interpretation, ambiguous citation identity/version choices that affect meaning, stable interface meaning, active variants, permitted cross-version differences, release approval, and external publication.
 
-The Agent performs retrieval, evidence-backed BibTeX and ledger repair, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, writing-repo creation, template-adoption inspection and mapping, template-sync planning, and focused validation. In autonomous mode (`PAPER.md` `Mode: autonomous`), the Agent may also draft, self-review, polish, and build checkpoints without step-by-step confirmation, stopping for Human review on locked-claim changes, release approval, and final submission.
+The Agent performs retrieval, evidence-backed BibTeX and ledger repair, impact analysis, alternatives, consistency maintenance, drafting, low-risk revision, variant checks, release construction, writing-repo creation, template-adoption inspection and mapping, template-sync planning, and focused validation. In autonomous mode (`PAPER.md` `Mode: autonomous`), the Agent may also draft, self-review, polish, and build checkpoints without step-by-step confirmation, stopping for Human approval before changing a locked item, approving a release, or final submission.
 
 ## Strong rules
 

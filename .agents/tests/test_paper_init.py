@@ -21,6 +21,10 @@ DECISION_UPSTREAM = """## DEC-0014: Case branches and verification trackers are 
 
 Decision: upstream template-only text.
 
+## DEC-0015: Generally applicable decision
+
+Decision: this decision remains applicable downstream.
+
 ## Recording future decisions
 """
 DECISION_DOWNSTREAM = "## DEC-0014: Downstream paper initialization"
@@ -286,6 +290,8 @@ class PaperInitTests(unittest.TestCase):
             decisions = (root / "DECISIONS.md").read_text(encoding="utf-8")
             self.assertIn(DECISION_DOWNSTREAM, decisions)
             self.assertNotIn("case/arxiv-2505-22954", decisions)
+            # Later generally-applicable decisions must survive downstream clean.
+            self.assertIn("## DEC-0015: Generally applicable decision", decisions)
             publication = (root / "PUBLICATION.md").read_text(encoding="utf-8")
             self.assertNotIn("#21", publication)
             self.assertNotIn("#31", publication)

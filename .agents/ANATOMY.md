@@ -54,7 +54,7 @@
 - Adoption inspections, plans, verification reports, and merge bundles live in ignored `.agents/runtime/template-adoption/`.
 - Template-sync plans and merge bundles live in ignored `.agents/runtime/template-sync/`.
 - Agents load one relevant skill and minimum context rather than recursively reading the sidecar.
-- The downstream lifecycle has one shared `paper-orientation` gate and three variants: `ccf-project-scaffolder` template-create, `template-adoption` unrelated-repository adoption, and `template-sync` reviewed infrastructure synchronization.
+- The downstream lifecycle has one shared `paper-orientation` gate and four variants: `ccf-project-scaffolder` template-create, `paper-brief-ingest` brief-driven bootstrap, `template-adoption` unrelated-repository adoption, and `template-sync` reviewed infrastructure synchronization.
 - Section writing does not automatically invoke reviewer passes. Manuscript consistency review runs only after the Human identifies a manuscript version as ready and reports findings without editing by default.
 - `make pdf VARIANT=<name>` and a paper-only checkout do not require `.agents/`.
 - A downstream repository initialized from the template must not keep upstream template branch/issue IDs in its governance documents.

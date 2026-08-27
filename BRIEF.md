@@ -7,9 +7,11 @@ materials and the instructions for using the writing template.
 
 The Agent reads `BRIEF.md`, creates an initialized **writing repo** from the
 `a-green-hand-jack/ccfa-writing-paper-template` GitHub Template, and ingests the
-content here into the paper contracts (`PAPER.md`, `EXPERIMENTS.md`,
-`PUBLICATION.md`) with `paper-brief-ingest`. The brief is then kept in the
-writing repo root as provenance and as the material inventory.
+content here into `PAPER.md` with `paper-brief-ingest`. The brief is then kept
+in the writing repo root as provenance and as the material inventory; the
+evidence, delivery, author, constraints, and first-deliverable sections remain
+authoritative here until their owner workflows update `EXPERIMENTS.md`,
+`PUBLICATION.md`, and the other contracts.
 
 Fill only what is actually decided. Anything left empty stays `unresolved` in
 the contracts; the Agent must never invent a field. Mark **locked** only the

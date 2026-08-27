@@ -501,11 +501,25 @@ def clean_decisions(root: Path, changes: list[str]) -> None:
     if DECISION_DOWNSTREAM_HEADING in text:
         return
     start = text.find(DECISION_UPSTREAM_HEADING)
-    end = text.find(DECISION_RECORDING_HEADING, start)
-    if start != -1 and end != -1:
-        text = text[:start] + DOWNSTREAM_DECISION + text[end:]
-        write_text(path, text)
-        changes.append("DECISIONS.md")
+    if start == -1:
+        return
+    # Replace only the DEC-0014 section; preserve any later decisions
+    # (for example bundled-skills or operating-mode decisions) that remain
+    # generally applicable downstream instead of treating them as upstream
+    # case-branch governance.
+    next_decision = text.find("\n## DEC-", start + len(DECISION_UPSTREAM_HEADING))
+    recording = text.find(DECISION_RECORDING_HEADING, start)
+    candidates = []
+    if next_decision != -1:
+        candidates.append(next_decision + 1)
+    if recording != -1:
+        candidates.append(recording)
+    if not candidates:
+        return
+    end = min(candidates)
+    text = text[:start] + DOWNSTREAM_DECISION + text[end:]
+    write_text(path, text)
+    changes.append("DECISIONS.md")
 
 
 def reset_documentation_config(root: Path, changes: list[str]) -> None:

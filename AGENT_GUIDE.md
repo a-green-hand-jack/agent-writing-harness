@@ -258,16 +258,19 @@ The Agent flow:
    ```
 
    The tool copies the brief to the writing-repo root `BRIEF.md` and fills only
-   decided fields. Missing or empty brief fields stay `unresolved`; never
-   invent a value.
+   decided `PAPER.md` fields. The brief's evidence, delivery, author,
+   constraints, and first-deliverable sections stay authoritative in `BRIEF.md`
+   until their owner workflows update the other contracts. Missing or empty
+   brief fields stay `unresolved`; never invent a value.
 5. Confirm `PAPER.md` `## Operating mode` (`collaborative` or `autonomous`) and
    the approval boundary, then run `bash .agents/tools/verify.sh` and `make pdf`.
-6. In **autonomous** mode, proceed through idea, outline, drafting, evidence,
-   self-review, polish, and variant builds without step-by-step confirmation.
-   Produce checkpoints (commits, builds, review notes) for the Human. Stop for
-   Human approval before changing a locked item, approving a release, or final
-   submission. In **collaborative** mode, follow the routine task workflow and
-   wait for Human request or approval per step.
+6. In **autonomous** mode, proceed through drafting, self-review, polish, and
+   variant and checkpoint builds without step-by-step confirmation. Idea
+   shaping and evidence analysis may be prepared as proposals only and never
+   settle a Human-owned decision. Produce checkpoints (commits, builds, review
+   notes) for the Human. Stop for Human approval before changing a locked item,
+   approving a release, or final submission. In **collaborative** mode, follow
+   the routine task workflow and wait for Human request or approval per step.
 
 Autonomy never relaxes the strong rules: no invented contributions, facts,
 results, citations, identity, approval, or external-platform success, and no
