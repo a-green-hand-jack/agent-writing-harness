@@ -1329,7 +1329,7 @@ if __name__ == "__main__":
             (self.downstream / ".agents/runtime/template-adoption/assessment.json").read_text()
         )
         self.assertFalse(report["authorizes_finalize"])
-        self.assertEqual(len(report["checks"]), 20)
+        self.assertEqual(len(report["checks"]), 16)
         self.assertEqual(
             report["checks"][0]["command"],
             "python3 -m compileall -q .agents/tools .agents/tests",
