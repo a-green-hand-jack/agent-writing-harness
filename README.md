@@ -205,4 +205,7 @@ The repository protects its current and future real-paper case branches and the 
 
 The repository has no legacy harness, capability registry, Bridge layer, experiment ledger, product adapter mirror, or committed generated release tree. A clean copy of `paper/` compiles all variants without `.agents/`.
 
-Pull requests must pass `harness`, `references`, four real-TeX variant jobs, `paper-only`, `official-templates`, and `release-package`. See `CONTRIBUTING.md`.
+Pull requests must pass `harness`, `references`, four real-TeX variant jobs,
+`paper-only`, and `release-package`. The upstream template repository also runs
+`official-templates`; that job never runs in a downstream writing repository.
+See `CONTRIBUTING.md`.
