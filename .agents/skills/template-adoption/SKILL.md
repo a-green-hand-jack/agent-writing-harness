@@ -83,7 +83,7 @@ The plan uses the same safety vocabulary as template synchronization:
    `paper-init.py status` reports `adoption_in_progress`; after reviewed
    finalization it reports `adoption_reviewed`.
 5. Perform the semantic migration deliberately:
-   - prefer a thin `paper/main.tex` compatibility wrapper before moving a working entrypoint;
+    - preserve a working publisher-native entrypoint through an `external-latex` profile, or prefer a thin `paper/main.tex` compatibility wrapper before moving it;
    - preserve section identity and input order while paths are normalized;
    - map one authoritative bibliography rather than copying references into divergent files;
    - preserve figure source assets, wrappers, generated-table provenance, venue classes, styles, and bibliography styles;
@@ -100,15 +100,15 @@ The plan uses the same safety vocabulary as template synchronization:
    python3 .agents/tools/template-adoption.py assess
    ```
 
-   Assessment executes every standard leaf check and all publication variants independently, records all outcomes in `.agents/runtime/template-adoption/assessment.json` and `assessment.md`, and does not stop at the first failure. It is diagnostic only: even a successful assessment cannot authorize finalization and is not a substitute for reviewed verification.
+   Assessment executes every standard leaf check and all builds declared in `.agents/paper-build.json` independently, records all outcomes in `.agents/runtime/template-adoption/assessment.json` and `assessment.md`, and does not stop at the first failure. It is diagnostic only: even a successful assessment cannot authorize finalization and is not a substitute for reviewed verification.
 8. Run focused reviewed verification:
 
    ```bash
-   python3 .agents/tools/template-adoption.py verify --variants
+   python3 .agents/tools/template-adoption.py verify --builds
    ```
 
-   The verification report records the exact template target, fresh inspection/mapping fingerprint, and a fingerprint of the reviewed downstream state. Finalization also requires a supported TeX entrypoint and all five Human contracts to be present. Also run any repository-specific experiment, artifact, or deployment checks that the generic template cannot know about. External venue portals, Overleaf import, and arXiv compilation remain unverified until actually exercised.
-9. After Human review and successful full-variant validation, record the exact template target as the first sync baseline. Finalization refuses a missing, failed, agent-only, wrong-target, stale, or assessment-only report:
+   The verification report records the exact template target, fresh inspection/mapping fingerprint, declared command set, expected output checks, and a fingerprint of the reviewed downstream state. Finalization also requires the profile entrypoint and all five Human contracts to be present. The historical `--variants` flag remains an alias for `--builds`. Also run any repository-specific experiment, artifact, or deployment checks that the generic template cannot know about. External venue portals, Overleaf import, and arXiv compilation remain unverified until actually exercised.
+9. After Human review and successful declared-build validation, record the exact template target as the first sync baseline. Finalization refuses a missing, failed, agent-only, wrong-target, stale, or assessment-only report:
 
    ```bash
    python3 .agents/tools/template-adoption.py finalize --reviewed

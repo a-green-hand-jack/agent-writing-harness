@@ -105,6 +105,7 @@ class TemplateSyncTests(unittest.TestCase):
         for relative in (
             '.agents/template-inheritance.json',
             '.agents/tools/_template_inheritance.py',
+            '.agents/tools/_paper_profile.py',
         ):
             source = ROOT / relative
             target = self.upstream / relative
@@ -120,8 +121,35 @@ class TemplateSyncTests(unittest.TestCase):
         write(self.upstream, 'CONTRIBUTING.md', 'contributing-v1\n')
         write(self.upstream, 'PUBLICATION.md', 'publication-v1\n')
         write(self.upstream, '.agents/tools/verify.sh', '#!/usr/bin/env bash\nexit 0\n')
-        write(self.upstream, 'Makefile', 'pdf:\n\t@true\n')
+        write(self.upstream, 'Makefile', "pdf:\n\t@printf '%s' '%PDF fixture' > manuscript.pdf\n")
+        write(self.upstream, '.gitignore', 'manuscript.pdf\n')
+        write(
+            self.upstream,
+            'manuscript.tex',
+            '\\documentclass{article}\n\\begin{document}Fixture\\end{document}\n',
+        )
         write(self.upstream, 'paper/variants/common.tex', 'variant-v1\n')
+        write(
+            self.upstream,
+            '.agents/paper-build.json',
+            json.dumps(
+                {
+                    'schema_version': 'paper-build-profile-v1',
+                    'layout': 'external-latex',
+                    'source_root': '.',
+                    'entrypoint': 'manuscript.tex',
+                    'bibliography': None,
+                    'builds': [
+                        {
+                            'name': 'journal',
+                            'command': ['make', 'pdf'],
+                            'output': 'manuscript.pdf',
+                        }
+                    ],
+                }
+            )
+            + '\n',
+        )
         write(self.upstream, 'paper/custom-authored.tex', 'custom-v1\n')
         self.baseline = commit_all(self.upstream, 'template v1')
 
@@ -131,6 +159,8 @@ class TemplateSyncTests(unittest.TestCase):
         shutil.copy2(self.upstream / 'CONTRIBUTING.md', self.downstream / 'CONTRIBUTING.md')
         shutil.copy2(self.upstream / 'PUBLICATION.md', self.downstream / 'PUBLICATION.md')
         shutil.copy2(self.upstream / 'Makefile', self.downstream / 'Makefile')
+        shutil.copy2(self.upstream / '.gitignore', self.downstream / '.gitignore')
+        shutil.copy2(self.upstream / 'manuscript.tex', self.downstream / 'manuscript.tex')
         write(self.downstream, '.agents/template-sync.json', config(self.upstream, self.baseline))
         write(self.downstream, '.agents/skills/template-sync/SKILL.md', skill())
         commit_all(self.downstream, 'paper from template v1')
@@ -215,6 +245,16 @@ class TemplateSyncTests(unittest.TestCase):
         self.assertEqual(self.tool('apply').returncode, 0)
         verified = self.tool('verify', '--reviewed')
         self.assertEqual(verified.returncode, 0, verified.stdout + verified.stderr)
+
+    def test_verification_uses_declared_build_profile(self) -> None:
+        self.apply_and_verify()
+        report = json.loads(
+            (self.downstream / '.agents/runtime/template-sync/verification.json').read_text()
+        )
+        self.assertEqual(
+            [check['command'] for check in report['checks']],
+            ['bash .agents/tools/verify.sh', 'make pdf'],
+        )
 
     def test_validate_and_plan_classification(self) -> None:
         validate = self.tool('validate')
@@ -847,6 +887,71 @@ class TemplateSyncTests(unittest.TestCase):
 
         self.assertNotEqual(refused.returncode, 0)
         self.assertIn('changed since template sync verification', refused.stderr)
+
+    def test_record_rejects_stale_verification_after_index_only_change(self) -> None:
+        self.apply_and_verify()
+        paper = self.downstream / 'PAPER.md'
+        paper.write_text('index-only mutation\n', encoding='utf-8')
+        git(self.downstream, 'add', 'PAPER.md')
+        paper.write_text('paper-v1\n', encoding='utf-8')
+
+        refused = self.tool('record', '--reviewed')
+
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn('changed since template sync verification', refused.stderr)
+
+    def test_verify_rejects_build_command_index_mutation(self) -> None:
+        self.assertEqual(self.tool('plan').returncode, 0)
+        self.assertEqual(self.tool('apply').returncode, 0)
+        makefile = self.downstream / 'Makefile'
+        makefile.write_text(
+            'pdf:\n'
+            "\tprintf 'index mutation\\n' > PAPER.md\n"
+            '\tgit add PAPER.md\n'
+            "\tprintf 'paper-v1\\n' > PAPER.md\n"
+            "\tprintf '%s' '%PDF fixture' > manuscript.pdf\n",
+            encoding='utf-8',
+        )
+
+        refused = self.tool('verify', '--reviewed')
+
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn('changed tracked, staged, or non-runtime untracked', refused.stderr)
+        report = json.loads(
+            (self.downstream / '.agents/runtime/template-sync/verification.json').read_text()
+        )
+        self.assertFalse(report['repository_unchanged'])
+
+    def test_verify_rejects_build_command_ignored_authored_mutation(self) -> None:
+        style = self.downstream / 'results.out'
+        style.write_text('original\n')
+        with (self.downstream / '.gitignore').open('a') as ignore:
+            ignore.write('results.out\n')
+        commit_all(self.downstream, 'ignore local publisher style')
+        self.assertEqual(self.tool('plan').returncode, 0)
+        self.assertEqual(self.tool('apply').returncode, 0)
+        makefile = self.downstream / 'Makefile'
+        makefile.write_text(
+            "pdf:\n\tprintf 'changed\\n' > results.out\n\tprintf '%s' '%PDF fixture' > paper/main.pdf\n"
+        )
+        refused = self.tool('verify', '--reviewed')
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn('changed tracked, staged, or non-runtime untracked', refused.stderr)
+
+    def test_verify_ignores_python_cache_created_by_build(self) -> None:
+        makefile = self.downstream / 'Makefile'
+        makefile.write_text(
+            "pdf:\n\tmkdir -p .gitignored/__pycache__\n"
+            "\tprintf 'cache' > .gitignored/__pycache__/module.cpython-312.pyc\n"
+            "\tprintf '%s' '%PDF fixture' > manuscript.pdf\n"
+        )
+        with (self.downstream / '.gitignore').open('a') as ignore:
+            ignore.write('.gitignored/\n')
+        commit_all(self.downstream, 'declare cache-producing build')
+        self.assertEqual(self.tool('plan').returncode, 0)
+        self.assertEqual(self.tool('apply').returncode, 0)
+        refused = self.tool('verify', '--reviewed')
+        self.assertEqual(refused.returncode, 0, refused.stdout + refused.stderr)
 
     def test_record_rejects_tampered_verification_binding(self) -> None:
         self.apply_and_verify()

@@ -33,6 +33,7 @@ Variants may control publication-facing presentation. They do not own copied sec
 - `.agents/skills/`: focused procedures for writing, publication planning, release review, the shared repository-role gate, template creation through `ccf-project-scaffolder`, initial template adoption, downstream template synchronization, and wrappers for the bundled third-party skill suites.
 - `.agents/vendor/`: immutable snapshots of the bundled CCFA-Skills and writing-dna-skill suites with MIT licenses and a hash manifest; never edited locally.
 - `.agents/template-sync.json`: downstream-local upstream location and template baseline; adoption first creates an uninitialized downstream-specific configuration and records the exact commit only after review.
+- `.agents/paper-build.json`: repository-local source root, entrypoint, bibliography, and native build command set. The default profile describes four canonical variants; adopted publisher templates may use `external-latex` without changing their document class or source layout.
 - `.agents/tools/`: structure, contract, interface, publication, release-build, manifest, record, template-adoption, template-sync, and vendored-skill integrity tools.
 - `.agents/dependencies/`: optional Agent-tool dependency projects with exact locks (`reference-integrity/`, `vendored-skills/`); never a `paper/` runtime dependency.
 - `.agents/tests/`: positive and negative regressions.
@@ -80,7 +81,7 @@ downstream validation and PR CI
 new recorded upstream baseline
 ```
 
-Human contracts and authored paper content are protected by default. Downstream-only files are not deleted merely because they are absent upstream.
+Human contracts, the paper build profile, and authored paper content are protected by default. Downstream-only files are not deleted merely because they are absent upstream.
 
 ## Generated release instances
 

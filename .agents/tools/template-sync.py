@@ -25,9 +25,41 @@ from _template_inheritance import (
     load_inheritance_policy,
     parse_inheritance_policy,
 )
+from _paper_profile import (
+    ProfileError,
+    load_profile,
+    run_profile_command,
+    verification_steps,
+)
 
 CONFIG_RELATIVE = Path(".agents/template-sync.json")
 RUNTIME_RELATIVE = Path(".agents/runtime/template-sync")
+GENERATED_BUILD_SUFFIXES = {
+    ".aux",
+    ".bbl",
+    ".bcf",
+    ".blg",
+    ".dvi",
+    ".fdb_latexmk",
+    ".fls",
+    ".lof",
+    ".log",
+    ".lot",
+    ".nav",
+    ".out",
+    ".ps",
+    ".run.xml",
+    ".snm",
+    ".synctex.gz",
+    ".toc",
+    ".vrb",
+    ".xdv",
+}
+
+
+def is_generated_python_cache(path: str) -> bool:
+    candidate = PurePosixPath(path)
+    return "__pycache__" in candidate.parts or candidate.suffix == ".pyc"
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 DEFAULT_BRANCHES = {"main", "master", "trunk"}
 PLAN_SCHEMA = "paper-template-sync-plan-v2"
@@ -440,6 +472,16 @@ def repository_fingerprint(root: Path) -> str:
     digest.update(b"paper-template-sync-worktree-v1\0")
     digest.update(head_commit(root).encode("ascii"))
     digest.update(b"\0")
+    staged = subprocess.run(
+        ["git", "diff", "--cached", "--binary", "--no-ext-diff", "HEAD", "--"],
+        cwd=root,
+        capture_output=True,
+        check=False,
+    )
+    if staged.returncode != 0:
+        raise SyncError("cannot fingerprint staged downstream changes")
+    digest.update(b"\0staged\0")
+    digest.update(staged.stdout)
     diff = subprocess.run(
         ["git", "diff", "--binary", "--no-ext-diff", "HEAD", "--"],
         cwd=root,
@@ -449,21 +491,42 @@ def repository_fingerprint(root: Path) -> str:
     if diff.returncode != 0:
         raise SyncError("cannot fingerprint tracked downstream changes")
     digest.update(diff.stdout)
-    untracked = subprocess.run(
-        ["git", "ls-files", "--others", "--exclude-standard", "-z"],
-        cwd=root,
-        capture_output=True,
-        check=False,
-    )
-    if untracked.returncode != 0:
-        raise SyncError("cannot fingerprint untracked downstream files")
-    paths = sorted(
-        normalize_path(raw.decode("utf-8", errors="surrogateescape"))
-        for raw in untracked.stdout.split(b"\0")
-        if raw
-    )
-    for relative in paths:
-        if path_matches(relative, [RUNTIME_RELATIVE.as_posix() + "/"]):
+    entries: dict[str, bool] = {}
+    for arguments, ignored in (
+        (("git", "ls-files", "--others", "--exclude-standard", "-z"), False),
+        (("git", "ls-files", "--others", "--ignored", "--exclude-standard", "-z"), True),
+    ):
+        untracked = subprocess.run(
+            arguments,
+            cwd=root,
+            capture_output=True,
+            check=False,
+        )
+        if untracked.returncode != 0:
+            raise SyncError("cannot fingerprint untracked downstream files")
+        for raw in untracked.stdout.split(b"\0"):
+            if raw:
+                entries[normalize_path(raw.decode("utf-8", errors="surrogateescape"))] = ignored
+    try:
+        declared_outputs = {
+            build["output"]
+            for build in load_profile(root)["builds"]
+            if "output" in build
+        }
+    except ProfileError:
+        declared_outputs = set()
+    generated_outputs = {
+        str(PurePosixPath(output).with_suffix("")) + suffix
+        for output in declared_outputs
+        for suffix in GENERATED_BUILD_SUFFIXES
+    }
+    for relative, ignored in sorted(entries.items()):
+        if (
+            path_matches(relative, [RUNTIME_RELATIVE.as_posix() + "/", "dist/"])
+            or is_generated_python_cache(relative)
+            or (ignored and relative in declared_outputs)
+            or (ignored and relative in generated_outputs)
+        ):
             continue
         candidate = root / relative
         digest.update(b"\0path\0")
@@ -1068,11 +1131,18 @@ def require_applied_safe_state(root: Path, plan: dict[str, Any]) -> None:
         )
 
 
-def expected_verification_commands() -> list[list[str]]:
-    commands = [["bash", ".agents/tools/verify.sh"]]
-    for variant in ("draft", "anonymous", "camera-ready", "arxiv"):
-        commands.append(["make", "pdf", f"VARIANT={variant}"])
-    return commands
+def build_steps(root: Path) -> list[dict[str, Any]]:
+    try:
+        return verification_steps(root)
+    except ProfileError as exc:
+        raise SyncError(str(exc)) from exc
+
+
+def expected_verification_commands(root: Path) -> list[list[str]]:
+    return [
+        ["bash", ".agents/tools/verify.sh"],
+        *(step["command"] for step in build_steps(root)),
+    ]
 
 
 def verify_sync(root: Path, config: dict[str, Any], plan_path: Path, *, reviewed: bool) -> int:
@@ -1089,20 +1159,47 @@ def verify_sync(root: Path, config: dict[str, Any], plan_path: Path, *, reviewed
     verification_markdown = runtime / "verification.md"
     ensure_regular_file(verification_json, "verification JSON")
     ensure_regular_file(verification_markdown, "verification Markdown")
-    commands = expected_verification_commands()
+    repository_fingerprint_before = repository_fingerprint(root)
+    steps = [{"command": ["bash", ".agents/tools/verify.sh"]}, *build_steps(root)]
     checks: list[dict[str, Any]] = []
-    for command in commands:
-        result = run(command, cwd=root, check=False)
-        checks.append({
+    for step in steps:
+        command = step["command"]
+        output = step.get("output")
+        try:
+            result, output_ready = run_profile_command(
+                root,
+                command,
+                output=None if output is None else str(output),
+            )
+        except ProfileError as exc:
+            raise SyncError(str(exc)) from exc
+        success = result.returncode == 0 and output_ready
+        check = {
             "command": shlex.join(command),
             "returncode": result.returncode,
             "stdout": result.stdout,
             "stderr": result.stderr,
-            "success": result.returncode == 0,
-        })
-        print(f"{'OK' if result.returncode == 0 else 'FAILED'} template_sync verify: {shlex.join(command)}")
+            "success": success,
+        }
+        if output is not None:
+            check["output"] = output
+            check["output_ready"] = output_ready
+            if not output_ready:
+                check["stderr"] = (
+                    str(check["stderr"]) + f"\nexpected non-empty build output: {output}"
+                ).lstrip("\n")
+        checks.append(check)
+        print(f"{'OK' if success else 'FAILED'} template_sync verify: {shlex.join(command)}")
     ensure_only_planned_changes(root, plan)
     require_applied_safe_state(root, plan)
+    repository_fingerprint_after = repository_fingerprint(root)
+    repository_unchanged = repository_fingerprint_before == repository_fingerprint_after
+    if not repository_unchanged:
+        print(
+            "ERROR template_sync verify: declared verification commands changed "
+            "tracked, staged, or non-runtime untracked repository state",
+            file=sys.stderr,
+        )
     report = {
         "schema_version": VERIFICATION_SCHEMA,
         "created_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
@@ -1114,8 +1211,10 @@ def verify_sync(root: Path, config: dict[str, Any], plan_path: Path, *, reviewed
         "baseline": plan["baseline"],
         "target_commit": plan["target_commit"],
         "plan_digest": plan["plan_digest"],
-        "repository_fingerprint": repository_fingerprint(root),
-        "success": all(check["success"] for check in checks),
+        "repository_fingerprint": repository_fingerprint_after,
+        "repository_fingerprint_before": repository_fingerprint_before,
+        "repository_unchanged": repository_unchanged,
+        "success": all(check["success"] for check in checks) and repository_unchanged,
         "checks": checks,
     }
     verification_json.write_text(
@@ -1136,7 +1235,7 @@ def require_current_verification(root: Path, plan: dict[str, Any]) -> None:
     report = read_runtime_json(path, VERIFICATION_SCHEMA, "verification report")
     if not report.get("reviewed") or not report.get("success"):
         raise SyncError("the latest template sync verification report is not reviewed and successful")
-    expected_commands = [shlex.join(command) for command in expected_verification_commands()]
+    expected_commands = [shlex.join(command) for command in expected_verification_commands(root)]
     checks = report.get("checks")
     if not isinstance(checks, list) or [check.get("command") for check in checks if isinstance(check, dict)] != expected_commands:
         raise SyncError("template sync verification report has an incomplete command set")
