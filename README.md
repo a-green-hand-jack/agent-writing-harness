@@ -38,6 +38,11 @@ make pdf VARIANT=arxiv
 
 Clean generated LaTeX files with `make clean`.
 
+The commands above are this repository's `canonical-variants` build profile.
+`.agents/paper-build.json` records the same native entrypoint and commands for
+adoption and template-sync verification; see `LATEX_TEMPLATES.md` for the
+schema, verified template matrix, official sources, and validation limits.
+
 ## Human-facing surface
 
 - `PAPER.md` — positioning, claims, story, style, protected decisions, and unresolved work.
@@ -125,11 +130,11 @@ After repository-specific semantic migration and validation:
 
 ```bash
 python3 .agents/tools/template-adoption.py assess
-python3 .agents/tools/template-adoption.py verify --variants
+python3 .agents/tools/template-adoption.py verify --builds
 python3 .agents/tools/template-adoption.py finalize --reviewed
 ```
 
-`assess` is a non-authorizing collect-all diagnostic: it runs every standard leaf check and publication variant, records every outcome in `assessment.json`/`assessment.md`, and continues after failures. It is intentionally distinct from reviewed verification and can never authorize finalization. Finalization requires a successful full-variant `verify` report for the unchanged downstream state, then records the exact reviewed template commit in `.agents/template-sync.json`. Subsequent template updates use `template-sync`, not adoption. See `.agents/skills/template-adoption/SKILL.md`.
+`assess` is a non-authorizing collect-all diagnostic: it runs every standard leaf check and every build declared in `.agents/paper-build.json`, records every outcome in `assessment.json`/`assessment.md`, and continues after failures. It is intentionally distinct from reviewed verification and can never authorize finalization. Finalization requires a successful all-build `verify` report for the unchanged downstream state, then records the exact reviewed template commit in `.agents/template-sync.json`. The legacy `--variants` flag remains an alias for `--builds`. Subsequent template updates use `template-sync`, not adoption. See `.agents/skills/template-adoption/SKILL.md`.
 
 ## Syncing a downstream paper repository
 
@@ -152,7 +157,7 @@ python3 .agents/tools/template-sync.py verify --reviewed
 python3 .agents/tools/template-sync.py record --reviewed
 ```
 
-Planning accepts only commits reachable from the configured branch of the configured upstream URL, and synchronization is blocked while adoption is `in_progress`. Template-sync runtime directories and files fail closed on symlinks and wrong filesystem types; plan, merge-bundle, application, verification, cleanup, and custom repository-local plan paths are never followed through a symlink outside the repository. Verification directly checks that every safe addition, modification, and deletion matches the target in both the index and worktree before running the repository checks and all four publication variants. Recording repeats those direct state checks and reruns all mandatory commands; receipts and reports remain evidence, not authority. Reviewed adoption metadata remains compatible with later baseline advancement.
+Planning accepts only commits reachable from the configured branch of the configured upstream URL, and synchronization is blocked while adoption is `in_progress`. Template-sync runtime directories and files fail closed on symlinks and wrong filesystem types; plan, merge-bundle, application, verification, cleanup, and custom repository-local plan paths are never followed through a symlink outside the repository. Verification directly checks that every safe addition, modification, and deletion matches the target in both the index and worktree before running the repository checks and every build declared in `.agents/paper-build.json`. Recording repeats those direct state checks and reruns all mandatory commands; receipts and reports remain evidence, not authority. Reviewed adoption metadata remains compatible with later baseline advancement.
 
 Adoption records the first reviewed baseline during `finalize`. A template-created or older repository without a trustworthy baseline instead uses one reviewed `--bootstrap` synchronization. Future synchronizations use the recorded upstream commit as the three-way baseline and run `plan` without `--bootstrap`. See `.agents/skills/template-sync/SKILL.md`.
 
@@ -192,4 +197,7 @@ The repository protects its current and future real-paper case branches and the 
 
 The repository has no legacy harness, capability registry, Bridge layer, experiment ledger, product adapter mirror, or committed generated release tree. A clean copy of `paper/` compiles all variants without `.agents/`.
 
-Pull requests must pass `harness`, `references`, `vendored-skills`, four real-TeX variant jobs, `paper-only`, and `release-package`. See `CONTRIBUTING.md`.
+Pull requests must pass `harness`, `references`, four real-TeX variant jobs,
+`paper-only`, and `release-package`. The template repository's `main` release
+PRs additionally run `official-templates`; this case branch does not duplicate
+that online matrix. See `CONTRIBUTING.md`.

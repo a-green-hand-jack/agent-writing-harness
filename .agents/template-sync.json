@@ -11,9 +11,9 @@
     ".agents/tools/check-structure.py"
   ],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed hosted-case routing sync from ad45718 to c135f32; preserved CORAL paper contracts and manual CI behavior.",
-  "last_synced_at": "2026-08-26T09:18:40+00:00",
-  "last_synced_commit": "c135f3261693042a2ba61c487af3f23ce6fdbebe",
+  "last_sync_note": "Reviewed Agent-assisted template synchronization.",
+  "last_synced_at": "2026-08-27T13:30:03+00:00",
+  "last_synced_commit": "c9638cd901694201d78be0451fa140554cbd2390",
   "reference_integrity": {
     "adopted": false
   },
