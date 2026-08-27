@@ -28,6 +28,11 @@ make pdf VARIANT=arxiv
 `make pdf` defaults to `draft`; `paper/main.tex` defaults to `anonymous` for a
 direct source or Overleaf import. Clean generated LaTeX files with `make clean`.
 
+The commands above are this repository's `canonical-variants` build profile.
+`.agents/paper-build.json` records the same native entrypoint and commands for
+adoption and template-sync verification; see `LATEX_TEMPLATES.md` for the
+schema, verified template matrix, official sources, and validation limits.
+
 ## Validate
 
 ```bash

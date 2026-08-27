@@ -52,6 +52,13 @@ make pdf VARIANT=arxiv
 contains no acknowledgement text, so enabling that slot in `camera-ready` and
 `arxiv` intentionally emits no additional prose.
 
+`.agents/paper-build.json` declares this repository's source entrypoint and the
+four commands that adoption and template sync must verify. An adopted external
+publisher template may instead use an `external-latex` profile with its native
+entrypoint and one or more real build commands; see `LATEX_TEMPLATES.md`. The
+profile changes build orchestration only and does not authorize publication
+variant differences.
+
 ## Reference integrity
 
 Bibliographic identity and claim support are separate review obligations. The

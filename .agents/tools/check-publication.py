@@ -6,6 +6,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from _paper_profile import ProfileError, is_canonical, load_profile
+
 VARIANTS = {
     "draft": {
         "internal": "draft",
@@ -60,6 +62,10 @@ def active_lines(path: Path) -> list[str]:
 
 def check(root: Path) -> int:
     code = 0
+    try:
+        profile = load_profile(root)
+    except ProfileError as exc:
+        return error(f"invalid paper build profile: {exc}")
     publication = root / "PUBLICATION.md"
     if not publication.is_file():
         code |= error("missing PUBLICATION.md")
@@ -69,8 +75,22 @@ def check(root: Path) -> int:
         for heading in PUBLICATION_HEADINGS:
             if heading not in publication_text:
                 code |= error(f"PUBLICATION.md missing heading: {heading}")
-        if ROOT_ENTRY_STATEMENT not in publication_text:
+        if is_canonical(profile) and ROOT_ENTRY_STATEMENT not in publication_text:
             code |= error("PUBLICATION.md must document the anonymous root main.tex default")
+
+    if not is_canonical(profile):
+        if f"`{profile['entrypoint']}`" not in publication_text:
+            code |= error(
+                f"PUBLICATION.md must document the declared entrypoint: {profile['entrypoint']}"
+            )
+        for build in profile["builds"]:
+            if f"`{build['name']}`" not in publication_text:
+                code |= error(
+                    f"PUBLICATION.md does not list declared build: {build['name']}"
+                )
+        if code == 0:
+            print("OK publication_profile")
+        return code
 
     variants_root = root / "paper/variants"
     common = variants_root / "common.tex"
