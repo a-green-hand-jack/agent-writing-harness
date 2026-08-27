@@ -99,7 +99,7 @@ TEX_REFERENCE_PATTERNS = (
     ("input", re.compile(r"\\InputIfFileExists\s*\{([^}]+)\}"), (".tex",), False),
     (
         "graphics",
-        re.compile(r"\\includegraphics\s*(?:\[[^\]]*\]\s*)?\{([^}]+)\}"),
+        re.compile(r"\\includegraphics\*?\s*(?:\[[^\]]*\]\s*)?\{([^}]+)\}"),
         ("", ".pdf", ".png", ".jpg", ".jpeg", ".svg", ".eps"),
         False,
     ),

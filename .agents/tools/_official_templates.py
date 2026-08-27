@@ -16,6 +16,13 @@ from typing import Iterable
 
 from _paper_profile import run_profile_command
 
+DOWNLOAD_CHUNK_BYTES = 1024 * 1024
+MAX_DOWNLOAD_BYTES = 256 * 1024 * 1024
+MAX_ARCHIVE_MEMBERS = 10_000
+MAX_ARCHIVE_MEMBER_BYTES = 256 * 1024 * 1024
+MAX_ARCHIVE_TOTAL_BYTES = 512 * 1024 * 1024
+MAX_ARCHIVE_COMPRESSION_RATIO = 1_000
+
 
 @dataclass(frozen=True)
 class RemoteFile:
@@ -247,7 +254,28 @@ def _download(remote: RemoteFile, cache_dir: Path) -> Path:
         with urllib.request.urlopen(request, timeout=90) as response, temporary.open(
             "wb"
         ) as handle:
-            shutil.copyfileobj(response, handle)
+            declared_length = response.headers.get("Content-Length")
+            if declared_length is not None:
+                try:
+                    declared_bytes = int(declared_length)
+                except ValueError as exc:
+                    raise OfficialTemplateError(
+                        f"invalid Content-Length for {remote.name}: {declared_length}"
+                    ) from exc
+                if declared_bytes < 0 or declared_bytes > MAX_DOWNLOAD_BYTES:
+                    raise OfficialTemplateError(
+                        f"official template download exceeds {MAX_DOWNLOAD_BYTES} bytes: "
+                        f"{remote.name}"
+                    )
+            downloaded_bytes = 0
+            while chunk := response.read(DOWNLOAD_CHUNK_BYTES):
+                downloaded_bytes += len(chunk)
+                if downloaded_bytes > MAX_DOWNLOAD_BYTES:
+                    raise OfficialTemplateError(
+                        f"official template download exceeds {MAX_DOWNLOAD_BYTES} bytes: "
+                        f"{remote.name}"
+                    )
+                handle.write(chunk)
         actual = _sha256(temporary)
         if remote.sha256 is not None and actual != remote.sha256:
             raise OfficialTemplateError(
@@ -298,18 +326,59 @@ def _safe_member_path(root: Path, name: str) -> Path:
 def _extract(archive: Path, destination: Path) -> None:
     try:
         with zipfile.ZipFile(archive) as package:
-            for member in package.infolist():
-                target = _safe_member_path(destination, member.filename)
-                if member.is_dir():
-                    target.mkdir(parents=True, exist_ok=True)
-                    continue
+            members = package.infolist()
+            if len(members) > MAX_ARCHIVE_MEMBERS:
+                raise OfficialTemplateError(
+                    f"official package has more than {MAX_ARCHIVE_MEMBERS} members: "
+                    f"{archive.name}"
+                )
+            total_bytes = 0
+            for member in members:
+                _safe_member_path(destination, member.filename)
                 if member.external_attr >> 16 & 0o170000 == 0o120000:
                     raise OfficialTemplateError(
                         f"symlink in official package is not supported: {member.filename}"
                     )
+                if member.is_dir():
+                    continue
+                if member.file_size > MAX_ARCHIVE_MEMBER_BYTES:
+                    raise OfficialTemplateError(
+                        f"official package member exceeds {MAX_ARCHIVE_MEMBER_BYTES} bytes: "
+                        f"{member.filename}"
+                    )
+                total_bytes += member.file_size
+                if total_bytes > MAX_ARCHIVE_TOTAL_BYTES:
+                    raise OfficialTemplateError(
+                        f"official package exceeds {MAX_ARCHIVE_TOTAL_BYTES} extracted bytes: "
+                        f"{archive.name}"
+                    )
+                if (
+                    member.file_size > 0
+                    and member.file_size
+                    > max(member.compress_size, 1) * MAX_ARCHIVE_COMPRESSION_RATIO
+                ):
+                    raise OfficialTemplateError(
+                        f"official package member has excessive compression ratio: "
+                        f"{member.filename}"
+                    )
+
+            for member in members:
+                target = _safe_member_path(destination, member.filename)
+                if member.is_dir():
+                    target.mkdir(parents=True, exist_ok=True)
+                    continue
                 target.parent.mkdir(parents=True, exist_ok=True)
                 with package.open(member) as source, target.open("wb") as output:
-                    shutil.copyfileobj(source, output)
+                    extracted_bytes = 0
+                    while chunk := source.read(DOWNLOAD_CHUNK_BYTES):
+                        extracted_bytes += len(chunk)
+                        if extracted_bytes > MAX_ARCHIVE_MEMBER_BYTES:
+                            raise OfficialTemplateError(
+                                f"official package member exceeds "
+                                f"{MAX_ARCHIVE_MEMBER_BYTES} bytes while extracting: "
+                                f"{member.filename}"
+                            )
+                        output.write(chunk)
     except zipfile.BadZipFile as exc:
         raise OfficialTemplateError(
             f"official package is not a ZIP archive: {archive.name}"
