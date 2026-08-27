@@ -33,9 +33,9 @@
     ".agents/tools/check-structure.py"
   ],
   "ignored_paths": [],
-  "last_sync_note": "Reviewed hosted-case routing fix sync to template main c135f32; preserved DGM paper contracts and downstream anatomy.",
-  "last_synced_at": "2026-08-26T08:50:39+00:00",
-  "last_synced_commit": "c135f3261693042a2ba61c487af3f23ce6fdbebe",
+  "last_sync_note": "Reviewed Agent-assisted template synchronization.",
+  "last_synced_at": "2026-08-27T13:18:36+00:00",
+  "last_synced_commit": "c9638cd901694201d78be0451fa140554cbd2390",
   "reference_integrity": {
     "adopted": false
   },

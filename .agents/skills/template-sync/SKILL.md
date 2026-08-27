@@ -97,7 +97,7 @@ The classification is a review aid, not permission to alter scientific meaning.
    python3 .agents/tools/template-sync.py verify --reviewed
    ```
 
-   This first establishes that every safe addition, modification, and deletion exactly matches the target in both the index and worktree, then runs repository verification and all four publication-variant builds. Any subsequent repository change makes the report stale.
+   This first establishes that every safe addition, modification, and deletion exactly matches the target in both the index and worktree, then runs repository verification and every build declared in `.agents/paper-build.json`. The default template profile still declares all four publication variants; an adopted publisher-native profile may declare a different reviewed command set. Any subsequent repository change makes the report stale.
 
 11. After manual review and successful validation, record the exact upstream target:
 
