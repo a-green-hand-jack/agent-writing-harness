@@ -18,6 +18,23 @@ The control words below are collaboration cues, not a rigid permission system:
 - Intended readers: TODO
 - One-sentence positioning: TODO
 
+## Operating mode
+
+The Human declares how this paper runs by setting `Mode`; the Agent follows the
+declared boundary and never widens it silently.
+
+- Mode: unresolved (`collaborative` or `autonomous`)
+
+In **collaborative** mode the Human stays in the loop for each substantive step;
+the Agent drafts and revises on request and brings high-impact choices to a
+decision packet.
+
+In **autonomous** mode the Human provides the brief and materials, then the
+Agent proceeds through drafting, self-review, polish, and variant and checkpoint
+builds on its own, and may prepare idea shaping and evidence analysis as
+proposals only. The Agent stops for Human approval before changing a locked
+item, approving a release, or final submission.
+
 ## What readers should believe
 
 ### Central thesis — unresolved

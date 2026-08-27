@@ -28,6 +28,11 @@ F7_REQUIREMENTS = (
         "the three questions",
     ),
     ("template-sync", "F7-TS-001-v1", "state the review boundary"),
+    (
+        "paper-brief-ingest",
+        "F7-PBI-001-v1",
+        "fill missing brief fields with invented content",
+    ),
 )
 
 
@@ -52,6 +57,8 @@ def completed_fixture(root: Path) -> None:
 The collaboration cues locked, bounded, free, and unresolved remain available as guidance.
 ## Paper identity
 The paper has an approved identity.
+## Operating mode
+The paper runs in collaborative mode with Human approval for each substantive step.
 ## What readers should believe
 The central thesis is approved.
 ## What must not change silently
@@ -130,6 +137,7 @@ The release instance is approved.
         "reference-repair",
         "citation-support-review",
         "release-review",
+        "paper-brief-ingest",
     ):
         write(
             root / f".agents/skills/{skill}/SKILL.md",
@@ -162,6 +170,10 @@ The release instance is approved.
     write(
         root / ".agents/skills/template-sync/SKILL.md",
         "# template-sync\n## Trigger\nSync a template.\n## Minimum context\nCurrent plan.\n## Procedure\n<!-- paper-skill-contract: F7-TS-001-v1 -->\nBefore applying any safe change, explain why paths were classified and state the review boundary; no classification authorizes a semantic change.\n",
+    )
+    write(
+        root / ".agents/skills/paper-brief-ingest/SKILL.md",
+        "# paper-brief-ingest\n## Trigger\nIngest a brief.\n## Minimum context\nCurrent brief and contracts.\n## Procedure\n<!-- paper-skill-contract: F7-PBI-001-v1 -->\nWhen the brief leaves a field empty or TODO, keep the corresponding contract item unresolved instead of inventing a value, and report it as left open.\n",
     )
     write(root / ".agents/runtime/.gitignore", "*\n!.gitignore\n")
     write(

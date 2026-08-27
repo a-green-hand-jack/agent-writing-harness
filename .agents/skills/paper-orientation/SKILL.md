@@ -39,10 +39,11 @@ exact conflict. `paper-init.py status` reporting `downstream` is not positive
 evidence that the repository came from this GitHub Template. Never infer a
 writing-repository identity from the directory name, branch name, copied
 template files, a non-upstream origin, or a marker without matching provenance;
-an initialized state additionally requires template-sync metadata. The three downstream lifecycle
+an initialized state additionally requires template-sync metadata. The downstream lifecycle
 variants share this gate but own different transitions:
 
 - `ccf-project-scaffolder` in template-create mode creates and initializes a new writing repository;
+- `paper-brief-ingest` starts a paper from a Human-provided brief repo (`BRIEF.md` content spec plus template-usage instructions) and fills the contracts from the brief; repository creation follows the `ccf-project-scaffolder` template-create procedure as a subordinate step;
 - `template-adoption` maps an unrelated existing paper repository and records its first reviewed baseline;
 - `template-sync` applies reviewed upstream changes after initialization or adoption.
 
@@ -59,7 +60,12 @@ Target: venue/year/track and deadline, or "unresolved"
 Authors and identity: author list plus anonymity or disclosure constraints
 First deliverable: idea clarification, evidence plan, outline, or a named section draft
 Constraints: language, length, compute/data limits, style examples, and locked decisions
+Operating mode: collaborative or autonomous
 ```
+
+When the Human provides a **brief repo**, its `BRIEF.md` is that packet in a
+structured form; use `paper-brief-ingest` to validate and ingest it instead of
+transcribing it by hand.
 
 With no evidence, limit work to initialization, clarification, an evidence plan,
 or an outline. A section draft requires supplied or Human-approved claims and

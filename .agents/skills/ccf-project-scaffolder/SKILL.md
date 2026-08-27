@@ -122,6 +122,11 @@ commands, repository status, or template file lists.
    Draft or update the five Human contracts only from that packet, repository
    evidence, and explicit Human decisions. Leave unknown title, venue, type,
    authorship, claims, results, experiments, and style as `unresolved`.
+   When the Human provides a **brief repo** (a `BRIEF.md` content spec plus
+   template-usage instructions), ingest it with `paper-brief-ingest` instead of
+   hand-filling the contracts: validate and then run
+   `python3 .agents/tools/paper-brief.py ingest --brief <path>`. Confirm the
+   declared `Mode` (`collaborative` or `autonomous`) before paper work begins.
 7. Run the downstream verification and daily draft build after initialization:
 
    ```bash

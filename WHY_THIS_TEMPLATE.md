@@ -1,11 +1,17 @@
 # Why Use This Template?
 
-This template is for papers written with both Human and Agent contributors. It
-does not promise better science by itself, and it does not replace the Human's
-responsibility for research decisions. Its purpose is more concrete: make the
-important parts of paper work explicit, keep them connected as the manuscript
-changes, and leave evidence that the delivered paper is the one that was
-reviewed.
+This template is an **agent-writing harness**. From it you create a writing repo
+that coding agents use to draft, revise, evidence, and release a paper. The
+harness works in two operating modes: **collaborative** writing, where the
+Human and the Agent work step by step, and **autonomous** writing, where the
+Human supplies a paper brief and materials and the Agent runs the paper
+long-term on its own, producing checkpoints for Human review.
+
+It does not promise better science by itself, and it does not replace the
+Human's responsibility for research decisions. Its purpose is more concrete:
+make the important parts of paper work explicit, keep them connected as the
+manuscript changes, and leave evidence that the delivered paper is the one that
+was reviewed.
 
 ## The Short Version
 
@@ -128,9 +134,20 @@ paper's meaning.
 wording or formatting autonomously while escalating a changed contribution,
 story, fairness condition, or interpretation.
 
+`PAPER.md` also declares the operating mode (`## Operating mode`). In
+**collaborative** mode the Human stays in the loop for each substantive step.
+In **autonomous** mode the Human provides the brief and materials once, and the
+Agent proceeds through drafting, self-review, polish, and variant and checkpoint
+builds without step-by-step confirmation, and may prepare idea shaping and
+evidence analysis as proposals only. It stops for Human approval before
+changing a locked item, approving a release, or final submission. The mode
+changes how much confirmation the Agent needs, never what it may silently
+alter.
+
 **Practical gain:** fewer silent changes to the thesis, claim strength, or
-experimental meaning, and more focused Human decisions when they are actually
-needed.
+experimental meaning, more focused Human decisions when they are actually
+needed, and a safe way for an Agent to run a paper end to end when the Human is
+not available to review every step.
 
 ### 2. A stable paper narrative
 
@@ -249,6 +266,8 @@ place to work inside them.
 
 This template is most useful when:
 
+- a paper is drafted or revised by a coding agent, either collaboratively or autonomously for a long-running session;
+- the Human wants to supply a brief and materials once and let the Agent drive the paper forward with checkpoints;
 - a paper is revised repeatedly with Agent assistance;
 - several contributors need a shared record of narrative and experiment
   boundaries;
