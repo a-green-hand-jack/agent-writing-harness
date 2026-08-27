@@ -266,6 +266,23 @@ class StructureChecks(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("non-paper surface", result.stdout)
 
+    def test_dependency_boundary_resolves_starred_graphics_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            (root / ".agents/secret.png").write_bytes(b"control asset")
+            main = root / "paper/main.tex"
+            main.write_text(
+                main.read_text(encoding="utf-8").replace(
+                    "\\begin{document}",
+                    "\\begin{document}\n\\includegraphics*{../.agents/secret}",
+                ),
+                encoding="utf-8",
+            )
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("non-paper surface", result.stdout)
+
     def test_dependency_boundary_resolves_whitespace_separated_commands(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
