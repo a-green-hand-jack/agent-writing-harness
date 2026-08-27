@@ -1,0 +1,45 @@
+{
+  "bibliography": "paper/refs.bib",
+  "builds": [
+    {
+      "command": [
+        "make",
+        "pdf",
+        "VARIANT=draft"
+      ],
+      "name": "draft",
+      "output": "paper/main.pdf"
+    },
+    {
+      "command": [
+        "make",
+        "pdf",
+        "VARIANT=anonymous"
+      ],
+      "name": "anonymous",
+      "output": "paper/main-anonymous.pdf"
+    },
+    {
+      "command": [
+        "make",
+        "pdf",
+        "VARIANT=camera-ready"
+      ],
+      "name": "camera-ready",
+      "output": "paper/main-camera-ready.pdf"
+    },
+    {
+      "command": [
+        "make",
+        "pdf",
+        "VARIANT=arxiv"
+      ],
+      "name": "arxiv",
+      "output": "paper/main-arxiv.pdf"
+    }
+  ],
+  "entrypoint": "paper/main.tex",
+  "layout": "canonical-variants",
+  "schema_version": "paper-build-profile-v1",
+  "source_root": "paper"
+}
