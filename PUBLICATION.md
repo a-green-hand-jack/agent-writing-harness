@@ -57,6 +57,13 @@ make pdf VARIANT=arxiv
 
 `make pdf` defaults to `draft` for daily writing. The root `paper/main.tex` defaults to `anonymous`, so a direct Overleaf or source import compiles the anonymous submission layout. Draft, camera-ready, and arXiv must be selected explicitly. Unknown variants fail rather than silently falling back.
 
+`.agents/paper-build.json` declares this repository's source entrypoint and the
+four commands that adoption and template sync must verify. An adopted external
+publisher template may instead use an `external-latex` profile with its native
+entrypoint and one or more real build commands; see `LATEX_TEMPLATES.md`. The
+profile changes build orchestration only and does not authorize publication
+variant differences.
+
 ## Reference integrity
 
 Bibliographic identity and claim support are separate review obligations. The

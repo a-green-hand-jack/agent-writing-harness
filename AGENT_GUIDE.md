@@ -456,11 +456,16 @@ The Agent then performs the manual semantic migration, runs:
 
 ```bash
 python3 .agents/tools/template-adoption.py --root /path/to/existing-paper assess
-python3 .agents/tools/template-adoption.py --root /path/to/existing-paper verify --variants
+python3 .agents/tools/template-adoption.py --root /path/to/existing-paper verify --builds
 python3 .agents/tools/template-adoption.py --root /path/to/existing-paper finalize --reviewed
 ```
 
-`assess` is diagnostic and cannot authorize finalization. `apply` stages only
+`assess` is diagnostic and cannot authorize finalization. `--builds` runs every
+command declared in the reviewed `.agents/paper-build.json`; the historical
+`--variants` spelling is an alias. A publisher-native repository may declare a
+single manuscript build instead of fabricating this template's four variants.
+See `LATEX_TEMPLATES.md` for the profile contract and tested template matrix.
+`apply` stages only
 safe missing sidecar infrastructure. Never mechanically overwrite or move
 scientific prose, results, references, figures, tables, macros, venue files,
 build logic, CI, Human contracts, or downstream-only files. Follow
@@ -521,12 +526,12 @@ Choose validation that proves the requested result:
 | Local prose change | Build the affected variant and inspect warnings or the rendered output as relevant |
 | Contract, interface, reference, publication, or Agent-sidecar change | `bash .agents/tools/verify.sh` plus the affected build |
 | Variant-sensitive paper change | Build every affected variant explicitly |
-| Adoption | `template-adoption.py assess`, then reviewed `verify --variants` before finalization |
+| Adoption | `template-adoption.py assess`, then reviewed `verify --builds` before finalization |
 | Template synchronization | `template-sync.py verify --reviewed` before recording |
 | Release candidate | The release-review procedure, strict release checks, manifest/checksum validation, and Human approval where required |
 
 `bash .agents/tools/verify.sh` checks repository structure and contracts but is
-not a substitute for every publication-variant build or external platform test.
+not a substitute for every declared build or external platform test.
 Never claim an unexecuted check passed.
 
 ## Prohibited Shortcuts
