@@ -29,6 +29,7 @@
     "verification_repository_fingerprint": "85837a9c4c0311f4447e83af5b736a154904af204bef03ef92cce6019022c98a"
   },
   "always_manual": [
+    ".agents/tests/test_structure.py",
     ".agents/tools/check-structure.py"
   ],
   "ignored_paths": [],
