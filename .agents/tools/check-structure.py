@@ -95,6 +95,12 @@ TEX_REFERENCE_PATTERNS = (
     ("input", re.compile(r"\\(?:input|include)\s*\{([^}]+)\}"), (".tex",), False),
     ("input", re.compile(r"\\InputIfFileExists\s*\{([^}]+)\}"), (".tex",), False),
     (
+        "natbib annotation",
+        re.compile(r"\\bibAnnoteFile\s*\{[^{}]*\}\s*\{([^{}]*)\}"),
+        (".tex",),
+        False,
+    ),
+    (
         "graphics",
         re.compile(r"\\includegraphics\*?\s*(?:\[[^\]]*\]\s*)?\{([^}]+)\}"),
         ("", ".pdf", ".png", ".jpg", ".jpeg", ".svg", ".eps"),
@@ -123,9 +129,14 @@ TEX_REFERENCE_PATTERNS = (
 )
 UNSUPPORTED_PATH_DIRECTIVE_RE = re.compile(r"\\(?:graphicspath|input@path)\b")
 UNSUPPORTED_INPUT_SYNTAX_RE = re.compile(r"\\(?:input|include)\b\s*+(?!\{)")
-DYNAMIC_DEPENDENCY_ALLOWLIST = {
-    ("paper/style/natbib.sty", "input", "#2"),
-}
+NATBIB_ANNOTATION_DEFINITION_RE = re.compile(
+    r"\\providecommand\s*\{\\bibAnnoteFile\}\s*\[2\]\s*\{\s*"
+    r"\\IfFileExists\s*\{#2\}\s*\{\s*"
+    r"\\bibAnnote\s*\{#1\}\s*\{#2\}\s*\{\s*"
+    r"\\input\s*\{#2\}\s*\}\s*\}\s*\{\s*"
+    r"\\bibAnnote\s*\{#1\}\s*\{#2\}\s*\{\s*\}\s*\}\s*\}",
+    re.DOTALL,
+)
 
 
 def error(message: str) -> int:
@@ -253,6 +264,16 @@ def check_dependency_boundary(root: Path, profile: dict[str, object]) -> int:
             )
         return 0
 
+    def dynamic_allowed(
+        relative: Path, label: str, value: str, text: str, reference_start: int
+    ) -> bool:
+        if (relative.as_posix(), label, value) != ("paper/style/natbib.sty", "input", "#2"):
+            return False
+        return any(
+            definition.start() <= reference_start < definition.end()
+            for definition in NATBIB_ANNOTATION_DEFINITION_RE.finditer(text)
+        )
+
     def candidates_for(
         source: Path,
         reference: str,
@@ -300,14 +321,15 @@ def check_dependency_boundary(root: Path, profile: dict[str, object]) -> int:
                 f"paper source uses unsupported unbraced TeX input syntax: {relative}"
             )
         for label, pattern, extensions, comma_separated in TEX_REFERENCE_PATTERNS:
-            for raw_reference in pattern.findall(text):
+            for match in pattern.finditer(text):
+                raw_reference = match.group(1)
                 references = raw_reference.split(",") if comma_separated else [raw_reference]
                 for raw_value in references:
                     value = raw_value.strip()
                     if not value:
                         continue
                     if any(token in value for token in ("\\", "#", "$")):
-                        if (relative.as_posix(), label, value) in DYNAMIC_DEPENDENCY_ALLOWLIST:
+                        if dynamic_allowed(relative, label, value, text, match.start(1)):
                             continue
                         code |= error(
                             f"paper source has unresolved dynamic {label} dependency: "

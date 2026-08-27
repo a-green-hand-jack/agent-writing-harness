@@ -327,7 +327,17 @@ class StructureChecks(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             fixture(root)
-            write(root / "paper/style/natbib.sty", "\\input{#2}\n")
+            write(
+                root / "paper/style/natbib.sty",
+                r"""\providecommand{\bibAnnoteFile}[2]{
+  \IfFileExists{#2}{
+    \bibAnnote{#1}{#2}{\input{#2}}
+  }{
+    \bibAnnote{#1}{#2}{}
+  }
+}
+""",
+            )
             result = run(root)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
@@ -339,6 +349,19 @@ class StructureChecks(unittest.TestCase):
             result = run(root)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("unresolved dynamic input dependency", result.stdout)
+
+    def test_dependency_boundary_rejects_natbib_macro_invocation_outside_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            write(root / ".agents/secret.tex", "Control content\n")
+            write(
+                root / "paper/sections/02_intro.tex",
+                "\\bibAnnoteFile{key}{../.agents/secret}\n",
+            )
+            result = run(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("non-paper surface", result.stdout)
 
     def test_dependency_boundary_checks_input_if_file_exists(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
