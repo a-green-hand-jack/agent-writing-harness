@@ -387,9 +387,14 @@ class OfficialLatexPackageTests(unittest.TestCase):
     PLATFORM_INDEPENDENT_TESTS = {
         "test_failed_build_refuses_cleanup_through_symlinked_output_parent",
         "test_official_archive_rejects_parent_traversal",
+        "test_official_archive_rejects_excessive_compression_ratio",
+        "test_official_archive_rejects_excessive_member_count",
+        "test_official_archive_rejects_excessive_total_size",
+        "test_official_archive_rejects_oversized_member",
         "test_official_archive_rejects_symlink_member",
         "test_official_download_accepts_updates_and_records_digest",
         "test_official_download_rejects_hash_mismatch",
+        "test_official_download_rejects_oversized_response",
         "test_official_matrix_uses_current_sources",
     }
 
@@ -479,6 +484,17 @@ class OfficialLatexPackageTests(unittest.TestCase):
                 _download(remote, root / "cache")
             self.assertFalse((root / "cache/package.bin").exists())
 
+    def test_official_download_rejects_oversized_response(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source.bin"
+            source.write_bytes(b"123456789")
+            remote = RemoteFile(name="package.bin", url=source.as_uri())
+            with mock.patch("_official_templates.MAX_DOWNLOAD_BYTES", 8):
+                with self.assertRaisesRegex(OfficialTemplateError, "download exceeds"):
+                    _download(remote, root / "cache")
+            self.assertFalse((root / "cache/package.bin").exists())
+
     def test_official_smoke_disables_latexmk_rc_and_shell_escape(self) -> None:
         if shutil.which("latexmk") is None:
             self.skipTest("latexmk is required")
@@ -539,6 +555,48 @@ class OfficialLatexPackageTests(unittest.TestCase):
             with self.assertRaisesRegex(OfficialTemplateError, "symlink"):
                 _extract(archive, root / "stage")
             self.assertFalse((root / "outside.txt").exists())
+
+    def test_official_archive_rejects_excessive_member_count(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = root / "package.zip"
+            with zipfile.ZipFile(archive, "w") as package:
+                package.writestr("one.txt", "one")
+                package.writestr("two.txt", "two")
+            with mock.patch("_official_templates.MAX_ARCHIVE_MEMBERS", 1):
+                with self.assertRaisesRegex(OfficialTemplateError, "more than 1 members"):
+                    _extract(archive, root / "stage")
+
+    def test_official_archive_rejects_oversized_member(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = root / "package.zip"
+            with zipfile.ZipFile(archive, "w") as package:
+                package.writestr("large.txt", "123456789")
+            with mock.patch("_official_templates.MAX_ARCHIVE_MEMBER_BYTES", 8):
+                with self.assertRaisesRegex(OfficialTemplateError, "member exceeds 8 bytes"):
+                    _extract(archive, root / "stage")
+
+    def test_official_archive_rejects_excessive_total_size(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = root / "package.zip"
+            with zipfile.ZipFile(archive, "w") as package:
+                package.writestr("one.txt", "12345")
+                package.writestr("two.txt", "67890")
+            with mock.patch("_official_templates.MAX_ARCHIVE_TOTAL_BYTES", 9):
+                with self.assertRaisesRegex(OfficialTemplateError, "exceeds 9 extracted bytes"):
+                    _extract(archive, root / "stage")
+
+    def test_official_archive_rejects_excessive_compression_ratio(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = root / "package.zip"
+            with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as package:
+                package.writestr("compressed.txt", "0" * 1024)
+            with mock.patch("_official_templates.MAX_ARCHIVE_COMPRESSION_RATIO", 2):
+                with self.assertRaisesRegex(OfficialTemplateError, "compression ratio"):
+                    _extract(archive, root / "stage")
 
     def test_failed_build_refuses_cleanup_through_symlinked_output_parent(self) -> None:
         with tempfile.TemporaryDirectory() as directory, tempfile.TemporaryDirectory() as external:
