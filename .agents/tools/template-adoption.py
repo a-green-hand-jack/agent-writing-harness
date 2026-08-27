@@ -30,6 +30,15 @@ from _template_inheritance import (
     load_inheritance_policy,
     parse_inheritance_policy,
 )
+from _paper_profile import (
+    PROFILE_RELATIVE,
+    ProfileError,
+    ensure_profile_paths,
+    is_canonical,
+    load_profile,
+    run_profile_command,
+    verification_steps,
+)
 
 RUNTIME_RELATIVE = Path(".agents/runtime/template-adoption")
 SYNC_CONFIG_RELATIVE = Path(".agents/template-sync.json")
@@ -39,6 +48,7 @@ DEFAULT_UPSTREAM_URL = "https://github.com/a-green-hand-jack/ccfa-writing-paper-
 DEFAULT_REMOTE = "template"
 DEFAULT_UPSTREAM_BRANCH = "main"
 DEFAULT_BRANCHES = {"main", "master", "trunk"}
+APPLICATION_SCHEMA = "paper-template-adoption-application-v1"
 REGULAR_FILE_MODES = {"100644", "100755"}
 SCAN_SKIP_PREFIXES = (
     ".git/",
@@ -52,6 +62,27 @@ SCAN_SKIP_PREFIXES = (
 )
 TEXT_LIMIT = 2 * 1024 * 1024
 IMAGE_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".svg", ".eps"}
+GENERATED_BUILD_SUFFIXES = {
+    ".aux",
+    ".bbl",
+    ".bcf",
+    ".blg",
+    ".dvi",
+    ".fdb_latexmk",
+    ".fls",
+    ".lof",
+    ".log",
+    ".lot",
+    ".nav",
+    ".out",
+    ".ps",
+    ".run.xml",
+    ".snm",
+    ".synctex.gz",
+    ".toc",
+    ".vrb",
+    ".xdv",
+}
 BUILD_CANDIDATES = (
     "Makefile",
     "makefile",
@@ -81,19 +112,17 @@ ASSESSMENT_COMMANDS = (
     ("python3", ".agents/tools/paper-init.py", "status"),
     ("python3", ".agents/tools/check-documentation.py"),
     ("python3", ".agents/tools/check-venue-knowledge.py"),
-    ("python3", ".agents/tools/check-paper-contracts.py", "--profile", "draft"),
-    ("python3", ".agents/tools/check-paper-interfaces.py"),
-    ("python3", ".agents/tools/check-reference-integrity.py", "--profile", "draft"),
     ("python3", ".agents/tools/check-publication.py"),
+    ("python3", ".agents/tools/check-paper-contracts.py", "--profile", "draft"),
     ("python3", ".agents/tools/check-release-records.py"),
     ("python3", ".agents/tools/template-adoption.py", "validate"),
     ("python3", ".agents/tools/template-sync.py", "validate"),
     ("python3", ".agents/tools/overleaf-sync.py", "validate"),
     ("python3", "-m", "unittest", "discover", "-s", ".agents/tests", "-p", "test_*.py"),
-    ("make", "pdf", "VARIANT=draft"),
-    ("make", "pdf", "VARIANT=anonymous"),
-    ("make", "pdf", "VARIANT=camera-ready"),
-    ("make", "pdf", "VARIANT=arxiv"),
+)
+CANONICAL_ASSESSMENT_COMMANDS = (
+    ("python3", ".agents/tools/check-paper-interfaces.py"),
+    ("python3", ".agents/tools/check-reference-integrity.py", "--profile", "draft"),
 )
 AGENT_CANDIDATES = (
     "AGENTS.md",
@@ -133,7 +162,8 @@ EXPERIMENT_FILE_TOKENS = (
     "experiment",
 )
 
-DOCUMENTCLASS_RE = re.compile(r"\\documentclass(?:\[[^\]]*\])?\{[^}]+\}")
+DOCUMENTCLASS_RE = re.compile(r"\\documentclass(?:\[([^\]]*)\])?\{([^}]+)\}")
+USEPACKAGE_RE = re.compile(r"\\usepackage(?:\[[^\]]*\])?\{([^}]+)\}")
 BEGIN_DOCUMENT_RE = re.compile(r"\\begin\{document\}")
 INPUT_RE = re.compile(r"\\(?:input|include)\{([^}]+)\}")
 GRAPHICS_RE = re.compile(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}")
@@ -209,6 +239,11 @@ def path_matches(path: str, patterns: Iterable[str]) -> bool:
         elif normalized == candidate:
             return True
     return False
+
+
+def is_generated_python_cache(path: str) -> bool:
+    candidate = PurePosixPath(path)
+    return "__pycache__" in candidate.parts or candidate.suffix == ".pyc"
 
 
 def ensure_directory_path(root: Path, relative: Path, *, create: bool) -> Path:
@@ -297,7 +332,9 @@ def worktree_changes(root: Path) -> list[str]:
             continue
         path = record[3:].decode("utf-8", errors="surrogateescape")
         normalized = normalize_path(path)
-        if path_matches(normalized, [RUNTIME_RELATIVE.as_posix() + "/"]):
+        if path_matches(normalized, [RUNTIME_RELATIVE.as_posix() + "/"]) or is_generated_python_cache(
+            normalized
+        ):
             continue
         changes.append(normalized)
     return changes
@@ -316,6 +353,17 @@ def repository_fingerprint(root: Path) -> str:
     digest.update(head.encode("ascii"))
     digest.update(b"\0")
 
+    staged = subprocess.run(
+        ["git", "diff", "--cached", "--binary", "--no-ext-diff", "HEAD", "--"],
+        cwd=root,
+        capture_output=True,
+        check=False,
+    )
+    if staged.returncode != 0:
+        raise AdoptionError("cannot fingerprint staged downstream changes")
+    digest.update(b"\0staged\0")
+    digest.update(staged.stdout)
+
     diff = subprocess.run(
         ["git", "diff", "--binary", "--no-ext-diff", "HEAD", "--"],
         cwd=root,
@@ -326,21 +374,42 @@ def repository_fingerprint(root: Path) -> str:
         raise AdoptionError("cannot fingerprint tracked downstream changes")
     digest.update(diff.stdout)
 
-    untracked = subprocess.run(
-        ["git", "ls-files", "--others", "--exclude-standard", "-z"],
-        cwd=root,
-        capture_output=True,
-        check=False,
-    )
-    if untracked.returncode != 0:
-        raise AdoptionError("cannot fingerprint untracked downstream files")
-    paths = sorted(
-        normalize_path(raw.decode("utf-8", errors="surrogateescape"))
-        for raw in untracked.stdout.split(b"\0")
-        if raw
-    )
-    for relative in paths:
-        if path_matches(relative, [RUNTIME_RELATIVE.as_posix() + "/"]):
+    entries: dict[str, bool] = {}
+    for arguments, ignored in (
+        (("git", "ls-files", "--others", "--exclude-standard", "-z"), False),
+        (("git", "ls-files", "--others", "--ignored", "--exclude-standard", "-z"), True),
+    ):
+        untracked = subprocess.run(
+            arguments,
+            cwd=root,
+            capture_output=True,
+            check=False,
+        )
+        if untracked.returncode != 0:
+            raise AdoptionError("cannot fingerprint untracked downstream files")
+        for raw in untracked.stdout.split(b"\0"):
+            if raw:
+                entries[normalize_path(raw.decode("utf-8", errors="surrogateescape"))] = ignored
+    try:
+        declared_outputs = {
+            build["output"]
+            for build in load_profile(root)["builds"]
+            if "output" in build
+        }
+    except ProfileError:
+        declared_outputs = set()
+    generated_outputs = {
+        str(PurePosixPath(output).with_suffix("")) + suffix
+        for output in declared_outputs
+        for suffix in GENERATED_BUILD_SUFFIXES
+    }
+    for relative, ignored in sorted(entries.items()):
+        if (
+            path_matches(relative, [RUNTIME_RELATIVE.as_posix() + "/", "dist/"])
+            or is_generated_python_cache(relative)
+            or (ignored and relative in declared_outputs)
+            or (ignored and relative in generated_outputs)
+        ):
             continue
         candidate = root / relative
         digest.update(b"\0path\0")
@@ -644,6 +713,7 @@ def main_candidates(
     root: Path,
     paths: list[str],
     build_files: list[str],
+    declared_entrypoint: str | None = None,
 ) -> list[dict[str, Any]]:
     hint_paths = build_files + [path for path in paths if is_workflow_candidate(path)]
     hint_text = "\n".join(
@@ -657,7 +727,8 @@ def main_candidates(
         if text is None:
             continue
         active = active_tex(text)
-        if not DOCUMENTCLASS_RE.search(active) or not BEGIN_DOCUMENT_RE.search(active):
+        document_class = DOCUMENTCLASS_RE.search(active)
+        if document_class is None or not BEGIN_DOCUMENT_RE.search(active):
             continue
         pure = PurePosixPath(path)
         score = 0
@@ -665,6 +736,9 @@ def main_candidates(
         if path == "paper/main.tex":
             score += 150
             reasons.append("already uses the template canonical entrypoint")
+        if path == declared_entrypoint:
+            score += 1000
+            reasons.append("declared by the paper build profile")
         if pure.name == "main.tex":
             score += 75
             reasons.append("conventional main.tex name")
@@ -684,7 +758,27 @@ def main_candidates(
         if path in hint_text or pure.name in hint_text:
             score += 35
             reasons.append("referenced by existing build or CI configuration")
-        candidates.append({"path": path, "score": score, "evidence": reasons})
+        candidates.append(
+            {
+                "path": path,
+                "score": score,
+                "document_class": document_class.group(2).strip(),
+                "document_class_options": [
+                    option.strip()
+                    for option in (document_class.group(1) or "").split(",")
+                    if option.strip()
+                ],
+                "latex_packages": sorted(
+                    {
+                        package.strip()
+                        for group in USEPACKAGE_RE.findall(active)
+                        for package in group.split(",")
+                        if package.strip()
+                    }
+                ),
+                "evidence": reasons,
+            }
+        )
     return sorted(candidates, key=lambda item: (-int(item["score"]), str(item["path"])))
 
 
@@ -935,12 +1029,32 @@ def discover_build_files(root: Path, paths: list[str]) -> list[str]:
 def inspect_repository(root: Path) -> dict[str, Any]:
     paths = tracked_and_untracked_paths(root)
     build_files = discover_build_files(root, paths)
-    mains = main_candidates(root, paths, build_files)
-    selected_main = str(mains[0]["path"]) if mains else None
+    profile_path = root / PROFILE_RELATIVE
+    profile_declared = profile_path.exists() or profile_path.is_symlink()
+    try:
+        profile = load_profile(root)
+    except ProfileError as exc:
+        raise AdoptionError(str(exc)) from exc
+    declared_entrypoint = str(profile["entrypoint"]) if profile_declared else None
+    mains = main_candidates(root, paths, build_files, declared_entrypoint)
+    selected_main = declared_entrypoint or (str(mains[0]["path"]) if mains else None)
+    selected_main_candidate = next(
+        (candidate for candidate in mains if candidate["path"] == selected_main),
+        None,
+    )
     graph_paths, graph_edges = discover_tex_graph(root, selected_main)
     bibliography_scope = graph_paths if graph_paths else ([selected_main] if selected_main else [])
     bibliographies = bibliography_candidates(root, paths, bibliography_scope, selected_main)
-    selected_bib = str(bibliographies[0]["path"]) if bibliographies else None
+    declared_bibliography = profile["bibliography"] if profile_declared else None
+    selected_bib = (
+        str(declared_bibliography)
+        if declared_bibliography is not None
+        else (str(bibliographies[0]["path"]) if bibliographies else None)
+    )
+    selected_bib_candidate = next(
+        (candidate for candidate in bibliographies if candidate["path"] == selected_bib),
+        None,
+    )
     table_paths = discover_table_files(root, graph_paths, selected_main)
     table_directories = ranked_directories(table_paths)
     section_paths = [
@@ -975,8 +1089,20 @@ def inspect_repository(root: Path) -> dict[str, Any]:
         {
             "template_surface": "paper/main.tex",
             "candidate": selected_main or "",
-            "confidence": confidence_for([int(item["score"]) for item in mains]),
-            "alternatives": [str(item["path"]) for item in mains[1:5]],
+            "confidence": (
+                "high"
+                if profile_declared and selected_main_candidate is not None
+                else (
+                    "none"
+                    if profile_declared
+                    else confidence_for([int(item["score"]) for item in mains])
+                )
+            ),
+            "alternatives": [
+                str(item["path"])
+                for item in mains
+                if item["path"] != selected_main
+            ][:4],
             "recommendation": (
                 "Preserve the existing entrypoint first; prefer a thin paper/main.tex wrapper before moving authored files."
             ),
@@ -984,8 +1110,20 @@ def inspect_repository(root: Path) -> dict[str, Any]:
         {
             "template_surface": "paper/refs.bib",
             "candidate": selected_bib or "",
-            "confidence": confidence_for([int(item["score"]) for item in bibliographies]),
-            "alternatives": [str(item["path"]) for item in bibliographies[1:5]],
+            "confidence": (
+                "high"
+                if declared_bibliography is not None and selected_bib_candidate is not None
+                else (
+                    "none"
+                    if declared_bibliography is not None
+                    else confidence_for([int(item["score"]) for item in bibliographies])
+                )
+            ),
+            "alternatives": [
+                str(item["path"])
+                for item in bibliographies
+                if item["path"] != selected_bib
+            ][:4],
             "recommendation": "Map the existing bibliography deliberately; do not duplicate or silently fork references.",
         },
         {
@@ -1068,8 +1206,18 @@ def inspect_repository(root: Path) -> dict[str, Any]:
             "worktree_clean": worktree_clean(root),
             "file_count": len(paths),
         },
-        "main_candidates": mains[:10],
+        "main_candidates": mains,
         "selected_main": selected_main,
+        "selected_document_class": (
+            selected_main_candidate["document_class"]
+            if selected_main_candidate is not None
+            else None
+        ),
+        "selected_latex_packages": (
+            selected_main_candidate["latex_packages"]
+            if selected_main_candidate is not None
+            else []
+        ),
         "tex_graph": {"files": graph_paths, "edges": graph_edges},
         "bibliography_candidates": bibliographies[:10],
         "selected_bibliography": selected_bib,
@@ -1104,6 +1252,10 @@ def render_inspection(inspection: dict[str, Any]) -> str:
         f"- Head: `{repository['head'] or 'unborn'}`",
         f"- Worktree clean: `{str(repository['worktree_clean']).lower()}`",
         f"- Files considered: `{repository['file_count']}`",
+        f"- Selected document class: `{inspection.get('selected_document_class') or 'none'}`",
+        "- Selected LaTeX packages: `"
+        + (", ".join(inspection.get("selected_latex_packages", [])) or "none")
+        + "`",
         "",
         "## Inferred mappings",
         "",
@@ -1915,6 +2067,60 @@ def validate_adoption_lifecycle_markers(root: Path) -> None:
             )
 
 
+def require_applied_safe_state(root: Path, plan: dict[str, Any]) -> None:
+    target = str(plan["target_commit"])
+    failures: list[str] = []
+    for item in plan.get("items", []):
+        if not isinstance(item, dict) or item.get("category") != "safe":
+            continue
+        path = str(item["path"])
+        staged = git(root, "diff", "--quiet", "--cached", target, "--", path, check=False)
+        worktree = git(root, "diff", "--quiet", "--", path, check=False)
+        if staged.returncode != 0 or worktree.returncode != 0:
+            failures.append(path)
+    if failures:
+        raise AdoptionError(
+            "safe adoption changes are not fully applied and staged against the target: "
+            + ", ".join(failures[:8])
+        )
+
+
+def write_application_receipt(root: Path, plan: dict[str, Any]) -> None:
+    path = runtime_directory(root, create=True) / "application.json"
+    ensure_writable_file(path)
+    receipt = {
+        "schema_version": APPLICATION_SCHEMA,
+        "created_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
+        "downstream_branch": plan["downstream_branch"],
+        "downstream_head": plan["downstream_head"],
+        "plan_fingerprint": json_fingerprint(plan),
+        "repository_fingerprint": repository_fingerprint(root),
+        "target_commit": plan["target_commit"],
+    }
+    path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def require_application_receipt(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
+    path = runtime_directory(root, create=False) / "application.json"
+    if not path.is_file() or path.is_symlink():
+        raise AdoptionError("missing adoption application receipt; rerun apply")
+    receipt = read_json(path, APPLICATION_SCHEMA)
+    expected = {
+        "downstream_branch": plan.get("downstream_branch"),
+        "downstream_head": plan.get("downstream_head"),
+        "plan_fingerprint": json_fingerprint(plan),
+        "target_commit": plan.get("target_commit"),
+    }
+    for key, value in expected.items():
+        if receipt.get(key) != value:
+            raise AdoptionError(f"adoption plan no longer matches the applied state: {key}")
+    if current_branch(root) != receipt["downstream_branch"]:
+        raise AdoptionError("downstream branch changed after adoption apply")
+    if head_commit(root) != receipt["downstream_head"]:
+        raise AdoptionError("downstream HEAD changed after adoption apply")
+    return receipt
+
+
 def apply_plan(root: Path, plan_path: Path, *, recover_reviewed: bool) -> None:
     ensure_safe_apply_context(root)
     validate_adoption_lifecycle_markers(root)
@@ -1981,6 +2187,8 @@ def apply_plan(root: Path, plan_path: Path, *, recover_reviewed: bool) -> None:
             render_inspection(plan["inspection"]), encoding="utf-8"
         )
     write_pending_sync_config(root, plan, recover_reviewed=recover_reviewed)
+    require_applied_safe_state(root, plan)
+    write_application_receipt(root, plan)
     print(
         f"OK template_adoption applied_safe={safe_count} "
         f"review_bundle={review_count} pending_sync_config=1"
@@ -2026,43 +2234,83 @@ def command_record(command: list[str], result: subprocess.CompletedProcess[str])
     }
 
 
-def expected_verification_commands(*, variants: bool) -> list[list[str]]:
+def build_steps(root: Path) -> list[dict[str, Any]]:
+    try:
+        return verification_steps(root)
+    except ProfileError as exc:
+        raise AdoptionError(str(exc)) from exc
+
+
+def expected_verification_commands(root: Path, *, builds: bool) -> list[list[str]]:
     commands = [["bash", ".agents/tools/verify.sh"]]
-    if variants:
-        for variant in ("draft", "anonymous", "camera-ready", "arxiv"):
-            commands.append(["make", "pdf", f"VARIANT={variant}"])
+    if builds:
+        commands.extend(step["command"] for step in build_steps(root))
     return commands
 
 
-def verify_adoption(root: Path, *, plan_path: Path, variants: bool) -> int:
+def checked_command_record(
+    root: Path,
+    command: list[str],
+    *,
+    env: dict[str, str] | None = None,
+    output: str | None = None,
+) -> dict[str, Any]:
+    try:
+        result, output_ready = run_profile_command(
+            root,
+            command,
+            env=env,
+            output=output,
+        )
+    except ProfileError as exc:
+        raise AdoptionError(str(exc)) from exc
+    record = command_record(command, result)
+    if output is not None:
+        record["output"] = output
+        record["output_ready"] = output_ready
+        record["success"] = bool(record["success"] and output_ready)
+        if not output_ready:
+            detail = f"expected non-empty build output: {output}"
+            record["stderr"] = (str(record["stderr"]) + "\n" + detail).lstrip("\n")
+    return record
+
+
+def verify_adoption(root: Path, *, plan_path: Path, builds: bool) -> int:
     if not plan_path.is_file():
         raise AdoptionError("missing adoption plan; run plan before verification")
     plan = read_json(plan_path, "paper-template-adoption-plan-v1")
     validate_plan_upstream(root, plan)
-    if current_branch(root) != plan.get("downstream_branch"):
-        raise AdoptionError(
-            "downstream branch changed after plan creation; regenerate the adoption plan"
-        )
+    require_application_receipt(root, plan)
+    require_applied_safe_state(root, plan)
     verify = root / ".agents/tools/verify.sh"
     if not verify.is_file():
         raise AdoptionError("missing .agents/tools/verify.sh; apply the safe sidecar set first")
-    if variants:
-        if not (root / "Makefile").is_file():
-            raise AdoptionError("cannot verify variants without a downstream Makefile")
-    commands = expected_verification_commands(variants=variants)
+    commands = expected_verification_commands(root, builds=builds)
+    outputs = [None] + [step.get("output") for step in build_steps(root)] if builds else [None]
+    repository_fingerprint_before = repository_fingerprint(root)
 
     checks: list[dict[str, Any]] = []
-    for command in commands:
-        result = run(command, cwd=root, check=False)
-        checks.append(command_record(command, result))
-        status = "OK" if result.returncode == 0 else "FAILED"
+    for command, output in zip(commands, outputs, strict=True):
+        record = checked_command_record(root, command, output=output)
+        checks.append(record)
+        status = "OK" if record["success"] else "FAILED"
         print(f"{status} template_adoption verify: {shlex.join(command)}")
-        if result.returncode != 0:
-            if result.stdout:
-                print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
-            if result.stderr:
-                print(result.stderr, file=sys.stderr, end="" if result.stderr.endswith("\n") else "\n")
+        if not record["success"]:
+            stdout = str(record["stdout"])
+            stderr = str(record["stderr"])
+            if stdout:
+                print(stdout, end="" if stdout.endswith("\n") else "\n")
+            if stderr:
+                print(stderr, file=sys.stderr, end="" if stderr.endswith("\n") else "\n")
 
+    repository_fingerprint_after = repository_fingerprint(root)
+    repository_unchanged = repository_fingerprint_before == repository_fingerprint_after
+    if not repository_unchanged:
+        print(
+            "ERROR template_adoption verify: declared verification commands changed "
+            "tracked or non-runtime untracked repository state",
+            file=sys.stderr,
+        )
     inspection = inspect_repository(root)
     report = {
         "schema_version": "paper-template-adoption-verification-v1",
@@ -2072,9 +2320,12 @@ def verify_adoption(root: Path, *, plan_path: Path, variants: bool) -> int:
         "target_commit": plan["target_commit"],
         "plan_fingerprint": json_fingerprint(plan),
         "inspection_fingerprint": inspection_fingerprint(inspection),
-        "variants_verified": variants,
-        "repository_fingerprint": repository_fingerprint(root),
-        "success": all(check["success"] for check in checks),
+        "build_profile_verified": builds,
+        "variants_verified": builds,
+        "repository_fingerprint": repository_fingerprint_after,
+        "repository_fingerprint_before": repository_fingerprint_before,
+        "repository_unchanged": repository_unchanged,
+        "success": all(check["success"] for check in checks) and repository_unchanged,
         "checks": checks,
     }
     runtime = runtime_directory(root, create=True)
@@ -2089,8 +2340,9 @@ def verify_adoption(root: Path, *, plan_path: Path, variants: bool) -> int:
     for check in checks:
         lines.append(f"- {'PASS' if check['success'] else 'FAIL'}: `{check['command']}`")
     lines.append("")
-    lines.append(f"Publication variants verified: `{str(variants).lower()}`")
+    lines.append(f"Declared paper builds verified: `{str(builds).lower()}`")
     lines.append(f"Repository fingerprint: `{report['repository_fingerprint']}`")
+    lines.append(f"Repository unchanged by checks: `{str(repository_unchanged).lower()}`")
     lines.append(f"Overall success: `{str(report['success']).lower()}`")
     verification_markdown.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return 0 if report["success"] else 1
@@ -2101,18 +2353,49 @@ def assess_adoption(root: Path, *, plan_path: Path) -> int:
         raise AdoptionError("missing adoption plan; run plan before assessment")
     plan = read_json(plan_path, "paper-template-adoption-plan-v1")
     validate_plan_upstream(root, plan)
+    repository_fingerprint_before = repository_fingerprint(root)
     checks: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="paper-template-adoption-pycache-") as pycache:
         env = dict(os.environ)
         env["PYTHONPYCACHEPREFIX"] = pycache
-        for raw_command in ASSESSMENT_COMMANDS:
-            command = list(raw_command)
-            result = run(command, cwd=root, check=False, env=env)
-            checks.append(command_record(command, result))
+        try:
+            profile = load_profile(root)
+        except ProfileError as exc:
+            raise AdoptionError(str(exc)) from exc
+        leaf_commands = list(ASSESSMENT_COMMANDS)
+        if is_canonical(profile):
+            leaf_commands.extend(CANONICAL_ASSESSMENT_COMMANDS)
+        assessment_steps = [
+            {"command": list(raw_command)} for raw_command in leaf_commands
+        ] + build_steps(root)
+        for step in assessment_steps:
+            command = list(step["command"])
+            output = step.get("output")
+            try:
+                record = checked_command_record(
+                    root,
+                    command,
+                    env=env,
+                    output=None if output is None else str(output),
+                )
+            except AdoptionError as exc:
+                record = {
+                    "command": shlex.join(command),
+                    "returncode": 125,
+                    "stdout": "",
+                    "stderr": str(exc),
+                    "success": False,
+                }
+                if output is not None:
+                    record["output"] = str(output)
+                    record["output_ready"] = False
+            checks.append(record)
             print(
-                f"{'OK' if result.returncode == 0 else 'FAILED'} "
+                f"{'OK' if record['success'] else 'FAILED'} "
                 f"template_adoption assess: {shlex.join(command)}"
             )
+    repository_fingerprint_after = repository_fingerprint(root)
+    repository_unchanged = repository_fingerprint_before == repository_fingerprint_after
     report = {
         "schema_version": "paper-template-adoption-assessment-v1",
         "created_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
@@ -2121,8 +2404,10 @@ def assess_adoption(root: Path, *, plan_path: Path) -> int:
         "downstream_branch": current_branch(root),
         "target_commit": plan["target_commit"],
         "plan_fingerprint": json_fingerprint(plan),
-        "repository_fingerprint": repository_fingerprint(root),
-        "success": all(check["success"] for check in checks),
+        "repository_fingerprint": repository_fingerprint_after,
+        "repository_fingerprint_before": repository_fingerprint_before,
+        "repository_unchanged": repository_unchanged,
+        "success": all(check["success"] for check in checks) and repository_unchanged,
         "checks": checks,
     }
     runtime = runtime_directory(root, create=True)
@@ -2148,17 +2433,21 @@ def assess_adoption(root: Path, *, plan_path: Path) -> int:
 
 
 def require_current_full_verification(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
+    require_application_receipt(root, plan)
     path = runtime_directory(root, create=False) / "verification.json"
     if not path.is_file():
-        raise AdoptionError("missing adoption verification report; run verify --variants before finalize")
+        raise AdoptionError(
+            "missing adoption verification report; run verify --builds "
+            "(or verify --variants) before finalize"
+        )
     report = read_json(path, "paper-template-adoption-verification-v1")
     if not report.get("success"):
         raise AdoptionError("the latest adoption verification report is not successful")
-    if not report.get("variants_verified"):
-        raise AdoptionError("finalize requires successful verification of all publication variants")
+    if not report.get("build_profile_verified", report.get("variants_verified")):
+        raise AdoptionError("finalize requires successful verification of all declared paper builds")
     checks = report.get("checks")
     expected_commands = [
-        shlex.join(command) for command in expected_verification_commands(variants=True)
+        shlex.join(command) for command in expected_verification_commands(root, builds=True)
     ]
     if not isinstance(checks, list) or [check.get("command") for check in checks if isinstance(check, dict)] != expected_commands:
         raise AdoptionError("verification report does not contain the complete expected command set")
@@ -2170,33 +2459,43 @@ def require_current_full_verification(root: Path, plan: dict[str, Any]) -> dict[
     ):
         raise AdoptionError("verification report contains an unsuccessful or malformed command result")
     if report.get("target_commit") != plan.get("target_commit"):
-        raise AdoptionError("verification report targets a different template commit; rerun verify --variants")
+        raise AdoptionError("verification report targets a different template commit; rerun verify --builds")
     if report.get("plan_fingerprint") != json_fingerprint(plan):
-        raise AdoptionError("adoption plan changed since verification; rerun verify --variants")
+        raise AdoptionError("adoption plan changed since verification; rerun verify --builds")
     if current_branch(root) != plan.get("downstream_branch"):
         raise AdoptionError("downstream branch changed after planning; regenerate the adoption plan")
     if report.get("downstream_branch") != current_branch(root):
-        raise AdoptionError("downstream branch changed since verification; rerun verify --variants")
+        raise AdoptionError("downstream branch changed since verification; rerun verify --builds")
     if report.get("downstream_head") != head_commit(root):
-        raise AdoptionError("downstream HEAD changed since verification; rerun verify --variants")
+        raise AdoptionError("downstream HEAD changed since verification; rerun verify --builds")
     current = repository_fingerprint(root)
     if report.get("repository_fingerprint") != current:
-        raise AdoptionError("downstream repository changed since verification; rerun verify --variants")
+        raise AdoptionError("downstream repository changed since verification; rerun verify --builds")
     inspection = inspect_repository(root)
     if report.get("inspection_fingerprint") != inspection_fingerprint(inspection):
-        raise AdoptionError("downstream inspection changed since verification; rerun verify --variants")
+        raise AdoptionError("downstream inspection changed since verification; rerun verify --builds")
     return report
 
 
 def require_paper_ready_inspection(root: Path) -> dict[str, Any]:
     inspection = inspect_repository(root)
+    try:
+        profile = load_profile(root)
+    except ProfileError as exc:
+        raise AdoptionError(str(exc)) from exc
     missing_contracts = [
         str(contract["path"])
         for contract in inspection["contracts"]
         if contract["status"] != "present"
     ]
     missing: list[str] = []
-    if not inspection.get("selected_main"):
+    profile_declared = (root / ".agents/paper-build.json").is_file()
+    if profile_declared:
+        try:
+            ensure_profile_paths(root, profile)
+        except ProfileError as exc:
+            raise AdoptionError(str(exc)) from exc
+    elif not inspection.get("selected_main"):
         missing.append("a supported TeX paper entrypoint")
     if missing_contracts:
         missing.append("Human contracts: " + ", ".join(missing_contracts))
@@ -2264,8 +2563,8 @@ def finalize_adoption(
         )
     require_current_full_verification(root, plan)
     require_paper_ready_inspection(root)
-    if verify_adoption(root, plan_path=plan_path, variants=True) != 0:
-        raise AdoptionError("mandatory full-variant verification failed during finalize")
+    if verify_adoption(root, plan_path=plan_path, builds=True) != 0:
+        raise AdoptionError("mandatory declared-build verification failed during finalize")
     report = require_current_full_verification(root, plan)
     always_manual = list(existing.get("always_manual", [])) if existing else []
     ignored_paths = list(existing.get("ignored_paths", [])) if existing else []
@@ -2370,7 +2669,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     verify = subparsers.add_parser("verify")
     verify.add_argument("--plan", type=Path)
-    verify.add_argument("--variants", action="store_true")
+    verify.add_argument(
+        "--builds",
+        "--variants",
+        dest="builds",
+        action="store_true",
+        help="run every build declared in .agents/paper-build.json",
+    )
 
     assess = subparsers.add_parser("assess")
     assess.add_argument("--plan", type=Path)
@@ -2434,7 +2739,7 @@ def main() -> int:
             apply_plan(root, plan_path, recover_reviewed=args.recover_reviewed)
         elif args.command == "verify":
             plan_path = resolve_runtime_path(root, args.plan, "plan.json")
-            return verify_adoption(root, plan_path=plan_path, variants=args.variants)
+            return verify_adoption(root, plan_path=plan_path, builds=args.builds)
         elif args.command == "assess":
             plan_path = resolve_runtime_path(root, args.plan, "plan.json")
             return assess_adoption(root, plan_path=plan_path)

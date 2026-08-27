@@ -60,6 +60,69 @@ class TemplateAdoptionTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_inspect_reports_journal_document_class(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            init_repo(root)
+            write(
+                root,
+                "manuscript.tex",
+                "\\documentclass[review]{elsarticle}\n\\begin{document}Paper\\end{document}\n",
+            )
+            commit_all(root, "journal fixture")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(TOOL),
+                    "--root",
+                    str(root),
+                    "inspect",
+                    "--output",
+                    "inspection.json",
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            inspection = json.loads((root / "inspection.json").read_text(encoding="utf-8"))
+            self.assertEqual(inspection["selected_document_class"], "elsarticle")
+            self.assertEqual(
+                inspection["main_candidates"][0]["document_class_options"], ["review"]
+            )
+
+    def test_inspect_reports_journal_style_package(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            init_repo(root)
+            write(
+                root,
+                "manuscript.tex",
+                "\\documentclass[twoside,11pt]{article}\n"
+                "\\usepackage{jmlr2e}\n\\begin{document}Paper\\end{document}\n",
+            )
+            commit_all(root, "journal style fixture")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(TOOL),
+                    "--root",
+                    str(root),
+                    "inspect",
+                    "--output",
+                    "inspection.json",
+                ],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            inspection = json.loads((root / "inspection.json").read_text(encoding="utf-8"))
+            self.assertEqual(inspection["selected_document_class"], "article")
+            self.assertIn("jmlr2e", inspection["selected_latex_packages"])
+
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         base = Path(self.tmp.name)
@@ -76,6 +139,8 @@ class TemplateAdoptionTests(unittest.TestCase):
         for relative in (
             ".agents/template-inheritance.json",
             ".agents/tools/_template_inheritance.py",
+            ".agents/tools/_paper_profile.py",
+            ".agents/tools/check-paper-profile.py",
         ):
             source = ROOT / relative
             target = self.upstream / relative
@@ -229,6 +294,24 @@ if __name__ == "__main__":
         figure.write_bytes(b"%PDF-1.4 fixture\n")
         write(self.downstream, "conference.sty", "% venue style\n")
         write(self.downstream, "Makefile", "pdf:\n\t@echo existing\n")
+        write(
+            self.downstream,
+            ".agents/paper-build.json",
+            json.dumps(
+                {
+                    "schema_version": "paper-build-profile-v1",
+                    "layout": "external-latex",
+                    "source_root": ".",
+                    "entrypoint": "main.tex",
+                    "bibliography": "references.bib",
+                    "builds": [
+                        {"name": variant, "command": ["make", "pdf", f"VARIANT={variant}"]}
+                        for variant in ("draft", "anonymous", "camera-ready", "arxiv")
+                    ],
+                }
+            )
+            + "\n",
+        )
         write(self.downstream, "experiments/run.py", "print('run experiment')\n")
         write(self.downstream, "experiments/config.yaml", "seed: 1\n")
         write(self.downstream, ".github/workflows/existing.yml", "name: existing-ci\n")
@@ -279,6 +362,32 @@ if __name__ == "__main__":
         ):
             write(self.downstream, contract, f"# Reviewed {contract}\n")
 
+    def write_external_build_profile(self, *, creates_output: bool) -> None:
+        command = "printf '%s' '%PDF fixture' > manuscript.pdf" if creates_output else ":"
+        write(self.downstream, "scripts/build-manuscript.sh", f"#!/bin/sh\n{command}\n", executable=True)
+        write(self.downstream, ".gitignore", "manuscript.pdf\n")
+        write(
+            self.downstream,
+            ".agents/paper-build.json",
+            json.dumps(
+                {
+                    "schema_version": "paper-build-profile-v1",
+                    "layout": "external-latex",
+                    "source_root": ".",
+                    "entrypoint": "main.tex",
+                    "bibliography": "references.bib",
+                    "builds": [
+                        {
+                            "name": "journal",
+                            "command": ["sh", "scripts/build-manuscript.sh"],
+                            "output": "manuscript.pdf",
+                        }
+                    ],
+                }
+            )
+            + "\n",
+        )
+
     def test_inspection_detects_existing_repository_surfaces(self) -> None:
         result = self.tool("inspect")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -296,6 +405,255 @@ if __name__ == "__main__":
         self.assertEqual(mappings[".github/workflows/"]["candidate"], ".github/workflows/existing.yml")
         self.assertEqual(mappings["AGENTS.md"]["candidate"], "CLAUDE.md")
 
+    def test_verify_runs_declared_external_build_and_checks_output(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        self.write_external_build_profile(creates_output=True)
+        verified = self.tool("verify", "--builds")
+        self.assertEqual(verified.returncode, 0, verified.stdout + verified.stderr)
+        report = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/verification.json").read_text()
+        )
+        self.assertEqual(
+            [check["command"] for check in report["checks"]],
+            ["bash .agents/tools/verify.sh", "sh scripts/build-manuscript.sh"],
+        )
+        self.assertTrue(report["checks"][1]["output_ready"])
+
+    def test_verify_fails_when_declared_output_is_missing(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        self.write_external_build_profile(creates_output=False)
+        verified = self.tool("verify", "--builds")
+        self.assertNotEqual(verified.returncode, 0)
+        self.assertIn("expected non-empty build output", verified.stderr)
+
+    def test_verify_rejects_stale_declared_output_and_restores_it(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        self.write_external_build_profile(creates_output=False)
+        (self.downstream / "manuscript.pdf").write_bytes(b"old output")
+        verified = self.tool("verify", "--builds")
+        self.assertNotEqual(verified.returncode, 0)
+        self.assertEqual((self.downstream / "manuscript.pdf").read_bytes(), b"old output")
+
+    def test_verify_rejects_declared_build_that_mutates_repository_state(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        self.write_external_build_profile(creates_output=True)
+        write(
+            self.downstream,
+            "scripts/build-manuscript.sh",
+            "#!/bin/sh\nprintf 'mutation\\n' >> main.tex\nprintf '%s' '%PDF fixture' > manuscript.pdf\n",
+            executable=True,
+        )
+        verified = self.tool("verify", "--builds")
+        self.assertNotEqual(verified.returncode, 0)
+        self.assertIn("changed tracked or non-runtime untracked", verified.stderr)
+        report = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/verification.json").read_text()
+        )
+        self.assertFalse(report["repository_unchanged"])
+
+    def test_verify_rejects_declared_build_that_mutates_ignored_authored_input(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        self.write_external_build_profile(creates_output=True)
+        style = self.downstream / "results.out"
+        style.write_text("original\n", encoding="utf-8")
+        with (self.downstream / ".gitignore").open("a", encoding="utf-8") as ignore:
+            ignore.write("results.out\n")
+        write(
+            self.downstream,
+            "scripts/build-manuscript.sh",
+            "#!/bin/sh\nprintf 'changed\\n' > results.out\nprintf '%s' '%PDF fixture' > manuscript.pdf\n",
+            executable=True,
+        )
+        verified = self.tool("verify", "--builds")
+        self.assertNotEqual(verified.returncode, 0)
+        self.assertIn("changed tracked or non-runtime untracked", verified.stderr)
+
+    def test_assessment_records_unsafe_declared_output_and_continues(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        write(
+            self.downstream,
+            ".agents/paper-build.json",
+            json.dumps(
+                {
+                    "schema_version": "paper-build-profile-v1",
+                    "layout": "external-latex",
+                    "source_root": ".",
+                    "entrypoint": "main.tex",
+                    "bibliography": "references.bib",
+                    "builds": [
+                        {
+                            "name": "unsafe-output",
+                            "command": ["sh", "scripts/build-manuscript.sh"],
+                            "output": "conference.sty",
+                        }
+                    ],
+                }
+            )
+            + "\n",
+        )
+        assessed = self.tool("assess")
+        self.assertNotEqual(assessed.returncode, 0)
+        report = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/assessment.json").read_text()
+        )
+        self.assertFalse(report["checks"][-1]["success"])
+        self.assertEqual(report["checks"][-1]["returncode"], 125)
+        self.assertIn("tracked file", report["checks"][-1]["stderr"])
+        self.assertFalse(report["success"])
+
+    def test_verify_records_command_start_failure_without_traceback(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        write(
+            self.downstream,
+            ".agents/paper-build.json",
+            json.dumps(
+                {
+                    "schema_version": "paper-build-profile-v1",
+                    "layout": "external-latex",
+                    "source_root": ".",
+                    "entrypoint": "main.tex",
+                    "bibliography": "references.bib",
+                    "builds": [
+                        {
+                            "name": "missing-tool",
+                            "command": ["definitely-missing-paper-build-command"],
+                        }
+                    ],
+                }
+            )
+            + "\n",
+        )
+        verified = self.tool("verify", "--builds")
+        self.assertNotEqual(verified.returncode, 0)
+        self.assertNotIn("Traceback", verified.stderr)
+        report = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/verification.json").read_text()
+        )
+        self.assertEqual(report["checks"][-1]["returncode"], 127)
+        self.assertIn("cannot start command", report["checks"][-1]["stderr"])
+
+    def test_assessment_skips_canonical_checks_for_external_profile(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        self.write_external_build_profile(creates_output=True)
+        assessed = self.tool("assess")
+        self.assertEqual(assessed.returncode, 0, assessed.stdout + assessed.stderr)
+        report = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/assessment.json").read_text()
+        )
+        commands = [check["command"] for check in report["checks"]]
+        self.assertIn("python3 .agents/tools/check-paper-contracts.py --profile draft", commands)
+        self.assertNotIn("python3 .agents/tools/check-paper-interfaces.py", commands)
+        self.assertIn("python3 .agents/tools/check-release-records.py", commands)
+        self.assertIn("sh scripts/build-manuscript.sh", commands)
+
+    def test_inspection_keeps_all_entrypoint_candidates(self) -> None:
+        (self.downstream / ".agents/paper-build.json").unlink()
+        for index in range(12):
+            write(
+                self.downstream,
+                f"alternatives/manuscript-{index:02d}.tex",
+                "\\documentclass{article}\n\\begin{document}Paper\\end{document}\n",
+            )
+        result = self.tool("inspect")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        inspection = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/inspection.json").read_text()
+        )
+        self.assertGreater(len(inspection["main_candidates"]), 10)
+        self.assertIn(
+            "alternatives/manuscript-11.tex",
+            {candidate["path"] for candidate in inspection["main_candidates"]},
+        )
+
+    def test_inspection_uses_declared_profile_entrypoint(self) -> None:
+        write(
+            self.downstream,
+            "paper.tex",
+            "\\documentclass{article}\n\\begin{document}Declared paper\\end{document}\n",
+        )
+        profile = json.loads(
+            (self.downstream / ".agents/paper-build.json").read_text(encoding="utf-8")
+        )
+        profile["entrypoint"] = "paper.tex"
+        write(self.downstream, "paper/refs.bib", "@misc{alternative}\n")
+        (self.downstream / ".agents/paper-build.json").write_text(
+            json.dumps(profile) + "\n", encoding="utf-8"
+        )
+
+        result = self.tool("inspect")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        inspection = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/inspection.json").read_text()
+        )
+        self.assertEqual(inspection["selected_main"], "paper.tex")
+        self.assertEqual(inspection["selected_bibliography"], "references.bib")
+        self.assertEqual(inspection["main_candidates"][0]["path"], "paper.tex")
+        self.assertIn(
+            "main.tex",
+            {candidate["path"] for candidate in inspection["main_candidates"]},
+        )
+
+    def test_verify_detects_index_only_mutation_by_verification_command(self) -> None:
+        write(
+            self.downstream,
+            ".agents/tools/verify.sh",
+            "#!/usr/bin/env bash\n"
+            "printf 'index mutation\\n' > .agents/tools/base.txt\n"
+            "git add .agents/tools/base.txt\n"
+            "printf 'base-v1\\n' > .agents/tools/base.txt\n",
+            executable=True,
+        )
+        commit_all(self.downstream, "add mutating verifier fixture")
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        self.write_external_build_profile(creates_output=True)
+        verified = self.tool("verify", "--builds")
+        self.assertNotEqual(verified.returncode, 0)
+        self.assertIn("changed tracked or non-runtime untracked", verified.stderr)
+        report = json.loads(
+            (self.downstream / ".agents/runtime/template-adoption/verification.json").read_text()
+        )
+        self.assertFalse(report["repository_unchanged"])
+
+    def test_verify_rejects_plan_changed_after_apply(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        plan_path = self.downstream / ".agents/runtime/template-adoption/plan.json"
+        plan = json.loads(plan_path.read_text(encoding="utf-8"))
+        plan["counts"]["manual"] += 1
+        plan_path.write_text(json.dumps(plan, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+        refused = self.tool("verify", "--builds")
+
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("plan no longer matches the applied state", refused.stderr)
+
+    def test_verify_rejects_safe_file_changed_after_apply(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        write(self.downstream, ".agents/tools/template-adoption.py", "changed after apply\n")
+        refused = self.tool("verify", "--builds")
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("safe adoption changes are not fully applied", refused.stderr)
+
+    def test_verify_rejects_downstream_head_changed_after_apply(self) -> None:
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        commit_all(self.downstream, "checkpoint after adoption apply")
+
+        refused = self.tool("verify", "--builds")
+
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("HEAD changed after adoption apply", refused.stderr)
+
     def test_inspection_recursively_resolves_nested_tex_from_main_directory(self) -> None:
         write(
             self.downstream,
@@ -309,6 +667,10 @@ if __name__ == "__main__":
             "\\includegraphics{result}\n",
         )
         (self.downstream / "paper/figures/result.pdf").write_bytes(b"%PDF nested fixture\n")
+        profile_path = self.downstream / ".agents/paper-build.json"
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        profile["entrypoint"] = "paper/main.tex"
+        profile_path.write_text(json.dumps(profile) + "\n", encoding="utf-8")
 
         result = self.tool("inspect")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -898,10 +1260,6 @@ if __name__ == "__main__":
         self.assertFalse((escaped / "runtime/template-adoption/plan.json").exists())
 
     def test_finalize_reruns_current_full_variant_verification(self) -> None:
-        self.plan()
-        applied = self.tool("apply")
-        self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
-        self.complete_semantic_migration()
         run_log = self.downstream / ".agents/runtime/template-adoption/finalize-runs"
         verify = self.downstream / ".agents/tools/verify.sh"
         verify.write_text(
@@ -909,6 +1267,11 @@ if __name__ == "__main__":
             "printf 'run\\n' >> .agents/runtime/template-adoption/finalize-runs\n",
             encoding="utf-8",
         )
+        commit_all(self.downstream, "add finalize verifier fixture")
+        self.plan()
+        applied = self.tool("apply")
+        self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
+        self.complete_semantic_migration()
         verified = self.tool("verify", "--variants")
         self.assertEqual(verified.returncode, 0, verified.stdout + verified.stderr)
 
@@ -922,20 +1285,22 @@ if __name__ == "__main__":
         self.assertEqual(run_log.read_text().splitlines(), ["run", "run"])
 
     def test_finalize_rejects_coherent_forged_report_when_fresh_commands_fail(self) -> None:
-        self.plan()
-        self.assertEqual(self.tool("apply").returncode, 0)
-        self.complete_semantic_migration()
-        marker = self.downstream / ".agents/runtime/template-adoption/fail-finalize"
         verify = self.downstream / ".agents/tools/verify.sh"
         verify.write_text(
             "#!/usr/bin/env bash\n"
             "test ! -e .agents/runtime/template-adoption/fail-finalize\n",
             encoding="utf-8",
         )
+        commit_all(self.downstream, "add failing verifier fixture")
+        self.plan()
+        self.assertEqual(self.tool("apply").returncode, 0)
+        self.complete_semantic_migration()
+        marker = self.downstream / ".agents/runtime/template-adoption/fail-finalize"
         marker.touch()
         failed = self.tool("verify", "--variants")
         self.assertNotEqual(failed.returncode, 0)
         report_path = self.downstream / ".agents/runtime/template-adoption/verification.json"
+        self.assertTrue(report_path.is_file())
         report = json.loads(report_path.read_text())
         report["success"] = True
         for check in report["checks"]:
@@ -964,7 +1329,7 @@ if __name__ == "__main__":
             (self.downstream / ".agents/runtime/template-adoption/assessment.json").read_text()
         )
         self.assertFalse(report["authorizes_finalize"])
-        self.assertEqual(len(report["checks"]), 18)
+        self.assertEqual(len(report["checks"]), 16)
         self.assertEqual(
             report["checks"][0]["command"],
             "python3 -m compileall -q .agents/tools .agents/tests",
@@ -1003,22 +1368,17 @@ if __name__ == "__main__":
         path.write_text(json.dumps(plan, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         refused = self.tool("finalize", "--plan", relative, "--reviewed")
         self.assertNotEqual(refused.returncode, 0)
-        self.assertIn("plan changed since verification", refused.stderr)
+        self.assertIn("plan no longer matches the applied state", refused.stderr)
 
-    def test_finalize_refuses_materially_non_paper_first_repository(self) -> None:
+    def test_verify_refuses_missing_declared_entrypoint(self) -> None:
         (self.downstream / "main.tex").unlink()
         commit_all(self.downstream, "remove paper entrypoint")
         self.plan()
         applied = self.tool("apply")
         self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
         verified = self.tool("verify", "--variants")
-        self.assertEqual(verified.returncode, 0, verified.stdout + verified.stderr)
-
-        refused = self.tool("finalize", "--reviewed")
-        self.assertNotEqual(refused.returncode, 0)
-        self.assertIn("materially non-paper-first", refused.stderr)
-        self.assertIn("TeX paper entrypoint", refused.stderr)
-        self.assertIn("Human contracts", refused.stderr)
+        self.assertNotEqual(verified.returncode, 0)
+        self.assertIn("entrypoint does not name an existing file", verified.stderr)
 
     def test_verify_and_finalize_record_first_template_baseline(self) -> None:
         self.plan()
