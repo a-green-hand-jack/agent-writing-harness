@@ -28,7 +28,9 @@ PAPER_RELATIVE = Path("PAPER.md")
 COMMIT_MESSAGE = "chore: ingest paper brief into contracts"
 MODE_RE = re.compile(r"^\s*[-*]\s*Mode\s*:\s*(.+)$", re.I)
 ALLOWED_MODES = ("collaborative", "autonomous", "unresolved")
-UPSTREAM_REPOSITORY = "a-green-hand-jack/ccfa-writing-paper-template"
+UPSTREAM_REPOSITORY = "a-green-hand-jack/agent-writing-harness"
+LEGACY_UPSTREAM_REPOSITORIES = ("a-green-hand-jack/ccfa-writing-paper-template",)
+UPSTREAM_REPOSITORY_NAMES = (UPSTREAM_REPOSITORY,) + LEGACY_UPSTREAM_REPOSITORIES
 REQUIRED_SECTIONS = (
     "Paper identity",
     "What readers should believe",
@@ -121,7 +123,9 @@ def require_writing_repository(root: Path) -> None:
     except OSError:
         raise BriefError(f"ingest root must be the Git top-level: {root}")
     identity = repository_identity(origin_url(root))
-    if identity == UPSTREAM_REPOSITORY:
+    if identity is not None and identity.lower() in {
+        name.lower() for name in UPSTREAM_REPOSITORY_NAMES
+    }:
         raise BriefError("refusing to ingest paper content into the upstream template repository")
     for relative in (PAPER_RELATIVE, BRIEF_RELATIVE):
         path = root / relative

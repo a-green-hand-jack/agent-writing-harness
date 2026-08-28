@@ -2,15 +2,15 @@
 % Venue-layout compatibility shim for the paper display API.
 %
 % It is available for venue-layout variants and release packaging. The factory
-% paper/main.tex uses style/ccfa-paper.sty directly, so this shim is not loaded
+% paper/main.tex uses style/paper-harness.sty directly, so this shim is not loaded
 % unless a venue-layout variant or official kit activates it. It provides the
-% same macro names as ccfa-paper.sty (\parahead, \headbf, \figref/\tabref/
+% same macro names as paper-harness.sty (\parahead, \headbf, \figref/\tabref/
 % \algref/\eqnref, \tablestyle, \cmark/\xmark, compact column types x/y/z/P/Y,
 % and optional \papercolor/\paperstyle) on top of packages already loaded by the
 % venue style. Canonical sections remain shared across internal and venue
 % layouts.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{compat}[2026/07/17 v1.0 ccfa-paper venue-layout compat shim]
+\ProvidesPackage{compat}[2026/08/28 v1.1 paper-harness venue-layout compat shim]
 
 \makeatletter
 \@ifpackageloaded{etoolbox}{}{\RequirePackage{etoolbox}}
@@ -24,26 +24,26 @@
 % ---------------------------------------------------------------------
 % Optional accent theme: \papercolor{<name>}, \paperstyle{accent|plain}
 % ---------------------------------------------------------------------
-\providecommand{\ccfaAccent}{}
-\definecolor{ccfaAccentblue}{HTML}{1B4F8C}
-\definecolor{ccfaAccentslate}{HTML}{2E2E2E}
-\definecolor{ccfaAccentforest}{HTML}{1F5C3E}
-\colorlet{ccfaAccent}{ccfaAccentblue}
+\providecommand{\paperAccent}{}
+\definecolor{paperAccentblue}{HTML}{1B4F8C}
+\definecolor{paperAccentslate}{HTML}{2E2E2E}
+\definecolor{paperAccentforest}{HTML}{1F5C3E}
+\colorlet{paperAccent}{paperAccentblue}
 
-\newbool{ccfaAccentEnabled}
-\booltrue{ccfaAccentEnabled}
+\newbool{paperAccentEnabled}
+\booltrue{paperAccentEnabled}
 
 \providecommand{\papercolor}[1]{%
-  \ifstrequal{#1}{blue}{\colorlet{ccfaAccent}{ccfaAccentblue}}{%
-  \ifstrequal{#1}{slate}{\colorlet{ccfaAccent}{ccfaAccentslate}}{%
-  \ifstrequal{#1}{forest}{\colorlet{ccfaAccent}{ccfaAccentforest}}{%
+  \ifstrequal{#1}{blue}{\colorlet{paperAccent}{paperAccentblue}}{%
+  \ifstrequal{#1}{slate}{\colorlet{paperAccent}{paperAccentslate}}{%
+  \ifstrequal{#1}{forest}{\colorlet{paperAccent}{paperAccentforest}}{%
     \PackageError{compat}{Unknown paper color `#1'}{Available colors: blue, slate, forest.}%
   }}}%
 }
 
 \providecommand{\paperstyle}[1]{%
-  \ifstrequal{#1}{accent}{\booltrue{ccfaAccentEnabled}}{%
-  \ifstrequal{#1}{plain}{\boolfalse{ccfaAccentEnabled}}{%
+  \ifstrequal{#1}{accent}{\booltrue{paperAccentEnabled}}{%
+  \ifstrequal{#1}{plain}{\boolfalse{paperAccentEnabled}}{%
     \PackageError{compat}{Unknown paper style `#1'}{Available styles: accent, plain.}%
   }}%
 }
@@ -51,7 +51,7 @@
 % ---------------------------------------------------------------------
 % Display API: heading and cross-reference helpers
 % ---------------------------------------------------------------------
-\providecommand{\headbf}[1]{{\bfseries\ifbool{ccfaAccentEnabled}{\color{ccfaAccent}}{}#1}}
+\providecommand{\headbf}[1]{{\bfseries\ifbool{paperAccentEnabled}{\color{paperAccent}}{}#1}}
 \providecommand{\parahead}[1]{\par\noindent\headbf{#1.}\enspace\ignorespaces}
 
 \providecommand{\figref}[1]{Figure~\ref{#1}}

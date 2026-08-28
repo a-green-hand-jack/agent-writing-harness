@@ -6,7 +6,7 @@ that repo holds this `BRIEF.md` (the content specification) plus any supplied
 materials and the instructions for using the writing template.
 
 The Agent reads `BRIEF.md`, creates an initialized **writing repo** from the
-`a-green-hand-jack/ccfa-writing-paper-template` GitHub Template, and ingests the
+`a-green-hand-jack/agent-writing-harness` GitHub Template, and ingests the
 content here into `PAPER.md` with `paper-brief-ingest`. The brief is then kept
 in the writing repo root as provenance and as the material inventory; the
 evidence, delivery, author, constraints, and first-deliverable sections remain
@@ -86,7 +86,7 @@ or `none yet`):
 
 ## Template usage note
 
-Use the `ccfa-writing-paper-template` harness to write this paper. The Agent
+Use the `agent-writing-harness` harness to write this paper. The Agent
 creates an initialized writing repo from that GitHub Template, ingests this
 brief with `paper-brief-ingest` (or `python3 .agents/tools/paper-brief.py ingest
 --brief <path>`), then drafts under the declared operating mode. See

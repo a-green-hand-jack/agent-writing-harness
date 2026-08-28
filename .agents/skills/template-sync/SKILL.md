@@ -1,13 +1,13 @@
 ---
 name: template-sync
-description: Use when inspecting or applying reviewed updates from the upstream ccfa-writing-paper-template repository to a downstream paper.
+description: Use when inspecting or applying reviewed updates from the upstream agent-writing-harness repository to a downstream paper.
 ---
 
 # Template Sync
 
 ## Trigger
 
-Use when a downstream paper repository needs to inspect or adopt updates from `a-green-hand-jack/ccfa-writing-paper-template`.
+Use when a downstream paper repository needs to inspect or adopt updates from `a-green-hand-jack/agent-writing-harness`.
 
 Do not load this skill during ordinary writing, experiment discussion, or publication work. Template synchronization is a repository-maintenance task with a separate branch and review cycle.
 

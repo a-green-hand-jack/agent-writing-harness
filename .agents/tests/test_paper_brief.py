@@ -8,7 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOL = ROOT / ".agents/tools/paper-brief.py"
-UPSTREAM_ORIGIN = "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git"
+UPSTREAM_ORIGIN = "git@github.com:a-green-hand-jack/agent-writing-harness.git"
+LEGACY_UPSTREAM_ORIGIN = "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git"
 WRITING_ORIGIN = "git@github.com:someone/writing-repo.git"
 
 
@@ -256,14 +257,15 @@ Use the template harness to write this paper.
             self.assertIn("requires a Git repository", result.stdout + result.stderr)
 
     def test_ingest_refuses_upstream_template_repository(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repo = Path(directory) / "upstream"
-            make_writing_repo(repo, origin=UPSTREAM_ORIGIN)
-            brief = Path(directory) / "briefrepo" / "BRIEF.md"
-            write(brief, brief_fixture())
-            result = run(repo, "ingest", "--brief", str(brief))
-            self.assertNotEqual(result.returncode, 0)
-            self.assertIn("upstream template repository", result.stdout + result.stderr)
+        for origin in (UPSTREAM_ORIGIN, LEGACY_UPSTREAM_ORIGIN):
+            with self.subTest(origin=origin), tempfile.TemporaryDirectory() as directory:
+                repo = Path(directory) / "upstream"
+                make_writing_repo(repo, origin=origin)
+                brief = Path(directory) / "briefrepo" / "BRIEF.md"
+                write(brief, brief_fixture())
+                result = run(repo, "ingest", "--brief", str(brief))
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("upstream template repository", result.stdout + result.stderr)
 
     def test_ingest_rejects_invalid_mode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

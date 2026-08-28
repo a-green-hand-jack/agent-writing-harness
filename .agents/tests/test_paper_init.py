@@ -74,7 +74,7 @@ def commit_all(root: Path, message: str) -> None:
 
 
 @contextmanager
-def fake_gh(template_repository: str = "a-green-hand-jack/ccfa-writing-paper-template"):
+def fake_gh(template_repository: str = "a-green-hand-jack/agent-writing-harness"):
     with tempfile.TemporaryDirectory() as directory:
         executable = Path(directory) / "gh"
         executable.write_text(
@@ -141,7 +141,7 @@ def fixture(root: Path) -> None:
                 "upstream": {
                     "branch": "main",
                     "remote": "template",
-                    "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+                    "url": "https://github.com/a-green-hand-jack/agent-writing-harness.git",
                 },
             }
         )
@@ -151,7 +151,7 @@ def fixture(root: Path) -> None:
 
 
 def set_upstream_origin(root: Path) -> None:
-    git(root, "remote", "add", "origin", "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git")
+    git(root, "remote", "add", "origin", "git@github.com:a-green-hand-jack/agent-writing-harness.git")
 
 
 def set_template_origin(root: Path) -> None:
@@ -165,7 +165,7 @@ def set_template_origin(root: Path) -> None:
                 "downstream_repository": repository,
                 "git_head": git(root, "rev-parse", "HEAD").stdout.strip(),
                 "schema_version": "paper-template-origin-v1",
-                "template_repository": "a-green-hand-jack/ccfa-writing-paper-template",
+                "template_repository": "a-green-hand-jack/agent-writing-harness",
                 "verification": "github_api_template_repository",
                 "verified_at": "2026-08-09T12:00:00+00:00",
             }
@@ -202,7 +202,7 @@ def reviewed_sync_metadata(**overrides: object) -> dict[str, object]:
         "upstream": {
             "branch": "main",
             "remote": "template",
-            "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+            "url": "https://github.com/a-green-hand-jack/agent-writing-harness.git",
         },
     }
     data.update(overrides)
@@ -225,8 +225,27 @@ class PaperInitTests(unittest.TestCase):
 
     def test_upstream_template_origin_variants_are_recognized(self) -> None:
         variants = (
-            "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git",
+            "git@github.com:a-green-hand-jack/agent-writing-harness.git",
             "https://github.com/A-Green-Hand-Jack/CCFA-Writing-Paper-Template.git",
+            "ssh://git@github.com/a-green-hand-jack/agent-writing-harness.git",
+        )
+        for origin in variants:
+            with self.subTest(origin=origin), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                fixture(root)
+                git(root, "remote", "add", "origin", origin)
+                result = run(
+                    [sys.executable, str(TOOL), "--root", str(root), "status"],
+                    root,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn("upstream_template", result.stdout)
+
+    def test_legacy_upstream_template_origins_are_recognized(self) -> None:
+        variants = (
+            "git@github.com:a-green-hand-jack/ccfa-writing-paper-template.git",
+            "https://github.com/a-green-hand-jack/CCFA-Writing-Paper-Template.git",
             "ssh://git@github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
         )
         for origin in variants:
@@ -242,11 +261,32 @@ class PaperInitTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertIn("upstream_template", result.stdout)
 
+    def test_legacy_template_origin_attestation_is_recognized(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            set_template_origin(root)
+            origin = root / ".agents/template-origin.json"
+            data = json.loads(origin.read_text(encoding="utf-8"))
+            data["template_repository"] = "a-green-hand-jack/ccfa-writing-paper-template"
+            origin.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            commit_all(root, "record legacy template provenance")
+            write(root, ".agents/init-state.json", valid_marker(root))
+            commit_all(root, "record initialized state")
+
+            result = run(
+                [sys.executable, str(TOOL), "--root", str(root), "status"],
+                root,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("initialized", result.stdout)
+
     def test_similar_writing_repo_origins_are_not_upstream_template(self) -> None:
         variants = (
-            "git@github.com:a-green-hand-jack/ccfa-writing-paper-template-my-paper.git",
-            "https://github.com/a-green-hand-jack/my-ccfa-writing-paper-template.git",
-            "https://github.com/another-owner/ccfa-writing-paper-template.git",
+            "git@github.com:a-green-hand-jack/agent-writing-harness-my-paper.git",
+            "https://github.com/a-green-hand-jack/my-agent-writing-harness.git",
+            "https://github.com/another-owner/agent-writing-harness.git",
         )
         for origin in variants:
             with self.subTest(origin=origin), tempfile.TemporaryDirectory() as directory:
@@ -395,7 +435,7 @@ class PaperInitTests(unittest.TestCase):
                         "upstream": {
                             "branch": "main",
                             "remote": "template",
-                            "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+                            "url": "https://github.com/a-green-hand-jack/agent-writing-harness.git",
                         },
                     }
                 )
@@ -459,7 +499,7 @@ class PaperInitTests(unittest.TestCase):
                         "upstream": {
                             "branch": "main",
                             "remote": "template",
-                            "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+                            "url": "https://github.com/a-green-hand-jack/agent-writing-harness.git",
                         },
                     }
                 )
@@ -587,7 +627,7 @@ class PaperInitTests(unittest.TestCase):
                             "upstream": {
                                 "branch": "main",
                                 "remote": "template",
-                                "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+                                "url": "https://github.com/a-green-hand-jack/agent-writing-harness.git",
                             },
                             **fields,
                         }
@@ -650,7 +690,7 @@ class PaperInitTests(unittest.TestCase):
                     "upstream": {
                         "branch": "main",
                         "remote": "template",
-                        "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+                        "url": "https://github.com/a-green-hand-jack/agent-writing-harness.git",
                     },
                 }
                 write(root, ".agents/template-sync.json", json.dumps(metadata) + "\n")
@@ -664,7 +704,7 @@ class PaperInitTests(unittest.TestCase):
                         json.dumps(
                             {
                                 "schema_version": "paper-template-origin-v1",
-                                "template_repository": "a-green-hand-jack/ccfa-writing-paper-template",
+                                "template_repository": "a-green-hand-jack/agent-writing-harness",
                             }
                         )
                         + "\n",
@@ -865,7 +905,7 @@ class PaperInitTests(unittest.TestCase):
                         "downstream_repository": repository,
                         "git_head": git(root, "rev-parse", "HEAD").stdout.strip(),
                         "schema_version": "paper-template-origin-v1",
-                        "template_repository": "a-green-hand-jack/ccfa-writing-paper-template",
+                        "template_repository": "a-green-hand-jack/agent-writing-harness",
                         "verification": "github_api_template_repository",
                         "verified_at": "2026-08-09T12:00:00+00:00",
                     }
@@ -904,7 +944,7 @@ class PaperInitTests(unittest.TestCase):
                         "upstream": {
                             "branch": "main",
                             "remote": "template",
-                            "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git",
+                            "url": "https://github.com/a-green-hand-jack/agent-writing-harness.git",
                         },
                     }
                 )

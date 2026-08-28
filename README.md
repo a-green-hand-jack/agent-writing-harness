@@ -1,6 +1,6 @@
 # TODO Paper Title
 
-[![PR validation](https://github.com/a-green-hand-jack/ccfa-writing-paper-template/actions/workflows/pr-validation.yml/badge.svg?branch=main)](https://github.com/a-green-hand-jack/ccfa-writing-paper-template/actions/workflows/pr-validation.yml)
+[![PR validation](https://github.com/a-green-hand-jack/agent-writing-harness/actions/workflows/pr-validation.yml/badge.svg?branch=main)](https://github.com/a-green-hand-jack/agent-writing-harness/actions/workflows/pr-validation.yml)
 
 A paper-first repository that works as an **agent-writing harness**: from this
 GitHub Template you get a **writing repo** that a coding agent (Codex, OpenCode,
@@ -146,11 +146,11 @@ reviewer sub-agents and remain narrower than a general quality benchmark.
 An existing paper repository may use different paths, build commands, CI, venue files, and Agent instructions. Do not copy the template tree over it. Run the adoption tool from a trusted template checkout so the target repository does not need `.agents/` in advance:
 
 ```bash
-python3 /path/to/ccfa-writing-paper-template/.agents/tools/template-adoption.py \
+python3 /path/to/agent-writing-harness/.agents/tools/template-adoption.py \
   --root /path/to/existing-paper inspect
-python3 /path/to/ccfa-writing-paper-template/.agents/tools/template-adoption.py \
+python3 /path/to/agent-writing-harness/.agents/tools/template-adoption.py \
   --root /path/to/existing-paper plan --fetch
-python3 /path/to/ccfa-writing-paper-template/.agents/tools/template-adoption.py \
+python3 /path/to/agent-writing-harness/.agents/tools/template-adoption.py \
   --root /path/to/existing-paper apply
 ```
 
