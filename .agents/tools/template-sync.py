@@ -1145,6 +1145,39 @@ def expected_verification_commands(root: Path) -> list[list[str]]:
     ]
 
 
+def require_downstream_release_surface(root: Path) -> None:
+    """Reject template-development CI residue before a sync can be recorded.
+
+    `template-dev` owns the vendored-skills job and its locked runtime. A
+    downstream paper may own its workflow files, but it must not retain that
+    template-development job after a reviewed synchronization.
+    """
+    workflows = root / ".github/workflows"
+    if not workflows.is_dir():
+        return
+    forbidden = (
+        ("vendored-skills job", "vendored-skills:"),
+        ("vendored-skills runtime", ".agents/dependencies/vendored-skills"),
+        ("vendored-skills checker", "check-vendored-skills.py"),
+        ("vendored-skill evaluation checker", "check-vendored-skill-evals.py"),
+    )
+    residues: list[str] = []
+    for workflow in sorted((*workflows.glob("*.yml"), *workflows.glob("*.yaml"))):
+        try:
+            text = workflow.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise SyncError(f"cannot read downstream workflow: {workflow.relative_to(root)}") from exc
+        for label, token in forbidden:
+            if token in text:
+                residues.append(f"{workflow.relative_to(root)} ({label})")
+    if residues:
+        raise SyncError(
+            "template-development CI residue remains in downstream workflow; "
+            "remove the vendored-skills job or runtime reference before recording: "
+            + ", ".join(residues)
+        )
+
+
 def verify_sync(root: Path, config: dict[str, Any], plan_path: Path, *, reviewed: bool) -> int:
     if not reviewed:
         raise SyncError("template sync verification requires --reviewed after manual merge review")
@@ -1154,6 +1187,7 @@ def verify_sync(root: Path, config: dict[str, Any], plan_path: Path, *, reviewed
     require_application(root, plan)
     ensure_only_planned_changes(root, plan)
     require_applied_safe_state(root, plan)
+    require_downstream_release_surface(root)
     runtime = runtime_directory(root, create=True)
     verification_json = runtime / "verification.json"
     verification_markdown = runtime / "verification.md"

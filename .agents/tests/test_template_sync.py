@@ -900,6 +900,23 @@ class TemplateSyncTests(unittest.TestCase):
         self.assertNotEqual(refused.returncode, 0)
         self.assertIn('changed since template sync verification', refused.stderr)
 
+    def test_verify_rejects_template_development_ci_residue(self) -> None:
+        write(
+            self.downstream,
+            '.github/workflows/pr-validation.yml',
+            'jobs:\n  vendored-skills:\n    runs-on: ubuntu-latest\n'
+            '    run: uv sync --project .agents/dependencies/vendored-skills --locked\n',
+        )
+        commit_all(self.downstream, 'retain template development workflow by mistake')
+
+        self.assertEqual(self.tool('plan').returncode, 0)
+        self.assertEqual(self.tool('apply').returncode, 0)
+        refused = self.tool('verify', '--reviewed')
+
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn('template-development CI residue', refused.stderr)
+        self.assertIn('.github/workflows/pr-validation.yml', refused.stderr)
+
     def test_verify_rejects_build_command_index_mutation(self) -> None:
         self.assertEqual(self.tool('plan').returncode, 0)
         self.assertEqual(self.tool('apply').returncode, 0)
