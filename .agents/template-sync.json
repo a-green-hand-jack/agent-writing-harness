@@ -11,6 +11,6 @@
   "upstream": {
     "branch": "main",
     "remote": "template",
-    "url": "https://github.com/a-green-hand-jack/ccfa-writing-paper-template.git"
+    "url": "https://github.com/a-green-hand-jack/agent-writing-harness.git"
   }
 }
