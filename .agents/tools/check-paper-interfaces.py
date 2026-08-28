@@ -24,6 +24,16 @@ def command_pattern(name: str) -> str:
     return rf"\\{re.escape(name)}(?![A-Za-z@])"
 
 
+def bare_control_word_pattern(name: str) -> str:
+    """Match a zero-argument interface macro followed by source whitespace.
+
+    TeX consumes that whitespace while tokenizing a control word. Requiring
+    braces at call sites (``\\Name{}``) keeps the rendered text grammatical
+    regardless of the macro replacement.
+    """
+    return rf"{command_pattern(name)}[ \t\r\n]+"
+
+
 def definition_pattern(name: str) -> str:
     command = command_pattern(name)
     return rf"\\(?:newcommand|renewcommand|providecommand)\s*(?:\{{\s*{command}\s*\}}|{command})"
@@ -67,6 +77,10 @@ def check(root: Path) -> int:
         for name in REQUIRED_CONSUMERS:
             if re.search(command_pattern(name), text):
                 consumers[name].append(relative)
+            if re.search(bare_control_word_pattern(name), text):
+                code |= error(
+                    f"interface macro \\{name} must use {{}} at call sites: {relative}"
+                )
 
     for name, paths in consumers.items():
         if not paths:
