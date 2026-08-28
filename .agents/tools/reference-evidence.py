@@ -39,7 +39,7 @@ from _citation_occurrences import (
 )
 
 TIMEOUT_SECONDS = 15
-USER_AGENT = "ccfa-writing-paper-template/reference-evidence (contact via repo)"
+USER_AGENT = "agent-writing-harness/reference-evidence (contact via repo)"
 SUPPORT_PROTOCOL_VERSION = "citation-support-protocol-v1"
 SUPPORT_VERDICTS = {
     "supported",

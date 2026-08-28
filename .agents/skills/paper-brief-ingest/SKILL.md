@@ -1,6 +1,6 @@
 ---
 name: paper-brief-ingest
-description: Own the brief-to-contracts transition that starts an autonomous or collaborative paper session from a Human-provided paper brief (BRIEF.md in a brief repo). Use when the Human supplies a brief repo with paper content and template-usage instructions and a coding agent must bootstrap an initialized writing repo from the ccfa-writing-paper-template and fill its contracts. Do not use for ordinary drafting or for writing content into the upstream template repo.
+description: Own the brief-to-contracts transition that starts an autonomous or collaborative paper session from a Human-provided paper brief (BRIEF.md in a brief repo). Use when the Human supplies a brief repo with paper content and template-usage instructions and a coding agent must bootstrap an initialized writing repo from the agent-writing-harness and fill its contracts. Do not use for ordinary drafting or for writing content into the upstream template repo.
 ---
 
 # Paper Brief Ingest Skill
@@ -20,7 +20,7 @@ the brief-driven task.
 - The Human supplies a brief repo (or path) containing `BRIEF.md` with the paper
   content spec and instructions for using this template.
 - A coding agent must create and initialize a writing repo from the
-  `ccfa-writing-paper-template` GitHub Template and fill its Human-facing
+  `agent-writing-harness` GitHub Template and fill its Human-facing
   contracts from the brief.
 - The Human asks to start an autonomous or brief-driven paper session.
 

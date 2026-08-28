@@ -174,7 +174,7 @@ class TemplateSyncTests(unittest.TestCase):
                     'downstream_repository': 'a-green-hand-jack/example-paper',
                     'git_head': initial_head,
                     'schema_version': 'paper-template-origin-v1',
-                    'template_repository': 'a-green-hand-jack/ccfa-writing-paper-template',
+                    'template_repository': 'a-green-hand-jack/agent-writing-harness',
                     'verification': 'github_api_template_repository',
                     'verified_at': '2026-08-09T00:00:00+00:00',
                 }

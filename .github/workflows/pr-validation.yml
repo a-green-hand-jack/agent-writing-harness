@@ -172,7 +172,7 @@ jobs:
 
   official-templates:
     name: official LaTeX template smoke tests
-    if: github.repository == 'a-green-hand-jack/ccfa-writing-paper-template'
+    if: github.repository == 'a-green-hand-jack/agent-writing-harness'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

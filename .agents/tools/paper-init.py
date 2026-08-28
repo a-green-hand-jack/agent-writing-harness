@@ -22,7 +22,8 @@ PUBLICATION_RELATIVE = Path("PUBLICATION.md")
 INVALID_SYNC_METADATA = object()
 COMMIT_MESSAGE = "chore: initialize paper repository and remove template governance residue"
 ORIGIN_COMMIT_MESSAGE = "chore: record GitHub Template provenance"
-UPSTREAM_REPOSITORY = "a-green-hand-jack/ccfa-writing-paper-template"
+UPSTREAM_REPOSITORY = "a-green-hand-jack/agent-writing-harness"
+LEGACY_UPSTREAM_REPOSITORIES = ("a-green-hand-jack/ccfa-writing-paper-template",)
 TEMPLATE_OVERLEAF_PROJECT = "6a71e37eeb498fef8922f370"
 AGENTS_PROTECTED_BRANCHES_LINE = (
     "- Never propose or perform deletion of the protected case branches "
@@ -101,8 +102,14 @@ def github_repository_identity(url: str) -> str | None:
     return "/".join(parts).lower()
 
 
+def upstream_repository_names() -> tuple[str, ...]:
+    return (UPSTREAM_REPOSITORY.lower(),) + tuple(
+        name.lower() for name in LEGACY_UPSTREAM_REPOSITORIES
+    )
+
+
 def is_upstream_template(root: Path) -> bool:
-    return github_repository_identity(origin_url(root)) == UPSTREAM_REPOSITORY.lower()
+    return github_repository_identity(origin_url(root)) in upstream_repository_names()
 
 
 def template_origin_path(root: Path) -> Path:
@@ -140,7 +147,7 @@ def valid_template_origin(root: Path) -> bool:
         return False
     if data.get("schema_version") != "paper-template-origin-v1":
         return False
-    if data.get("template_repository") != UPSTREAM_REPOSITORY.lower():
+    if data.get("template_repository") not in upstream_repository_names():
         return False
     if data.get("verification") != "github_api_template_repository":
         return False
@@ -591,7 +598,7 @@ def run_gh_template_check(root: Path, repository: str) -> None:
         detail = result.stderr.strip() or result.stdout.strip()
         raise InitError(f"GitHub Template provenance check failed: {detail}")
     observed = result.stdout.strip().lower()
-    if observed != UPSTREAM_REPOSITORY.lower():
+    if observed not in upstream_repository_names():
         raise InitError(
             "GitHub API did not identify "
             f"{UPSTREAM_REPOSITORY} as the template repository for {repository}"
@@ -620,7 +627,7 @@ def record_template_origin(root: Path, commit: bool) -> int:
     if path.is_symlink() or path.exists():
         raise InitError(f"template provenance path already exists: {path}")
     repository = github_repository_identity(origin_url(root))
-    if repository is None or repository == UPSTREAM_REPOSITORY.lower():
+    if repository is None or repository in upstream_repository_names():
         raise InitError("record-template-origin requires a distinct GitHub repository origin")
     run_gh_template_check(root, repository)
     data = {

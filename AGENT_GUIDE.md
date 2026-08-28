@@ -15,7 +15,7 @@ Use these names consistently:
 
 | Term | Meaning |
 |---|---|
-| **template repo** | The upstream GitHub Template repository, `a-green-hand-jack/ccfa-writing-paper-template`. It is maintained as reusable infrastructure and is not the workspace for a particular paper. |
+| **template repo** | The upstream GitHub Template repository, `a-green-hand-jack/agent-writing-harness`. It is maintained as reusable infrastructure and is not the workspace for a particular paper. |
 | **brief repo** | A Human-owned repository that holds the paper brief: a `BRIEF.md` content spec (identity, claims, evidence inventory, constraints) plus instructions for using this template. It is the input that starts a paper. |
 | **writing repo** | A downstream repository for one actual paper, normally created from the template repo and filled from a brief. It has independent Git history, project-specific contracts, and canonical paper content. It is the harness instance the Agent works in. |
 
@@ -39,7 +39,7 @@ Route by the observed state:
 
 | State | What the Agent should do |
 |---|---|
-| The remote is `a-green-hand-jack/ccfa-writing-paper-template` and `paper-init.py status` reports `upstream_template` | This is the template repo. If the Human wants to start a paper, create a separate writing repo by following the happy path below. Do not write the paper here. |
+| The remote is `a-green-hand-jack/agent-writing-harness` and `paper-init.py status` reports `upstream_template` | This is the template repo. If the Human wants to start a paper, create a separate writing repo by following the happy path below. Do not write the paper here. |
 | A valid `.agents/template-origin.json` attestation confirms a separate GitHub-Template-created writing repo, its origin is not the upstream template, and `.agents/init-state.json` is absent | This is an uninitialized writing repo. Run the downstream initialization before editing paper content. |
 | `.agents/template-origin.json` and `.agents/init-state.json` are valid, and `.agents/template-sync.json` identifies the configured upstream template | This is an initialized writing repo. Follow `AGENTS.md` and the routine task workflow. |
 | `.agents/template-sync.json` records `adoption.status: reviewed`, while template-origin and init-state records are absent | This is a reviewed adopted writing repo. Follow `AGENTS.md`; use template synchronization for later upstream updates. |
@@ -79,7 +79,7 @@ already contain another repository:
 
 ```bash
 gh auth status
-gh repo view a-green-hand-jack/ccfa-writing-paper-template \
+gh repo view a-green-hand-jack/agent-writing-harness \
   --json isTemplate,nameWithOwner,defaultBranchRef,url
 ```
 
@@ -92,7 +92,7 @@ Run the equivalent of:
 
 ```bash
 gh repo create OWNER/WRITING_REPO \
-  --template a-green-hand-jack/ccfa-writing-paper-template \
+  --template a-green-hand-jack/agent-writing-harness \
   --private
 
 gh repo clone OWNER/WRITING_REPO /absolute/path/to/WRITING_REPO

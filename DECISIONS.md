@@ -179,6 +179,28 @@ Rationale: the harness serves papers in any field; the CCF letters in the name
 are historical. Keeping the name preserves template references while the
 positioning and documentation reflect the broader scope.
 
+## DEC-0019: Repository renamed to agent-writing-harness (DEC-0018 superseded)
+
+Decision: the repository is renamed from `ccfa-writing-paper-template` to
+`agent-writing-harness` (issue #148). The rename de-CCFs the repository identity
+after the DEC-0018 positioning made the old name misleading. The bundled
+CCFA-Skills suite keeps its upstream `ccf-*` wrapper names as a vendored
+capability family; the paper display package is renamed `paper-harness.sty`.
+
+Compatibility: `paper-init.py` and `paper-brief.py` accept both the new
+canonical name and the legacy `a-green-hand-jack/ccfa-writing-paper-template`
+name in origin identity, `template-origin.json` validation, and the GitHub API
+`template_repository` check, so downstream repositories created before the
+rename keep a valid initialization state. New provenance records write the
+canonical new name. GitHub redirects keep legacy URLs usable; existing
+downstream repositories may refresh their `template-sync.json` upstream URL at
+their next reviewed synchronization.
+
+Execution order: code and compatibility changes first (merged to `main`), then
+`gh repo rename agent-writing-harness`, then end-to-end verification from a
+repository created from the renamed template. Changing the repository name
+again, or republishing the development surface to `main`, requires review.
+
 ## Recording future decisions
 
 Record durable, high-impact Human decisions and rationale here. Do not record every sentence edit or temporary discussion. A useful decision states what was chosen, affected paper objects, rejected alternatives when relevant, and what future change requires review.

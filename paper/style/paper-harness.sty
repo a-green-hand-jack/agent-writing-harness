@@ -1,10 +1,10 @@
-% ccfa-paper.sty
+% paper-harness.sty
 % Reusable presentation macros for the internal draft/arXiv layout.
 % Project-specific macros belong in paper/macros.tex, not here — this file
 % must stay swappable (e.g. for a compat.sty venue shim) without touching
 % paper/sections/*.tex.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{ccfa-paper}[2026/07/17 v1.0 CCFA reusable paper display macros]
+\ProvidesPackage{paper-harness}[2026/08/28 v1.1 reusable paper display macros for the agent-writing harness]
 
 \RequirePackage[T1]{fontenc}
 \RequirePackage{etoolbox}
@@ -17,33 +17,33 @@
 % ---------------------------------------------------------------------
 % Optional accent theme: \papercolor{<name>}, \paperstyle{accent|plain}
 % ---------------------------------------------------------------------
-\definecolor{ccfaAccentblue}{HTML}{1B4F8C}
-\definecolor{ccfaAccentslate}{HTML}{2E2E2E}
-\definecolor{ccfaAccentforest}{HTML}{1F5C3E}
-\colorlet{ccfaAccent}{ccfaAccentblue}
+\definecolor{paperAccentblue}{HTML}{1B4F8C}
+\definecolor{paperAccentslate}{HTML}{2E2E2E}
+\definecolor{paperAccentforest}{HTML}{1F5C3E}
+\colorlet{paperAccent}{paperAccentblue}
 
-\newbool{ccfaAccentEnabled}
-\booltrue{ccfaAccentEnabled}
+\newbool{paperAccentEnabled}
+\booltrue{paperAccentEnabled}
 
 \newcommand{\papercolor}[1]{%
-  \ifstrequal{#1}{blue}{\colorlet{ccfaAccent}{ccfaAccentblue}}{%
-  \ifstrequal{#1}{slate}{\colorlet{ccfaAccent}{ccfaAccentslate}}{%
-  \ifstrequal{#1}{forest}{\colorlet{ccfaAccent}{ccfaAccentforest}}{%
-    \PackageError{ccfa-paper}{Unknown paper color `#1'}{Available colors: blue, slate, forest.}%
+  \ifstrequal{#1}{blue}{\colorlet{paperAccent}{paperAccentblue}}{%
+  \ifstrequal{#1}{slate}{\colorlet{paperAccent}{paperAccentslate}}{%
+  \ifstrequal{#1}{forest}{\colorlet{paperAccent}{paperAccentforest}}{%
+    \PackageError{paper-harness}{Unknown paper color `#1'}{Available colors: blue, slate, forest.}%
   }}}%
 }
 
 \newcommand{\paperstyle}[1]{%
-  \ifstrequal{#1}{accent}{\booltrue{ccfaAccentEnabled}}{%
-  \ifstrequal{#1}{plain}{\boolfalse{ccfaAccentEnabled}}{%
-    \PackageError{ccfa-paper}{Unknown paper style `#1'}{Available styles: accent, plain.}%
+  \ifstrequal{#1}{accent}{\booltrue{paperAccentEnabled}}{%
+  \ifstrequal{#1}{plain}{\boolfalse{paperAccentEnabled}}{%
+    \PackageError{paper-harness}{Unknown paper style `#1'}{Available styles: accent, plain.}%
   }}%
 }
 
 % ---------------------------------------------------------------------
 % Display API: heading and cross-reference helpers
 % ---------------------------------------------------------------------
-\newcommand{\headbf}[1]{{\bfseries\ifbool{ccfaAccentEnabled}{\color{ccfaAccent}}{}#1}}
+\newcommand{\headbf}[1]{{\bfseries\ifbool{paperAccentEnabled}{\color{paperAccent}}{}#1}}
 \newcommand{\parahead}[1]{\par\noindent\headbf{#1.}\enspace\ignorespaces}
 
 \newcommand{\figref}[1]{Figure~\ref{#1}}

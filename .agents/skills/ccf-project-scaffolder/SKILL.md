@@ -1,6 +1,6 @@
 ---
 name: ccf-project-scaffolder
-description: Create and initialize a new downstream writing repository from the a-green-hand-jack/ccfa-writing-paper-template GitHub Template, or scaffold an external CCF paper project. Use for GitHub Template creation, repository setup, project scaffolding, and reproducible workspace setup. Do not use to overwrite an existing paper repository, plan workflow stages only, or generate research content.
+description: Create and initialize a new downstream writing repository from the a-green-hand-jack/agent-writing-harness GitHub Template, or scaffold an external CCF paper project. Use for GitHub Template creation, repository setup, project scaffolding, and reproducible workspace setup. Do not use to overwrite an existing paper repository, plan workflow stages only, or generate research content.
 ---
 
 # CCF Project Scaffolder (bundled)
@@ -62,13 +62,13 @@ commands, repository status, or template file lists.
 ### Procedure
 
 1. Run the shared lifecycle gate and confirm that the current origin is exactly
-   `a-green-hand-jack/ccfa-writing-paper-template` and that
+   `a-green-hand-jack/agent-writing-harness` and that
    `paper-init.py status` reports `upstream_template`. Stop on any conflict.
 2. Verify GitHub access and source identity without printing credentials:
 
    ```bash
    gh auth status
-   gh repo view a-green-hand-jack/ccfa-writing-paper-template \
+   gh repo view a-green-hand-jack/agent-writing-harness \
      --json isTemplate,nameWithOwner,defaultBranchRef,url
    ```
 
@@ -78,7 +78,7 @@ commands, repository status, or template file lists.
 
    ```bash
    gh repo create OWNER/WRITING_REPO \
-     --template a-green-hand-jack/ccfa-writing-paper-template \
+     --template a-green-hand-jack/agent-writing-harness \
      --private
    gh repo clone OWNER/WRITING_REPO /absolute/path/to/WRITING_REPO
    ```

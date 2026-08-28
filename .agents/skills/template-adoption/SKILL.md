@@ -7,7 +7,7 @@ description: Use when adapting an existing paper repository to this template or 
 
 ## Trigger
 
-Use when an existing paper repository was not created from `a-green-hand-jack/ccfa-writing-paper-template`, has no trustworthy template baseline, or uses materially different paths and build conventions that require a reviewed first migration.
+Use when an existing paper repository was not created from `a-green-hand-jack/agent-writing-harness`, has no trustworthy template baseline, or uses materially different paths and build conventions that require a reviewed first migration.
 
 Do not use this skill for ordinary upstream updates after adoption. Once `.agents/template-sync.json` records explicit `adoption.status: reviewed` state for the baseline, route future updates to `.agents/skills/template-sync/SKILL.md`. A non-null baseline alone is not evidence that adoption completed.
 
@@ -56,10 +56,10 @@ The plan uses the same safety vocabulary as template synchronization:
 2. Run the adoption tool from a trusted template checkout. The target repository does not need to contain `.agents/` yet:
 
    ```bash
-   python3 /path/to/ccfa-writing-paper-template/.agents/tools/template-adoption.py \
+   python3 /path/to/agent-writing-harness/.agents/tools/template-adoption.py \
      --root /path/to/existing-paper inspect
 
-   python3 /path/to/ccfa-writing-paper-template/.agents/tools/template-adoption.py \
+   python3 /path/to/agent-writing-harness/.agents/tools/template-adoption.py \
      --root /path/to/existing-paper plan --fetch
    ```
 
@@ -71,7 +71,7 @@ The plan uses the same safety vocabulary as template synchronization:
 4. With a clean worktree on the dedicated branch, apply only the safe set:
 
    ```bash
-   python3 /path/to/ccfa-writing-paper-template/.agents/tools/template-adoption.py \
+   python3 /path/to/agent-writing-harness/.agents/tools/template-adoption.py \
      --root /path/to/existing-paper apply
    ```
 

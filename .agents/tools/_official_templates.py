@@ -248,7 +248,7 @@ def _download(remote: RemoteFile, cache_dir: Path) -> Path:
         request = urllib.request.Request(
             remote.url,
             headers={
-                "User-Agent": "ccfa-writing-paper-template official template smoke test"
+                "User-Agent": "agent-writing-harness official template smoke test"
             },
         )
         with urllib.request.urlopen(request, timeout=90) as response, temporary.open(
@@ -418,7 +418,7 @@ def _stage(template: OfficialTemplate, cache_dir: Path, destination: Path) -> No
 
 
 def smoke_test(template: OfficialTemplate, cache_dir: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix=f"ccfa-{template.name}-") as directory:
+    with tempfile.TemporaryDirectory(prefix=f"paper-harness-{template.name}-") as directory:
         stage = Path(directory)
         _stage(template, cache_dir, stage)
         packaged_output = stage / template.output
