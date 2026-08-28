@@ -136,6 +136,21 @@ class PaperInterfaceChecks(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("does not document \\MainResult", result.stdout)
 
+    def test_bare_control_word_call_followed_by_text_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            path = root / "paper/sections/01_abstract.tex"
+            text = path.read_text(encoding="utf-8")
+            path.write_text(
+                text.replace("\\CoreTerm{} ", "\\CoreTerm has "),
+                encoding="utf-8",
+            )
+
+            result = run(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("interface macro \\CoreTerm must use {} at call sites", result.stdout)
 
 if __name__ == "__main__":
     unittest.main()
