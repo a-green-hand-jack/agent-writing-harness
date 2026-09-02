@@ -7,6 +7,22 @@ meaning.
 
 ## Durable records
 
+## Bibliography origin
+
+- bibliography_origin: agent-curated
+
+`agent-curated` means the Agent discovers and maintains entries, and the ledger
+is the authority for what a citation is supported by.
+
+`supplied-fixed` means the bibliography arrived with the task or from the Human,
+is read-only, and may not gain, lose, or alter entries. The set of works is then
+a Human decision that is already made, so `citation-support-review`'s
+supplied-fixed-bibliography profile applies: a key's presence in the file is
+sufficient to cite it at Draft strength, recorded `provisional`, without passage
+retrieval. Release strength is unchanged and still requires Human-confirmed
+support.
+
+
 - `paper/refs.bib` is the canonical bibliography used by LaTeX.
 - `references/ledger.json` is the Human-reviewable integrity ledger.
 - `dist/reference-integrity/` contains ignored online-check reports and caches.
