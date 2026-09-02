@@ -694,6 +694,25 @@ def check_v2_support(
     return code
 
 
+def check_without_ledger(root: Path, bibliography: Path, bib_keys: list[str]) -> int:
+    """Bibliography identity plus cited-key coverage, with no ledger present."""
+    code = 0
+    for key in duplicate_values(bib_keys):
+        code |= error(f"duplicate BibTeX citation key: {key}")
+
+    bib_set = set(bib_keys)
+    cited = cited_keys(root)
+    for key in sorted(cited - bib_set):
+        code |= error(f"paper cites a key missing from BibTeX: {key}")
+
+    if code == 0:
+        print(
+            "WARN reference_integrity ledger absent; checked bibliography identity "
+            f"and cited-key coverage only (references={len(bib_set)} cited={len(cited)})"
+        )
+    return code
+
+
 def check(root: Path, profile: str) -> int:
     try:
         policy = enforcement_policy(root)
@@ -709,6 +728,20 @@ def check(root: Path, profile: str) -> int:
         if not bibliography.is_file():
             raise IntegrityError(f"missing bibliography: {bibliography.relative_to(root)}")
         bib_keys = bibtex_keys(bibliography.read_text(encoding="utf-8"))
+    except (IntegrityError, OSError) as exc:
+        return error(str(exc))
+
+    # A repository with a policy but no ledger is a legitimate intermediate
+    # state: a supplied, read-only bibliography was never migrated into one, and
+    # there is nothing to migrate it from. Before this, the only two outcomes
+    # were "enforce a ledger that does not exist" and "skip every check", and
+    # the second is what let a manuscript citing nothing at all pass. Draft
+    # profiles degrade to the check the downstream task actually needs:
+    # bibliography identity, and every cited key defined.
+    if profile != "release" and not ledger_path.is_file():
+        return check_without_ledger(root, bibliography, bib_keys)
+
+    try:
         ledger = load_ledger(ledger_path)
     except (IntegrityError, OSError) as exc:
         return error(str(exc))

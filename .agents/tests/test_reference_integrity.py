@@ -129,6 +129,58 @@ class ReferenceIntegrityTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("requires the protected PUBLICATION.md policy", result.stdout)
 
+    def test_draft_degrades_when_no_ledger_exists(self) -> None:
+        """A supplied bibliography that was never migrated is a legitimate state.
+
+        Before this, an adopted policy with no ledger had two outcomes: enforce
+        a ledger that does not exist, or disable the policy and skip every
+        check. The second is what let a manuscript citing nothing at all pass a
+        full pipeline, so a draft profile now checks what the downstream task
+        actually needs.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write(root / ".agents/template-sync.json", '{"reference_integrity":{"adopted":true}}\n')
+            write(root / "PUBLICATION.md", policy())
+            write(
+                root / "paper/refs.bib",
+                "% REFERENCE_INTEGRITY_REQUIRED: references/ledger.json\n"
+                "@article{real2024, title={Real}, year={2024}}\n",
+            )
+            write(root / "paper/sections/02_intro.tex", "As shown \\cite{real2024}.\n")
+
+            result = run_checker(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("ledger absent", result.stdout)
+
+    def test_ledgerless_draft_still_rejects_an_invented_citation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write(root / ".agents/template-sync.json", '{"reference_integrity":{"adopted":true}}\n')
+            write(root / "PUBLICATION.md", policy())
+            write(
+                root / "paper/refs.bib",
+                "% REFERENCE_INTEGRITY_REQUIRED: references/ledger.json\n"
+                "@article{real2024, title={Real}, year={2024}}\n",
+            )
+            write(root / "paper/sections/02_intro.tex", "As shown \\cite{invented2024}.\n")
+
+            result = run_checker(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("invented2024", result.stdout)
+
+    def test_release_still_requires_a_ledger(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write(root / ".agents/template-sync.json", '{"reference_integrity":{"adopted":true}}\n')
+            write(root / "PUBLICATION.md", policy())
+            write(
+                root / "paper/refs.bib",
+                "% REFERENCE_INTEGRITY_REQUIRED: references/ledger.json\n",
+            )
+            result = run_checker(root, "release")
+            self.assertNotEqual(result.returncode, 0)
+
     def test_v1_policy_paths_are_canonical(self) -> None:
         for field, replacement in (("bibliography", "alternate.bib"), ("ledger", "alternate.json")):
             with self.subTest(field=field), tempfile.TemporaryDirectory() as directory:

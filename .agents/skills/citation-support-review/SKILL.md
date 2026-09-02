@@ -65,7 +65,9 @@ Provider failures (`rate-limited`, `provider-unavailable`, `paper-not-indexed`,
 infrastructure/source-availability outcomes, never scientific verdicts.
 
 A real DOI or correct metadata does not prove claim support. Title relevance
-and metadata existence alone never justify inserting a citation.
+and metadata existence alone never justify inserting a citation. The single
+exception is the supplied-fixed-bibliography profile below, where a Human has
+already decided which works belong to this paper.
 
 ## Profiles
 
@@ -96,6 +98,42 @@ check joint support only when no individual work supports the complete claim.
 Mechanically validate every exact excerpt against the retrieved passage before
 recording. Produce a Human decision packet when the supportive and adversarial
 readings disagree or when the result touches a controlled claim.
+
+### Supplied fixed bibliography
+
+Use when the bibliography is Human- or task-supplied, closed, and read-only:
+`REFERENCES.md` records `bibliography_origin: supplied-fixed`, or the Human
+states that the bibliography must not gain, lose, or alter entries.
+
+In this mode the Human has already decided which works belong to this paper, so
+the fabrication risk this skill exists to prevent is structurally absent: a key
+can only come from the supplied file. A key's presence in that file is
+therefore sufficient support to *insert* the citation at Draft strength, with no
+passage retrieval. Record the occurrence `provisional` with source origin
+`supplied-bibliography`.
+
+`source-unavailable` is then a statement about the *support claim*, not about
+the citation. It has always meant "no retrievable text could be checked" rather
+than evidence of fabrication; what changes here is that it no longer blocks
+attribution the Human has already scoped.
+
+What does not change:
+
+- The claim must be one the entry's title, venue, and year can plausibly carry.
+  A supplied bibliography licenses attribution, not any attribution.
+- Numbers, comparisons, precedence and novelty claims still need evidence and
+  still escalate to Review.
+- Review and Release are unchanged. Provisional supplied-bibliography support is
+  never Human-confirmed support, and Release still fails closed on substantive
+  claim support no Human has confirmed.
+- Never cite a key that is not in the supplied bibliography, and never add,
+  remove, or alter an entry.
+
+This profile exists because its absence was measured. An agent with web access
+denied, holding a fixed 52-entry bibliography supplied by its task, read the
+Draft profile's passage requirement as unconditional and cited nothing at all —
+producing a four-page paper with an empty related-work section where the
+materials supported nine pages and twenty citations.
 
 ### Release
 
